@@ -1,0 +1,6 @@
+language: "ko-KR" # 한국어 설정
+reviews:
+  auto_review:
+    enabled: false   # 자동 리뷰 끄기
+    drafts: false    # 드래프트 PR도 자동 리뷰 끄기
+  poem: false
