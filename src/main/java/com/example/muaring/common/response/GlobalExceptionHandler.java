@@ -1,0 +1,74 @@
+package com.example.muaring.common.response;
+
+import com.example.muaring.common.exception.GeneralException;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+
+// ✨ 애플리케이션 전체에서 발생하는 예외를 catch 해서 통일된 응답(JSON)으로 반환하는 역할을 하는 클래스
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    // ⚪ GeneralException 처리
+    @ExceptionHandler(GeneralException.class)
+    public ResponseEntity<ApiResponse<Void>> handleGeneralException(GeneralException e) {
+        ErrorCode errorCode = e.getErrorCode();
+        return ResponseEntity
+                .status(errorCode.getStatus())
+                .body(ApiResponse.fail(errorCode));
+    }
+
+    // ⚪ 요청 헤더 누락 예외 처리
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMissingHeader(MissingRequestHeaderException e) {
+        ErrorCode errorCode = ErrorCode.REQUEST_HEADER_EMPTY;
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(ApiResponse.fail(errorCode));
+    }
+
+    // ⚪ 지원하지 않는 HTTP 메서드 예외 처리
+    @ExceptionHandler({HttpRequestMethodNotSupportedException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<ApiResponse<Void>> handleMethodNotAllowed(Exception e) {
+        ErrorCode errorCode = ErrorCode.METHOD_NOT_ALLOWED;
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(ApiResponse.fail(errorCode));
+    }
+
+    // ⚪ 잘못된 URL 접근 예외 처리
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNoHandlerFound(NoHandlerFoundException e) {
+        ErrorCode errorCode = ErrorCode.NOT_FOUND_URL;
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(ApiResponse.fail(errorCode));
+    }
+
+    // ⚪ DTO Validation 예외 처리
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException e) {
+        ErrorCode errorCode = ErrorCode.NOT_VALID_EXCEPTION;
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(ApiResponse.fail(errorCode));
+    }
+
+    // ⚪ Media Type 오류 예외 처리
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMediaTypeNotAcceptable(HttpMediaTypeNotAcceptableException e) {
+        ErrorCode errorCode = ErrorCode.HTTP_MEDIA_TYPE_NOT_ACCEPTABLE;
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(ApiResponse.fail(errorCode));
+    }
+
+    // ⚪ 그 외의 예외 처리
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Void>> handleUnhandledException(Exception e) {
+        ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
+        return ResponseEntity.status(errorCode.getStatus())
+                .body(ApiResponse.fail(errorCode));
+    }
+}
