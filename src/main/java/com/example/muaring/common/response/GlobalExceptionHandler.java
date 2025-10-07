@@ -1,6 +1,7 @@
 package com.example.muaring.common.response;
 
 import com.example.muaring.common.exception.GeneralException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
@@ -17,6 +18,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 // ✨ 애플리케이션 전체에서 발생하는 예외를 catch 해서 통일된 응답(JSON)으로 반환하는 역할을 하는 클래스
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -85,6 +87,7 @@ public class GlobalExceptionHandler {
     // ⚪ 그 외의 예외 처리
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleUnhandledException(Exception e) {
+        log.error("예상치 못한 예외가 발생했습니다.", e);
         ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
         return ResponseEntity.status(errorCode.getStatus())
                 .body(ApiResponse.fail(errorCode));
