@@ -2,6 +2,7 @@ package com.example.muaring.common.response;
 
 import com.example.muaring.common.exception.GeneralException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -10,6 +11,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 // ✨ 애플리케이션 전체에서 발생하는 예외를 catch 해서 통일된 응답(JSON)으로 반환하는 역할을 하는 클래스
 @RestControllerAdvice
@@ -50,10 +55,23 @@ public class GlobalExceptionHandler {
 
     // ⚪ DTO Validation 예외 처리
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Void>> handleValidationException(MethodArgumentNotValidException e) {
+    public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationException(MethodArgumentNotValidException e) {
         ErrorCode errorCode = ErrorCode.NOT_VALID_EXCEPTION;
+        /*
+        e.getBindingResult().getFieldErrors(): DTO 검증 중 실패한 필드들의 정보를 모두 가져옴
+        FieldError 객체에는
+        - field: 실패한 필드 이름
+        - defaultMessage: 어노테이션에서 설정한 오류메시지
+        가 있다.
+        */
+        Map<String, String> errors = e.getBindingResult().getFieldErrors().stream()
+                .collect(Collectors.toMap(
+                        FieldError::getField,
+                        error -> Optional.ofNullable(error.getDefaultMessage()).orElse("유효하지 않은 값입니다."), // default message가 null일 경우 기본 문자열로 대체
+                        (existing, replacement) -> existing  // 같은 필드 이름이 나오면, 기존값은 두고 새값은 무시한다.
+                ));
         return ResponseEntity.status(errorCode.getStatus())
-                .body(ApiResponse.fail(errorCode));
+                .body(ApiResponse.fail(errorCode, errors));
     }
 
     // ⚪ Media Type 오류 예외 처리

@@ -31,4 +31,9 @@ public record ApiResponse<T>(int code, String message, T data) {
     public static <T> ApiResponse<T> fail(ErrorCode code) {
         return new ApiResponse<>(code.getCode(), code.getMessage(), null);
     }
+
+    // ⚪ 실패 응답 (필드별 오류 상세 정보가 필요한 경우)
+    public static <T> ApiResponse<T> fail(ErrorCode code, T data) {
+        return new ApiResponse<>(code.getCode(), code.getMessage(), data);
+    }
 }
