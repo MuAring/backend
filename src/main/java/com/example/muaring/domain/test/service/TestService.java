@@ -34,7 +34,6 @@ public class TestService {
     public TestResponseDTO getTestById(Long testSeq) {
         Test test = testRepository.findById(testSeq)
                 .orElseThrow(() -> new TestException(ErrorCode.NOT_FOUND_TEST));
-        log.info("단일 조회: {}", test.getContent());
         return testMapper.toResponseDTO(test);
     }
 

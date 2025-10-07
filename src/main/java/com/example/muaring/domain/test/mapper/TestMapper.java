@@ -24,7 +24,4 @@ public interface TestMapper {
 
     // ⚪ 엔티티 리스트 -> ResponseDTO 리스트로 변환
     List<TestResponseDTO> toResponseDTO(List<Test> entities);
-
-    // ⚪ 기존 엔티티에 RequestDTO의 내용을 업데이트 (수정 시 사용)
-    void updateFromDTO(TestRequestDTO dto, @MappingTarget Test test);
 }
