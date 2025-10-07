@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 public class SwaggerConfig {
 
     @Bean
-    public OpenAPI ClogAPI() {
+    public OpenAPI MuaringAPI() {
         Info info = new Info()
                 .title("MuAring API")
                 .description("MuAring API입니다.")
