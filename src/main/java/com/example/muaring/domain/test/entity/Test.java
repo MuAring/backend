@@ -1,7 +1,7 @@
 package com.example.muaring.domain.test.entity;
 
 import com.example.muaring.common.response.ErrorCode;
-import com.example.muaring.domain.common.BaseTimeEntity;
+import com.example.muaring.domain.common.BaseEntity;
 import com.example.muaring.domain.test.exception.TestException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -18,7 +18,7 @@ import org.hibernate.annotations.SQLRestriction;
 // 엔티티에서는 @Setter, @AllArgsConstructor, @ToString 사용 지양, builder 패턴 추천
 @SQLDelete(sql = "UPDATE test SET deleted_at = NOW() WHERE id = ?")
 @SQLRestriction("deleted_at IS NULL")
-public class Test extends BaseTimeEntity {
+public class Test extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
