@@ -15,12 +15,14 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class) // 필드를 자동으로 채워준다.
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public abstract class BaseTimeEntity {
+public abstract class BaseEntity {
+
+    @Column(nullable = false)
+    private Boolean isDeleted = false;
 
     @CreatedDate
     @Column(updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(updatable = true, nullable = true)
     private LocalDateTime deletedAt;
 }
