@@ -13,10 +13,7 @@ import lombok.*;
         }
 )
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class GroupMember extends BaseEntity {
 
     @Id

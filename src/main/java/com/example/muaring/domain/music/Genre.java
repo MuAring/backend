@@ -7,10 +7,7 @@ import com.example.muaring.domain.common.BaseEntity;
 @Entity
 @Table(name = "genre")
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Genre extends BaseEntity {
 
     @Id

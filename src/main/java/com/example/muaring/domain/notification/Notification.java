@@ -8,10 +8,7 @@ import lombok.*;
 @Entity
 @Table(name = "notification")
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Notification extends BaseEntity {
 
     @Id
@@ -35,14 +32,5 @@ public class Notification extends BaseEntity {
 
     @Column(name = "is_read", nullable = false)
     private Boolean isRead = false;
-
-    // type enum으로 관리, 필요할 시 파일 분리할 것
-    public enum NotificationType {
-        TODAY_MUSIC,
-        LIKE,
-        COMMENT,
-        FOLLOW_APPROVED,
-        NEW_FOLLOWER,
-        INTERESTED_USER
-    }
 }
+

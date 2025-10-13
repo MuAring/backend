@@ -6,10 +6,7 @@ import lombok.*;
 @Entity
 @Table(name = "musicGenre")
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MusicGenre {
 
     @Id

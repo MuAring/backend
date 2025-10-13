@@ -8,10 +8,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "join_request")
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class JoinRequest {
 
     @Id

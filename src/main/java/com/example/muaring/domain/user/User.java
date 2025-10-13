@@ -1,5 +1,6 @@
 package com.example.muaring.domain.user;
 
+import com.example.muaring.domain.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -8,11 +9,8 @@ import java.time.LocalTime;
 @Entity
 @Table(name = "user")
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class User {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,9 +26,6 @@ public class User {
     @Column(name = "auth_provider_id", length = 100, nullable = false)
     private String authProviderId;
 
-    @Column(length = 20, nullable = false)
-    private Status status;
-
     @Column(name = "is_public", nullable = false)
     private Boolean isPublic;
 
@@ -43,17 +38,6 @@ public class User {
     @Column(name = "noti_time", nullable = false)
     private LocalTime notiTime;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
-
-    public enum Status {
-        ACTIVE,
-        DELETED
-    }
 }

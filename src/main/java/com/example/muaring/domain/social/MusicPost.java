@@ -9,10 +9,7 @@ import lombok.*;
 @Entity
 @Table(name = "music_post")
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MusicPost extends BaseEntity {
 
     @Id

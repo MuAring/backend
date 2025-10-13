@@ -9,10 +9,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "`group`")
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Group extends BaseEntity {
 
     @Id
@@ -43,6 +40,6 @@ public class Group extends BaseEntity {
     @Column(name = "is_public", nullable = false)
     private Boolean isPublic;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @Column(name = "playlist_updated_at")
+    private LocalDateTime playlistUpdatedAt;
 }

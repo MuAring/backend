@@ -7,10 +7,7 @@ import lombok.*;
 @Entity
 @Table(name = "group_category")
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Category extends BaseEntity {
 
     @Id

@@ -13,10 +13,7 @@ import java.time.LocalDateTime;
         }
 )
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class YearlyUserStats {
 
     @Id
@@ -71,10 +68,10 @@ public class YearlyUserStats {
     private LocalDateTime calculatedAt;
 
     public enum EnergyTrend {
-        증가, 감소, 유지
+        INCREASE, DECREASE, STABLE
     }
 
     public enum MoodShift {
-        밝아짐, 어두워짐
+        BRIGHTEN, DARKEN
     }
 }

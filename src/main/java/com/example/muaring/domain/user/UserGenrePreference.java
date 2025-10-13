@@ -14,10 +14,7 @@ import java.time.LocalDateTime;
         }
 )
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserGenrePreference {
 
     @Id

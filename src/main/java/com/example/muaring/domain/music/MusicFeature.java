@@ -7,10 +7,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "music_feature")
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MusicFeature {
 
     @Id

@@ -11,10 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "library")
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Library {
 
     @Id

@@ -13,10 +13,7 @@ import java.time.LocalDateTime;
         }
 )
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class NotiSetting {
 
     @Id
@@ -36,13 +33,4 @@ public class NotiSetting {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
-
-    public enum NotificationType {
-        TODAY_MUSIC,
-        LIKE,
-        COMMENT,
-        FOLLOW_APPROVED,
-        NEW_FOLLOWER,
-        INTERESTED_USER
-    }
 }
