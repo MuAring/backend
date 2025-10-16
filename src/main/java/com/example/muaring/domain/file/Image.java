@@ -16,10 +16,6 @@ public class Image extends BaseEntity {
     @Column(name = "image_id")
     private Long imageId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
     @Column(name = "s3_key", length = 255, nullable = false)
     private String s3Key;
 
