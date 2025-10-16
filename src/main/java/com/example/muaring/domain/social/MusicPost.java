@@ -1,6 +1,7 @@
 package com.example.muaring.domain.social;
 
 import com.example.muaring.domain.common.BaseEntity;
+import com.example.muaring.domain.group.Group;
 import com.example.muaring.domain.user.User;
 import com.example.muaring.domain.music.Music;
 import jakarta.persistence.*;
@@ -24,6 +25,13 @@ public class MusicPost extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "music_id", nullable = false)
     private Music music;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "group_id")
+    private Group group;
+
+    @Column(name = "is_profile", nullable = false)
+    private boolean isProfile;
 
     @Column(columnDefinition = "TEXT")
     private String content;
