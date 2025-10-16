@@ -1,6 +1,7 @@
 package com.example.muaring.domain.user;
 
 import com.example.muaring.domain.common.BaseEntity;
+import com.example.muaring.domain.file.Image;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -19,6 +20,10 @@ public class User extends BaseEntity {
 
     @Column(length = 10, nullable = false)
     private String nickname;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_image_id")
+    private Image profileImage;
 
     @Column(name = "auth_provider", length = 20, nullable = false)
     private String authProvider;

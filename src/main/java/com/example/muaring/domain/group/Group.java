@@ -1,6 +1,7 @@
 package com.example.muaring.domain.group;
 
 import com.example.muaring.domain.common.BaseEntity;
+import com.example.muaring.domain.file.Image;
 import com.example.muaring.domain.user.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,9 +22,9 @@ public class Group extends BaseEntity {
     @JoinColumn(name = "admin_user_id", nullable = false)
     private User adminUser;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_category_id", nullable = false)
-    private Category category;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_image_id")
+    private Image profileImage;
 
     @Column(length = 30, nullable = false)
     private String name;
