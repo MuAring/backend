@@ -24,7 +24,7 @@ public class Group extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_category_id", nullable = false)
-    private Category category;
+    private GroupCategory category;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profile_image_id")
