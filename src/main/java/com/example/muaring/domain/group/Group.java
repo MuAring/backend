@@ -22,10 +22,6 @@ public class Group extends BaseEntity {
     @JoinColumn(name = "admin_user_id", nullable = false)
     private User adminUser;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "group_category_id", nullable = false)
-    private GroupCategory category;
-
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profile_image_id")
     private Image profileImage;
