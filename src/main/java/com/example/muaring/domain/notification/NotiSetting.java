@@ -1,6 +1,6 @@
 package com.example.muaring.domain.notification;
 
-import com.example.muaring.domain.user.User;
+import com.example.muaring.domain.member.Member;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Table(
         name = "noti_setting",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"user_id", "type"})
+                @UniqueConstraint(columnNames = {"member_id", "type"})
         }
 )
 @Getter
@@ -18,11 +18,11 @@ public class NotiSetting {
 
     @Id
     @Column(name = "noti_setting_id", length = 255)
-    private String notiSettingId;
+    private String id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 30, nullable = false)

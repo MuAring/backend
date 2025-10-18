@@ -13,7 +13,7 @@ public class GroupCategory extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "group_category_id")
-    private Long groupCategoryId;
+    private Long id;
 
     @Column(length = 30, nullable = false, unique = true)
     private String name;

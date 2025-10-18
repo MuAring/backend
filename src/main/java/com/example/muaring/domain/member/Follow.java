@@ -1,4 +1,4 @@
-package com.example.muaring.domain.user;
+package com.example.muaring.domain.member;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -6,29 +6,29 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(
-        name = "interested_user",
+        name = "follow",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"follower_id", "followee_id"})
         }
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class InterestedUser {
+public class Follow {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "interested_user_id")
-    private Long interestedUserId;
+    @Column(name = "follow_id")
+    private Long id;
 
-    // 관심을 표시한 사용자
+    // 팔로우를 건 사용자
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "follower_id", nullable = false)
-    private User follower;
+    private Member follower;
 
-    // 관심을 받은 사용자
+    // 팔로우 요청을 받은 사용자
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "followee_id", nullable = false)
-    private User followee;
+    private Member followee;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

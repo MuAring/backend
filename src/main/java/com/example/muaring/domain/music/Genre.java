@@ -13,7 +13,7 @@ public class Genre extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "genre_id")
-    private Long genreId;
+    private Long id;
 
     @Column(length = 50, nullable = false)
     private String name;

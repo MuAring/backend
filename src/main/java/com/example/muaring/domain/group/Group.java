@@ -2,7 +2,7 @@ package com.example.muaring.domain.group;
 
 import com.example.muaring.domain.common.BaseEntity;
 import com.example.muaring.domain.file.Image;
-import com.example.muaring.domain.user.User;
+import com.example.muaring.domain.member.Member;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -16,11 +16,11 @@ public class Group extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "group_id")
-    private Long groupId;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "admin_user_id", nullable = false)
-    private User adminUser;
+    @JoinColumn(name = "admin_member_id", nullable = false)
+    private Member adminMember;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profile_image_id")

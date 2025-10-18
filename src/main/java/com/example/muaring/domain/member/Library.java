@@ -1,7 +1,6 @@
-package com.example.muaring.domain.user;
+package com.example.muaring.domain.member;
 
 import com.example.muaring.domain.music.Music;
-import com.example.muaring.domain.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,11 +16,11 @@ public class Library {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "library_id")
-    private Long libraryId;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "music_id", nullable = false)

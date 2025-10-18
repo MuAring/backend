@@ -12,7 +12,7 @@ public class MusicFeature {
 
     @Id
     @Column(name = "music_id")
-    private Long musicId;
+    private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId

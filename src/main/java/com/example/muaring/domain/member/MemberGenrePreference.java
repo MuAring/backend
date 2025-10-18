@@ -1,30 +1,29 @@
-package com.example.muaring.domain.user;
+package com.example.muaring.domain.member;
 
 import com.example.muaring.domain.music.Genre;
-import com.example.muaring.domain.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(
-        name = "user_genre_preference",
+        name = "member_genre_preference",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"user_id", "genre_id"})
+                @UniqueConstraint(columnNames = {"member_id", "genre_id"})
         }
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserGenrePreference {
+public class MemberGenrePreference {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_genre_id")
-    private Long userGenreId;
+    @Column(name = "member_genre_id")
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "genre_id", nullable = false)
