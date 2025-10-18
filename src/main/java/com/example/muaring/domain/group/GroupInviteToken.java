@@ -26,8 +26,8 @@ public class GroupInviteToken extends BaseEntity {
     private Group group;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private Member user;
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
     @Column(name = "invite_token", length = 36, nullable = false, unique = true)
     private String inviteToken;
