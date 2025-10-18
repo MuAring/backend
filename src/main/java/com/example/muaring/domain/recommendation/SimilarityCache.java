@@ -1,6 +1,6 @@
 package com.example.muaring.domain.recommendation;
 
-import com.example.muaring.domain.user.User;
+import com.example.muaring.domain.member.Member;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Table(
         name = "similarity_cache",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"user_id_a", "user_id_b"})
+                @UniqueConstraint(columnNames = {"member_id_a", "member_id_b"})
         }
 )
 @Getter
@@ -19,17 +19,17 @@ public class SimilarityCache {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "similarity_id")
-    private Long similarityId;
+    private Long id;
 
     // 사용자 A (ID 작은 쪽)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id_a", nullable = false)
-    private User userA;
+    @JoinColumn(name = "member_id_a", nullable = false)
+    private Member memberA;
 
     // 사용자 B (ID 큰 쪽)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id_b", nullable = false)
-    private User userB;
+    @JoinColumn(name = "member_id_b", nullable = false)
+    private Member memberB;
 
     @Column(name = "total_score", nullable = false)
     private Double totalScore;

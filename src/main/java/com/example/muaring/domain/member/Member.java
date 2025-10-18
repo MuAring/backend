@@ -1,4 +1,4 @@
-package com.example.muaring.domain.user;
+package com.example.muaring.domain.member;
 
 import com.example.muaring.domain.common.BaseEntity;
 import com.example.muaring.domain.file.Image;
@@ -8,15 +8,15 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
-@Table(name = "user")
+@Table(name = "member")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User extends BaseEntity {
+public class Member extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private Long userId;
+    @Column(name = "member_id")
+    private Long id;
 
     @Column(length = 10, nullable = false)
     private String nickname;

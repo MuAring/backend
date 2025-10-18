@@ -2,7 +2,7 @@ package com.example.muaring.domain.social;
 
 import com.example.muaring.domain.common.BaseEntity;
 import com.example.muaring.domain.group.Group;
-import com.example.muaring.domain.user.User;
+import com.example.muaring.domain.member.Member;
 import com.example.muaring.domain.music.Music;
 import jakarta.persistence.*;
 import lombok.*;
@@ -16,11 +16,11 @@ public class MusicPost extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "post_id")
-    private Long postId;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "music_id", nullable = false)

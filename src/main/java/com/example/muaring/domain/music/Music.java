@@ -13,7 +13,7 @@ public class Music {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "music_id")
-    private Long musicId;
+    private Long id;
 
     @Column(name = "spotify_id", length = 50, nullable = false, unique = true)
     private String spotifyId;

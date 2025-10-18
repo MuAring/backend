@@ -2,9 +2,11 @@ package com.example.muaring.domain.group;
 
 import com.example.muaring.domain.common.BaseEntity;
 import com.example.muaring.domain.file.Image;
-import com.example.muaring.domain.user.User;
+import com.example.muaring.domain.member.Member;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -16,15 +18,15 @@ public class Group extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "group_id")
-    private Long groupId;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "admin_user_id", nullable = false)
-    private User adminUser;
+    @JoinColumn(name = "admin_id", nullable = false)
+    private Member admin;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "profile_image_id")
-    private Image profileImage;
+    @JoinColumn(name = "image_id")
+    private Image image;
 
     @Column(length = 30, nullable = false)
     private String name;
@@ -38,8 +40,8 @@ public class Group extends BaseEntity {
     @Column(name = "max_members", nullable = false)
     private Integer maxMembers;
 
-    @Column(name = "is_public", nullable = false)
-    private Boolean isPublic;
+    @Column(name = "is_public", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private Boolean isPublic = true;
 
     @Column(name = "playlist_updated_at")
     private LocalDateTime playlistUpdatedAt;

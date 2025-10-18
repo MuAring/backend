@@ -1,25 +1,24 @@
-package com.example.muaring.domain.user;
+package com.example.muaring.domain.member;
 
-import com.example.muaring.domain.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
 // 사용자 음악 취향 수치화한 테이블
 @Entity
-@Table(name = "user_music_profile")
+@Table(name = "member_music_profile")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserMusicProfile {
+public class MemberMusicProfile {
 
     @Id
-    @Column(name = "user_id")
-    private Long userId;
+    @Column(name = "member_id")
+    private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     @Column(name = "avg_danceability", nullable = false)
     private Double avgDanceability;

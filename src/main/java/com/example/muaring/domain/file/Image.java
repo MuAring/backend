@@ -1,7 +1,6 @@
 package com.example.muaring.domain.file;
 
 import com.example.muaring.domain.common.BaseEntity;
-import com.example.muaring.domain.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,7 +13,7 @@ public class Image extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "image_id")
-    private Long imageId;
+    private Long id;
 
     @Column(name = "s3_key", length = 255, nullable = false)
     private String s3Key;

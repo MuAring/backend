@@ -1,7 +1,7 @@
 package com.example.muaring.domain.group;
 
 import com.example.muaring.domain.common.BaseEntity;
-import com.example.muaring.domain.user.User;
+import com.example.muaring.domain.member.Member;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,7 +9,7 @@ import lombok.*;
 @Table(
         name = "group_member",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"group_id", "user_id"})
+                @UniqueConstraint(columnNames = {"group_id", "member_id"})
         }
 )
 @Getter
@@ -19,15 +19,15 @@ public class GroupMember extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "group_member_id")
-    private Long groupMemberId;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id", nullable = false)
     private Group group;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role", length = 20, nullable = false)

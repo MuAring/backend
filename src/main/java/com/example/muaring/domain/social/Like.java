@@ -1,6 +1,6 @@
 package com.example.muaring.domain.social;
 
-import com.example.muaring.domain.user.User;
+import com.example.muaring.domain.member.Member;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Table(
         name = "`like`",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"post_id", "user_id"})
+                @UniqueConstraint(columnNames = {"post_id", "member_id"})
         }
 )
 @Getter
@@ -19,15 +19,15 @@ public class Like {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "like_id")
-    private Long likeId;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
     private MusicPost post;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

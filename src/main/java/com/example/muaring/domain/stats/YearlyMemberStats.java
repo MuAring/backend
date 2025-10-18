@@ -1,29 +1,29 @@
 package com.example.muaring.domain.stats;
 
-import com.example.muaring.domain.user.User;
+import com.example.muaring.domain.member.Member;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(
-        name = "yearly_user_stats",
+        name = "yearly_member_stats",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"user_id", "year"})
+                @UniqueConstraint(columnNames = {"member_id", "year"})
         }
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class YearlyUserStats {
+public class YearlyMemberStats {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "stat_id")
-    private Long statId;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
     // 연도 (ex: 2025)
     @Column(name = "year", nullable = false)
