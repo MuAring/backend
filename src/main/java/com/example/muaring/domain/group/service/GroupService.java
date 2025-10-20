@@ -16,6 +16,7 @@ import com.example.muaring.domain.member.repository.MemberRepository;
 import com.example.muaring.domain.member.response.MemberErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -29,6 +30,7 @@ public class GroupService {
     private final MemberRepository memberRepository;
 
     // 그룹 생성
+    @Transactional
     public GroupCreateResponseDto createGroup(GroupCreateRequestDto requestDto) {
         Member admin = memberRepository.findById(requestDto.getAdminId())
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
