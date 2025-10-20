@@ -1,5 +1,6 @@
 package com.example.muaring.domain.test.entity;
 
+import com.example.muaring.common.response.CommonErrorCode;
 import com.example.muaring.common.response.ErrorCode;
 import com.example.muaring.domain.common.BaseEntity;
 import com.example.muaring.domain.test.exception.TestException;
@@ -33,7 +34,7 @@ public class Test extends BaseEntity {
 
     public void updateContent(String content) {
         if (content == null || content.isBlank()) {
-            throw new TestException(ErrorCode.INVALID_TEST_CONTENT);
+            throw new TestException(CommonErrorCode.INVALID_TEST_CONTENT);
         }
         this.content = content;
     }

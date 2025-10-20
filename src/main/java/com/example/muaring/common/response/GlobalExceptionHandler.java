@@ -34,7 +34,7 @@ public class GlobalExceptionHandler {
     // ⚪ 요청 헤더 누락 예외 처리
     @ExceptionHandler(MissingRequestHeaderException.class)
     public ResponseEntity<ApiResponse<Void>> handleMissingHeader(MissingRequestHeaderException e) {
-        ErrorCode errorCode = ErrorCode.REQUEST_HEADER_EMPTY;
+        ErrorCode errorCode = CommonErrorCode.REQUEST_HEADER_EMPTY;
         return ResponseEntity.status(errorCode.getStatus())
                 .body(ApiResponse.fail(errorCode));
     }
@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
     // ⚪ 지원하지 않는 HTTP 메서드 예외 처리
     @ExceptionHandler({HttpRequestMethodNotSupportedException.class, MethodArgumentTypeMismatchException.class})
     public ResponseEntity<ApiResponse<Void>> handleMethodNotAllowed(Exception e) {
-        ErrorCode errorCode = ErrorCode.METHOD_NOT_ALLOWED;
+        ErrorCode errorCode = CommonErrorCode.METHOD_NOT_ALLOWED;
         return ResponseEntity.status(errorCode.getStatus())
                 .body(ApiResponse.fail(errorCode));
     }
@@ -50,7 +50,7 @@ public class GlobalExceptionHandler {
     // ⚪ 잘못된 URL 접근 예외 처리
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleNoHandlerFound(NoHandlerFoundException e) {
-        ErrorCode errorCode = ErrorCode.NOT_FOUND_URL;
+        ErrorCode errorCode = CommonErrorCode.NOT_FOUND_URL;
         return ResponseEntity.status(errorCode.getStatus())
                 .body(ApiResponse.fail(errorCode));
     }
@@ -58,7 +58,7 @@ public class GlobalExceptionHandler {
     // ⚪ DTO Validation 예외 처리
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationException(MethodArgumentNotValidException e) {
-        ErrorCode errorCode = ErrorCode.NOT_VALID_EXCEPTION;
+        ErrorCode errorCode = CommonErrorCode.NOT_VALID_EXCEPTION;
         /*
         e.getBindingResult().getFieldErrors(): DTO 검증 중 실패한 필드들의 정보를 모두 가져옴
         FieldError 객체에는
@@ -79,7 +79,7 @@ public class GlobalExceptionHandler {
     // ⚪ Media Type 오류 예외 처리
     @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
     public ResponseEntity<ApiResponse<Void>> handleMediaTypeNotAcceptable(HttpMediaTypeNotAcceptableException e) {
-        ErrorCode errorCode = ErrorCode.HTTP_MEDIA_TYPE_NOT_ACCEPTABLE;
+        ErrorCode errorCode = CommonErrorCode.HTTP_MEDIA_TYPE_NOT_ACCEPTABLE;
         return ResponseEntity.status(errorCode.getStatus())
                 .body(ApiResponse.fail(errorCode));
     }
@@ -88,7 +88,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleUnhandledException(Exception e) {
         log.error("예상치 못한 예외가 발생했습니다.", e);
-        ErrorCode errorCode = ErrorCode.INTERNAL_SERVER_ERROR;
+        ErrorCode errorCode = CommonErrorCode.INTERNAL_SERVER_ERROR;
         return ResponseEntity.status(errorCode.getStatus())
                 .body(ApiResponse.fail(errorCode));
     }
