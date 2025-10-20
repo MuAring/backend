@@ -25,4 +25,14 @@ public enum GroupCategoryType {
 
     private final String name;
     private final String displayName;
+
+    public static GroupCategoryType fromName(String name) {
+        for (GroupCategoryType type : GroupCategoryType.values()) {
+            if (type.name.equalsIgnoreCase(name)) {
+                return type;
+            }
+        }
+
+        return OTHERS;
+    }
 }
