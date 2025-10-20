@@ -19,4 +19,10 @@ public class GroupCategoryMapping {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_category_id", nullable = false)
     private GroupCategory groupCategory;
+
+    @Builder
+    public GroupCategoryMapping(Group group, GroupCategory groupCategory) {
+        this.group = group;
+        this.groupCategory = groupCategory;
+    }
 }

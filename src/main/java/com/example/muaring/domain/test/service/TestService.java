@@ -1,5 +1,6 @@
 package com.example.muaring.domain.test.service;
 
+import com.example.muaring.common.response.CommonErrorCode;
 import com.example.muaring.common.response.ErrorCode;
 import com.example.muaring.domain.test.dto.TestRequestDTO;
 import com.example.muaring.domain.test.dto.TestResponseDTO;
@@ -33,7 +34,7 @@ public class TestService {
     // ⚪ 단일 조회
     public TestResponseDTO getTestById(Long testSeq) {
         Test test = testRepository.findById(testSeq)
-                .orElseThrow(() -> new TestException(ErrorCode.NOT_FOUND_TEST));
+                .orElseThrow(() -> new TestException(CommonErrorCode.NOT_FOUND_TEST));
         return testMapper.toResponseDTO(test);
     }
 
@@ -49,7 +50,7 @@ public class TestService {
     @Transactional
     public TestResponseDTO updateTest(Long testSeq, @Valid TestRequestDTO testRequestDTO) {
         Test test = testRepository.findById(testSeq)
-                .orElseThrow(() -> new TestException(ErrorCode.NOT_FOUND_TEST));
+                .orElseThrow(() -> new TestException(CommonErrorCode.NOT_FOUND_TEST));
 
         test.updateContent(testRequestDTO.content());
         return testMapper.toResponseDTO(test);
@@ -59,7 +60,7 @@ public class TestService {
     @Transactional
     public void deleteTest(Long testSeq) {
         Test test = testRepository.findById(testSeq)
-                .orElseThrow(() -> new TestException(ErrorCode.NOT_FOUND_TEST));
+                .orElseThrow(() -> new TestException(CommonErrorCode.NOT_FOUND_TEST));
         testRepository.delete(test);
     }
 }
