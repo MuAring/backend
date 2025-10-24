@@ -51,4 +51,10 @@ public class Member extends BaseEntity {
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public static Member CreateOAuthMember(String email) {
+        Member member = new Member();
+        member.email = email;
+        return member;
+    }
 }
