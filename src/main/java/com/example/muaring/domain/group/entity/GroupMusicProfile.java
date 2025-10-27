@@ -50,7 +50,7 @@ public class GroupMusicProfile {
     @Column(name = "avg_rarity", nullable = false)
     private Double avgRarity;
 
-    @Column(name = "hidden_gem_rati", nullable = false)
+    @Column(name = "hidden_gem_ratio", nullable = false)
     private Double hiddenGemRatio;
 
     @Column(name = "total_songs", nullable = false)
