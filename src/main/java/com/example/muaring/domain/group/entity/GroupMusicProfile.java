@@ -90,8 +90,6 @@ public class GroupMusicProfile {
         GroupMusicProfile profile = new GroupMusicProfile();
         profile.group = group;
         profile.status = ProfileStatus.NOT_AVAILABLE;
-        profile.createdAt = LocalDateTime.now();
-        profile.updatedAt = LocalDateTime.now();
         return profile;
     }
 
@@ -124,14 +122,18 @@ public class GroupMusicProfile {
         profile.genreDiversity = genreDiversity;
         profile.activeMemberRatio = activeMemberRatio;
         profile.calculatedPeriodDays = calculatedPeriodDays;
-        profile.createdAt = LocalDateTime.now();
-        profile.updatedAt = LocalDateTime.now();
         return profile;
     }
 
+    // 생성/수정 공통 안전장치: status 기본값
+    @PrePersist
+    void ensureDefaults() {
+        if (status == null) status = ProfileStatus.NOT_AVAILABLE;
+    }
+
     /* 무결성: READY일 때는 주요 메트릭이 null이면 안 되고,
-   NOT_AVAILABLE/PROCESSING일 땐 메트릭이 있으면 안 됨 */
-    @PrePersist @PreUpdate
+       NOT_AVAILABLE/PROCESSING일 땐 메트릭이 있으면 안 됨 */
+    @PreUpdate
     private void validateConsistency() {
         boolean hasMetrics =
                 avgDanceability != null || avgEnergy != null || avgValence != null ||
