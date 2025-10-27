@@ -1,9 +1,13 @@
 package com.example.muaring.domain.group.entity;
 
+import com.example.muaring.domain.common.ProfileStatus;
 import com.example.muaring.domain.group.exception.GroupErrorCode;
 import com.example.muaring.domain.group.response.GroupException;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -73,18 +77,13 @@ public class GroupMusicProfile {
     @Column(name = "caculated_period_days")
     private Integer calculatedPeriodDays;
 
+    @CreatedDate
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
-    // status enum으로 관리, 필요할 시 파일 분리할 것
-    public enum ProfileStatus {
-        NOT_AVAILABLE,
-        PROCESSING,
-        READY
-    }
 
     // 그룹 생성 시 기본 비어있는 profile 생성 *
     public static GroupMusicProfile createEmpty(Group group) {

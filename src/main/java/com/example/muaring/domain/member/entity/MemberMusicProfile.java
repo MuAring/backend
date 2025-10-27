@@ -1,9 +1,13 @@
 package com.example.muaring.domain.member.entity;
 
+import com.example.muaring.domain.common.ProfileStatus;
 import com.example.muaring.domain.member.exception.MemberException;
 import com.example.muaring.domain.member.response.MemberErrorCode;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
 import java.time.LocalDateTime;
 
 // 사용자 음악 취향 수치화한 테이블
@@ -58,20 +62,17 @@ public class MemberMusicProfile {
     @Column(name = "calculated_days")
     private Integer calculatedDays;
 
+    @CreatedDate
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     private ProfileStatus status;
-
-    // 일단 한 파일에 넣었는데 분리 필요하면 분리하기
-    public enum ProfileStatus {
-        NOT_AVAILABLE, PROCESSING, READY
-    }
 
     // 새 멤버 생성 시 기본 profile (비어 있음)
     public static MemberMusicProfile createEmpty(Member member) {
