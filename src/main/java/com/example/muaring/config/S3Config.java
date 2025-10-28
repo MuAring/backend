@@ -16,16 +16,16 @@ public class S3Config {
 
     private final S3Properties s3Properties;
 
-    @Bean
+    @Bean(destroyMethod = "close")
     public S3Presigner s3Presigner() {
-        AwsBasicCredentials awsCreds = AwsBasicCredentials.create(
+        AwsBasicCredentials awsCredentials = AwsBasicCredentials.create(
                 s3Properties.credentials().accessKey(),
                 s3Properties.credentials().secretKey()
         );
 
         return S3Presigner.builder()
                 .region(Region.of(s3Properties.region()))
-                .credentialsProvider(StaticCredentialsProvider.create(awsCreds))
+                .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
                 .build();
     }
 }
