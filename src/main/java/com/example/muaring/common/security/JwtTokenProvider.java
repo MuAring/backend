@@ -123,6 +123,11 @@ public class JwtTokenProvider{
     // ⚪ 토큰에서 사용자 email를 추출하는 메서드
     public String getEmail(String token) {
         Claims claims = parse(token).getPayload();
-        return claims.get("email").toString();
+        String email = (String) claims.get("email").toString();
+
+        if (email == null || email.isBlank()) {
+            throw new AuthException(AuthErrorCode.INVALID_TOKEN);
+        }
+        return email;
     }
 }
