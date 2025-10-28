@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public record KakaoMemberInfoResponseDTO(
 
         @JsonProperty("id")
-        Long kakaoId, // 카카오가 발급한 고유 ID
+        Long kakaoProviderId, // 카카오가 발급한 고유 ID
 
         @JsonProperty("kakao_account")
         KakaoAccount kakaoAccount
