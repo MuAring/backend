@@ -113,7 +113,11 @@ public class JwtTokenProvider{
     // ⚪ 토큰에서 사용자 ID를 추출하는 메서드
     public Long getMemberId(String token) {
         Claims claims = parse(token).getPayload();
-        return Long.parseLong(claims.getSubject());
+        try {
+            return Long.parseLong(claims.getSubject());
+        } catch (NumberFormatException e) {
+            throw new AuthException(AuthErrorCode.INVALID_TOKEN);
+        }
     }
 
     // ⚪ 토큰에서 사용자 email를 추출하는 메서드
