@@ -2,6 +2,8 @@ package com.example.muaring.common.security;
 
 import com.example.muaring.domain.auth.exception.AuthErrorCode;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.WeakKeyException;
 import jakarta.annotation.PostConstruct;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,7 +11,6 @@ import com.example.muaring.domain.auth.exception.AuthException;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 // ✨JWT 생성 및 검증
@@ -38,7 +39,21 @@ public class JwtTokenProvider{
      */
     @PostConstruct
     private void initKey() {
-        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        // 환경변수 미설정/빈 값 예외 처리
+        if (secret == null || secret.isEmpty()) {
+            throw new AuthException(AuthErrorCode.INVALID_JWT_SECRET);
+        }
+
+        try {
+            byte[] keyBytes = Decoders.BASE64.decode(secret);
+            this.key = Keys.hmacShaKeyFor(keyBytes);
+        } catch (IllegalArgumentException | WeakKeyException e)  {
+            throw new AuthException(AuthErrorCode.INVALID_JWT_SECRET);
+        }
+
+        if (accessTtlSec <= 0 || refreshTtlSec <= 0) {
+            throw new  AuthException(AuthErrorCode.INVALID_JWT_TTL);
+        }
     }
 
     // ⚪ AccessToken을 생성하는 메서드
