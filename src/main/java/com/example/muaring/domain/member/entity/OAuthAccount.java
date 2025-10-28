@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Table(name = "oauth_account",
-        uniqueConstraints = @UniqueConstraint(name = "uk_provider_providerId", columnNames = {"authProvider", "authProviderId"})
+        uniqueConstraints = @UniqueConstraint(name = "uk_provider_providerId", columnNames = {"auth_provider", "auth_provider_id"})
 )
 public class OAuthAccount {
 
@@ -23,7 +23,7 @@ public class OAuthAccount {
     @Column(name = "auth_provider")
     private AuthProvider authProvider;
 
-    @Column(name = "auto_provider_id")
+    @Column(name = "auth_provider_id")
     private String authProviderId;
 
     @ManyToOne(fetch = FetchType.LAZY)
