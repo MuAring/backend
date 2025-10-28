@@ -1,4 +1,4 @@
-package com.example.muaring.domain.file;
+package com.example.muaring.domain.file.entity;
 
 import com.example.muaring.domain.common.BaseEntity;
 import jakarta.persistence.*;
@@ -15,14 +15,14 @@ public class Image extends BaseEntity {
     @Column(name = "image_id")
     private Long id;
 
-    @Column(name = "s3_key", length = 255, nullable = false)
-    private String s3Key;
-
     @Column(name = "file_name", length = 255, nullable = false)
     private String fileName;
 
-    @Column(name = "file_type", length = 50, nullable = false)
-    private String fileType;
+    @Column(name = "image_type", length = 255, nullable = false)
+    private ImageType type;
+
+    @Column(name = "s3_key", length = 255, nullable = false)
+    private String s3Key;
 
     @Column(name = "file_size", nullable = false)
     private Long fileSize;
