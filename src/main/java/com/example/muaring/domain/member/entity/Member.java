@@ -33,7 +33,6 @@ public class Member extends BaseEntity {
     private String email;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Column(name="oauth_accounts")
     private List<OAuthAccount> oauthAccounts = new ArrayList<>();
 
     @Column(name = "is_public", nullable = false)
