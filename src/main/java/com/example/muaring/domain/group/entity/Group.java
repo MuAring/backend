@@ -40,18 +40,18 @@ public class Group extends BaseEntity {
     private Integer maxMembers;
 
     @Column(name = "is_public", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
-    private Boolean opened = true;  // isPublic -> opened 로 변경
+    private Boolean isPublic = true;
 
     @Column(name = "playlist_updated_at")
     private LocalDateTime playlistUpdatedAt;
 
     @Builder
-    public Group(Member admin, String name, String description, Integer maxMembers, Boolean opened) {
+    public Group(Member admin, String name, String description, Integer maxMembers, Boolean isPublic) {
         this.admin = admin;
         this.name = name;
         this.description = description;
         this.memberCount = 1; // 그룹 생성 시 멤버 수는 1명
         this.maxMembers = maxMembers;
-        this.opened = opened;
+        this.isPublic = isPublic;
     }
 }

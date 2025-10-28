@@ -38,4 +38,11 @@ public class GroupMember extends BaseEntity {
         ADMIN,
         MEMBER
     }
+
+    @Builder
+    public GroupMember(Group group, Member member, GroupRole role) {
+        this.group = group;
+        this.member = member;
+        this.role = role;
+    }
 }
