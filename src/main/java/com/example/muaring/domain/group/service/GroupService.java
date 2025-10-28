@@ -101,7 +101,7 @@ public class GroupService {
                 (categoryIds == null || categoryIds.isEmpty()) ? null : categoryIds;
 
         // Repository 단 페이지네이션 조회
-        Page<Group> groupPage = groupRepository.search(name, isPublic, categoryIds, pageable);
+        Page<Group> groupPage = groupRepository.search(name, isPublic, normalizedCategoryIds, pageable);
         List<Group> groups = groupPage.getContent();    // 컨텐츠 받아오기
 
         // 결과가 비어있으면 빈 DTO 반환
