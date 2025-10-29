@@ -18,8 +18,11 @@ public class Image extends BaseEntity {
     @Column(name = "file_name", length = 255, nullable = false)
     private String fileName;
 
-    @Column(name = "image_type", length = 255, nullable = false)
-    private ImageType type;
+    @Column(name = "file_type", length = 20, nullable = false)
+    private String fileType;
+
+    @Column(name = "image_type", length = 20, nullable = false)
+    private ImageType imageType;
 
     @Column(name = "s3_key", length = 255, nullable = false)
     private String s3Key;
@@ -27,14 +30,15 @@ public class Image extends BaseEntity {
     @Column(name = "file_size", nullable = false)
     private Long fileSize;
 
-    public Image(String fileName, ImageType type, String s3Key, Long fileSize) {
+    public Image(String fileName, String fileType, ImageType imageType, String s3Key, Long fileSize) {
         this.fileName = fileName;
-        this.type = type;
+        this.fileType = fileType;
+        this.imageType = imageType;
         this.s3Key = s3Key;
         this.fileSize = fileSize;
     }
 
-    public static Image create(String fileName, ImageType type, String s3Key, Long fileSize) {
-        return new Image(fileName, type, s3Key, fileSize);
+    public static Image create(String fileName, String fileType, ImageType imageType, String s3Key, Long fileSize) {
+        return new Image(fileName, fileType, imageType, s3Key, fileSize);
     }
 }
