@@ -42,9 +42,11 @@ public class ImageService {
                 .key(s3Key)
                 .build();
 
+        Duration uploadDuration = Duration.ofMinutes(s3Properties.s3().presign().uploadExpMinutes());
+
         // 정의한 파일 정보에 서명하여 presigned URL 생성
         PutObjectPresignRequest putObjectPresignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(10))
+                .signatureDuration(uploadDuration)
                 .putObjectRequest(putObjectRequest)
                 .build();
 
@@ -66,9 +68,11 @@ public class ImageService {
                 .key(image.getS3Key())
                 .build();
 
+        Duration downloadDuration = Duration.ofMinutes(s3Properties.s3().presign().downloadExpMinutes());
+
         // 정의한 파일 정보에 서명하여 presigned URL 생성
         GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(5)) // 5분 유효
+                .signatureDuration(downloadDuration)
                 .getObjectRequest(getObjectRequest)
                 .build();
 
