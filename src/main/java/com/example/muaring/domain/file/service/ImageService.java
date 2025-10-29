@@ -7,6 +7,7 @@ import com.example.muaring.domain.file.entity.Image;
 import com.example.muaring.domain.file.exception.FileErrorCode;
 import com.example.muaring.domain.file.exception.FileException;
 import com.example.muaring.domain.file.repository.ImageRepository;
+import com.example.muaring.domain.file.validator.FileValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +21,6 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 import java.net.URL;
 import java.time.Duration;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -31,14 +31,12 @@ public class ImageService {
     private final S3Presigner s3Presigner;
     private final S3Properties s3Properties;
     private final ImageRepository imageRepository;
-    private static final Set<String> ALLOWED_IMAGE_TYPES = Set.of(
-            "image/jpeg", "image/png", "image/webp"
-    );
+    private final FileValidator fileValidator;
 
     // ⚪ 파일 업로드용 presigned URL 생성 메서드
     @Transactional
     public PresignedUrlResponseDTO generatePresignedUploadUrl(ImageUploadRequestDTO request) {
-        validateFileType(request.fileType());
+        fileValidator.validateImage(request);
 
         String prefix = switch (request.imageType()) {
             case MEMBER -> "member/";
@@ -109,13 +107,6 @@ public class ImageService {
                 presignedUrl.toString(),
                 image.getS3Key()
         );
-    }
-
-    // ⚪ 파일 타입을 검증하기 위한 메서드
-    public void validateFileType(String fileType) {
-        if (!ALLOWED_IMAGE_TYPES.contains(fileType)) {
-            throw new FileException(FileErrorCode.INVALID_FILE_TYPE);
-        }
     }
 
     // ⚪ 파일명을 정제하는 메서드
