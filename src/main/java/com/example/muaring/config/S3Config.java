@@ -10,7 +10,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 @Configuration
-@EnableConfigurationProperties({S3Properties.class})
+@EnableConfigurationProperties({S3Properties.class, FilePolicyProperties.class})
 @RequiredArgsConstructor
 public class S3Config {
 
@@ -19,8 +19,8 @@ public class S3Config {
     @Bean(destroyMethod = "close")
     public S3Presigner s3Presigner() {
         AwsBasicCredentials awsCredentials = AwsBasicCredentials.create(
-                s3Properties.credentials().accessKey(),
-                s3Properties.credentials().secretKey()
+                s3Properties.s3().credentials().accessKey(),
+                s3Properties.s3().credentials().secretKey()
         );
 
         return S3Presigner.builder()
