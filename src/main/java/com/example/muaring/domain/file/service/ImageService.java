@@ -1,5 +1,6 @@
 package com.example.muaring.domain.file.service;
 
+import com.example.muaring.common.security.SecurityUtil;
 import com.example.muaring.config.S3Properties;
 import com.example.muaring.domain.file.dto.ImageUploadRequestDTO;
 import com.example.muaring.domain.file.dto.PresignedUrlResponseDTO;
@@ -8,6 +9,8 @@ import com.example.muaring.domain.file.exception.FileErrorCode;
 import com.example.muaring.domain.file.exception.FileException;
 import com.example.muaring.domain.file.repository.ImageRepository;
 import com.example.muaring.domain.file.validator.FileValidator;
+import com.example.muaring.domain.group.entity.Group;
+import com.example.muaring.domain.group.repository.GroupRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,10 +35,31 @@ public class ImageService {
     private final S3Properties s3Properties;
     private final ImageRepository imageRepository;
     private final FileValidator fileValidator;
+    private final GroupRepository groupRepository;
 
     // ⚪ 파일 업로드용 presigned URL 생성 메서드
     @Transactional
     public PresignedUrlResponseDTO generatePresignedUploadUrl(ImageUploadRequestDTO request) {
+        Long requesterId = SecurityUtil.getMemberId();
+
+        // 권한 검증
+        switch (request.imageType()) {
+            case MEMBER -> {}  // 본인 프로필 업로드는 별도의 권한 검증 불필요
+            case GROUP -> {
+                Long groupId = request.targetId();
+                if (groupId == null) {
+                    throw new FileException(FileErrorCode.MISSING_GROUP_ID);
+                }
+
+                Group group = groupRepository.findById(groupId)
+                        .orElseThrow(() -> new FileException(FileErrorCode.FORBIDDEN_GROUP_IMAGE_UPLOAD));
+
+                if (!group.getAdmin().getId().equals(requesterId)) {
+                    throw new FileException(FileErrorCode.FORBIDDEN_GROUP_IMAGE_UPLOAD);
+                }
+            }
+        }
+
         fileValidator.validateImage(request);
 
         String prefix = switch (request.imageType()) {
