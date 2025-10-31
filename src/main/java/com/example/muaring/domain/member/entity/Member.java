@@ -1,11 +1,15 @@
 package com.example.muaring.domain.member.entity;
 
 import com.example.muaring.domain.common.BaseEntity;
-import com.example.muaring.domain.file.Image;
+import com.example.muaring.domain.file.entity.Image;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.LastModifiedDate;
+
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "member")
@@ -18,31 +22,38 @@ public class Member extends BaseEntity {
     @Column(name = "member_id")
     private Long id;
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 10)
     private String nickname;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "profile_image_id")
     private Image profileImage;
 
-    @Column(name = "auth_provider", length = 20, nullable = false)
-    private String authProvider;
+    @Column(name="email", nullable = false, unique = true)
+    private String email;
 
-    @Column(name = "auth_provider_id", length = 100, nullable = false)
-    private String authProviderId;
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OAuthAccount> oauthAccounts = new ArrayList<>();
 
     @Column(name = "is_public", nullable = false)
-    private Boolean isPublic;
+    private Boolean isPublic = true;
 
     @Column(name = "discovery_enabled", nullable = false)
-    private Boolean discoveryEnabled;
+    private Boolean discoveryEnabled = false;
 
     @Column(name = "noti_enabled", nullable = false)
-    private Boolean notiEnabled;
+    private Boolean notiEnabled = true;
 
     @Column(name = "noti_time", nullable = false)
-    private LocalTime notiTime;
+    private LocalTime notiTime = LocalTime.of(10, 0, 0);
 
+    @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public static Member CreateOAuthMember(String email) {
+        Member member = new Member();
+        member.email = email;
+        return member;
+    }
 }

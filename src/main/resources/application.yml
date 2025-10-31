@@ -20,3 +20,43 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    issuer: muaring
+    access-ttl-seconds: 3600  # 1시간
+    refresh-ttl-seconds: 604800  # 7일
+
+kakao:
+  client-id: ${KAKAO_CLIENT_ID}
+  client-secret: ${KAKAO_CLIENT_SECRET}
+  redirect-uri: ${KAKAO_REDIRECT_URI}
+  token-uri: "https://kauth.kakao.com/oauth/token"
+  user-info-uri: "https://kapi.kakao.com/v2/user/me"
+  scope: "account_email"
+
+cloud:
+  aws:
+    region: ${AWS_REGION}
+    s3:
+      bucket: ${AWS_BUCKET_NAME}
+      presign:
+        upload-exp-minutes: 10
+        download-exp-minutes: 5
+      credentials:
+        access-key: ${AWS_S3_ACCESS_KEY}
+        secret-key: ${AWS_S3_SECRET_KEY}
+
+file:
+  policy:
+    max-size: 5242880  # 5MB (byte 단위)
+    max-name-length: 255
+    allowed-types:
+      - image/jpeg
+      - image/jpg
+      - image/png
+
+logging:
+  level:
+    org.springframework.security: DEBUG

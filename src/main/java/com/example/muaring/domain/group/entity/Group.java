@@ -1,7 +1,7 @@
 package com.example.muaring.domain.group.entity;
 
 import com.example.muaring.domain.common.BaseEntity;
-import com.example.muaring.domain.file.Image;
+import com.example.muaring.domain.file.entity.Image;
 import com.example.muaring.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
