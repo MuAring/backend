@@ -1,14 +1,15 @@
 package com.example.muaring.domain.group.controller;
 
-import com.example.muaring.domain.group.dto.GroupCreateRequestDto;
-import com.example.muaring.domain.group.dto.GroupCreateResponseDto;
-import com.example.muaring.domain.group.dto.GroupListResponseDto;
+import com.example.muaring.common.response.ApiResponse;
+import com.example.muaring.domain.auth.security.MemberPrincipal;
+import com.example.muaring.domain.group.dto.*;
 import com.example.muaring.domain.group.service.GroupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -56,4 +57,19 @@ public class GroupController {
 
         return ResponseEntity.ok(response);
     }
+
+    // [PATCH] /groups/{groupId}
+    // 그룹 정보 수정 (그룹 이름, 최대 멤버, 설명, 공개여부, 카테고리)
+    @PatchMapping("/{groupId}")
+    public ApiResponse<GroupUpdateResponseDto> updateGroup(
+            @PathVariable Long groupId,
+            Long memberId,
+            //@AuthenticationPrincipal MemberPrincipal principal,
+            @RequestBody GroupUpdateRequestDto request) {
+        //Long memberId = principal.getMemberId();
+        GroupUpdateResponseDto response = groupService.updateGroup(groupId, memberId, request);
+        return ApiResponse.ok(response, "그룹 정보가 수정되었습니다.");
+    }
+
+    // 그룹 프로필 이미지 수정
 }

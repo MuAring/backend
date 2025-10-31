@@ -54,4 +54,16 @@ public class Group extends BaseEntity {
         this.maxMembers = maxMembers;
         this.isPublic = isPublic;
     }
+
+    public void updateDescription(String description) {
+        this.description = description;
+    }
+
+    public void updateMaxMembers(Integer maxMembers) {
+        this.maxMembers = maxMembers;
+    }
+
+    public void updateIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
+    }
 }

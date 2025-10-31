@@ -150,4 +150,59 @@ public class GroupService {
 
     // 그룹 상세 조회 메서드
 
+    // 그룹 정보 수정 메서드
+    @Transactional
+    public GroupUpdateResponseDto updateGroup(Long groupId, Long memberId, GroupUpdateRequestDto request) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
+
+        if (!group.getAdmin().getId().equals(memberId)) {
+            throw new GroupException(GroupErrorCode.NOT_GROUP_ADMIN);
+        }
+
+        // 설명 수정
+        if (request.getDescription() != null) {
+            group.updateDescription(request.getDescription());
+        }
+
+        // 최대 인원 수정
+        if (request.getMaxMembers() != null) {
+            if (request.getMaxMembers() < group.getMemberCount()) {
+                throw new GroupException(GroupErrorCode.MAX_MEMBERS_TOO_SMALL);
+            }
+            group.updateMaxMembers(request.getMaxMembers());
+        }
+
+        // 공개 여부 수정
+        if (request.getIsPublic() != null) {
+            group.updateIsPublic(request.getIsPublic());
+        }
+
+        // 그룹 카테고리 수정
+        if (request.getCategoryNames() != null) {
+            if (request.getCategoryNames().size() != 3) {
+                throw new GroupException(GroupErrorCode.CATEGORY_MUST_BE_THREE);
+            }
+
+            // 기존 매핑 삭제
+            mappingRepository.deleteByGroup(group);
+
+            List<GroupCategory> categories = request.getCategoryNames().stream()
+                    .map(name -> groupCategoryRepository.findByName(name)
+                            .orElseThrow(() -> new GroupException(GroupErrorCode.CATEGORY_NOT_FOUND)))
+                    .collect(Collectors.toList());
+
+            List<GroupCategoryMapping> newMappings = categories.stream()
+                    .map(category -> GroupCategoryMapping.builder()
+                            .group(group)
+                            .groupCategory(category)
+                            .build())
+                    .collect(Collectors.toList());
+
+            mappingRepository.saveAll(newMappings);
+        }
+
+        List<GroupCategoryMapping> mappings = mappingRepository.findByGroup(group);
+        return GroupUpdateResponseDto.from(group, mappings);
+    }
 }
