@@ -226,4 +226,17 @@ public class GroupService {
         List<GroupCategoryMapping> mappings = mappingRepository.findByGroup(group);
         return GroupUpdateResponseDto.from(group, mappings);
     }
+
+    // 그룹 삭제 메서드
+    public void deleteGroup(Long groupId, Long memberId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
+
+        // 관리자 권한 확인
+        if (!group.getAdmin().getId().equals(memberId)) {
+            throw new GroupException(GroupErrorCode.NOT_GROUP_ADMIN);
+        }
+
+        groupRepository.delete(group);
+    }
 }

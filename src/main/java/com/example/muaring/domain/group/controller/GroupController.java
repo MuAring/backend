@@ -86,4 +86,16 @@ public class GroupController {
     }
 
     // 그룹 프로필 이미지 수정
+
+    // [DELETE] /groups/{groupId}
+    // 그룹 삭제
+    @DeleteMapping("/{groupId}")
+    public ApiResponse<Void> deleteGroup(
+            @PathVariable Long groupId,
+            //@AuthenticationPrincipal MemberPrincipal principal
+            Long memberId) {
+        //Long memberId = principal.getMemberId();
+        groupService.deleteGroup(groupId, memberId);
+        return ApiResponse.ok("그룹이 삭제되었습니다.");
+    }
 }
