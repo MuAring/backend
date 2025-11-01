@@ -58,6 +58,20 @@ public class GroupController {
         return ResponseEntity.ok(response);
     }
 
+
+    // [GET] /groups/{groupId}/members
+    // 그룹 멤버 목록 조회
+    @GetMapping("/{groupId}/members")
+    public ApiResponse<List<GroupMemberResponseDto>> getGroupMembers(
+            @PathVariable Long groupId,
+            //@AuthenticationPrincipal MemberPrincipal principal
+            Long memberId) {
+        //Long memberId = principal.getMemberId();
+        List<GroupMemberResponseDto> members = groupService.getGroupMembers(groupId, memberId);
+        return ApiResponse.ok(members, "그룹 멤버 목록을 조회했습니다.");
+    }
+
+
     // [PATCH] /groups/{groupId}
     // 그룹 정보 수정 (그룹 이름, 최대 멤버, 설명, 공개여부, 카테고리)
     @PatchMapping("/{groupId}")

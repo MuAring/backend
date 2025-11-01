@@ -150,6 +150,27 @@ public class GroupService {
 
     // 그룹 상세 조회 메서드
 
+
+    // 그룹 멤버 조회 메서드
+    public List<GroupMemberResponseDto> getGroupMembers(Long groupId, Long memberId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
+
+        // 비공개 그룹일 경우에는 요청자가 그룹 멤버인지 확인
+        if (!group.getIsPublic()) {
+            boolean isMember = groupMemberRepository.existsByGroupIdAndMemberId(groupId, memberId);
+            if (!isMember) {
+                throw new GroupException(GroupErrorCode.NOT_GROUP_MEMBER);
+            }
+        }
+
+        List<GroupMember> groupMembers = groupMemberRepository.findByGroupId(groupId);
+
+        return groupMembers.stream()
+                .map(GroupMemberResponseDto::from)
+                .toList();
+    }
+
     // 그룹 정보 수정 메서드
     @Transactional
     public GroupUpdateResponseDto updateGroup(Long groupId, Long memberId, GroupUpdateRequestDto request) {

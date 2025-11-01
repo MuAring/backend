@@ -17,6 +17,7 @@ public enum GroupErrorCode implements ErrorCode {
 
     // 403 에러
     NOT_GROUP_ADMIN(5009, HttpStatus.FORBIDDEN, "그룹 관리자만 수정할 수 있습니다."),
+    NOT_GROUP_MEMBER(5010, HttpStatus.FORBIDDEN, "그룹 멤버만 조회할 수 있습니다."),
 
     // 404 에러
     GROUP_NOT_FOUND(5003, HttpStatus.NOT_FOUND, "해당 그룹을 찾을 수 없습니다."),

@@ -13,4 +13,8 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> 
 
     @EntityGraph(attributePaths = { "group" })
     List<GroupMember> findByMember_IdOrderByGroup_NameAsc(Long memberId);
+
+    List<GroupMember> findByGroupId(Long groupId);
+
+    boolean existsByGroupIdAndMemberId(Long groupId, Long memberId);
 }

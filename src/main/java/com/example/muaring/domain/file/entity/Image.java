@@ -41,4 +41,8 @@ public class Image extends BaseEntity {
     public static Image create(String fileName, String fileType, ImageType imageType, String s3Key, Long fileSize) {
         return new Image(fileName, fileType, imageType, s3Key, fileSize);
     }
+
+    public String getUrl() {
+        return "https://your-bucket.s3.amazonaws.com/" + this.s3Key;
+    }
 }
