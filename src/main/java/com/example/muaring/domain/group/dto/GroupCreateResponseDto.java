@@ -7,14 +7,14 @@ import java.util.List;
 
 @Getter
 public class GroupCreateResponseDto {
-    private Long groupId;
-    private Long adminId;
-    private List<Long> groupCategoryId;
-    private String name;
-    private String description;
-    private int memberCount;
-    private int maxMembers;
-    private Boolean opened;
+    private final Long groupId;
+    private final Long adminId;
+    private final List<Long> groupCategoryId;
+    private final String name;
+    private final String description;
+    private final int memberCount;
+    private final int maxMembers;
+    private final Boolean isPublic;
 
     private GroupCreateResponseDto(Group entity, List<Long> categoryIds) {
         this.groupId = entity.getId();
@@ -24,7 +24,7 @@ public class GroupCreateResponseDto {
         this.description = entity.getDescription();
         this.memberCount = entity.getMemberCount();
         this.maxMembers = entity.getMaxMembers();
-        this.opened = entity.getOpened();
+        this.isPublic = entity.getIsPublic();
     }
 
     public static GroupCreateResponseDto from(Group entity, List<Long> categoryIds) {
