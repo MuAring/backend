@@ -239,4 +239,25 @@ public class GroupService {
 
         groupRepository.delete(group);
     }
+
+    // 그룹 탈퇴 메서드
+    @Transactional
+    public void leaveGroup(Long groupId, Long memberId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
+
+        // 그룹 멤버 확인
+        GroupMember groupMember = groupMemberRepository.findByGroupIdAndMemberId(groupId, memberId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.NOT_GROUP_MEMBER));
+
+        // 일단 관리자는 탈퇴 불가로...
+        if (groupMember.getRole() == GroupMember.GroupRole.ADMIN) {
+            throw new GroupException(GroupErrorCode.ADMIN_CANNOT_LEAVE);
+        }
+
+        groupMemberRepository.delete(groupMember);
+
+        // 그룹 멤버 수 감소
+        group.decrementMemberCount();
+    }
 }

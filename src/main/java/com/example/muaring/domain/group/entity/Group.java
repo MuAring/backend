@@ -72,4 +72,8 @@ public class Group extends BaseEntity {
     public void updateIsPublic(Boolean isPublic) {
         this.isPublic = isPublic;
     }
+
+    public void decrementMemberCount() {
+        this.memberCount--;
+    }
 }
