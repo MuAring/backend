@@ -4,6 +4,7 @@ import com.example.muaring.domain.group.entity.Group;
 import com.example.muaring.domain.group.repository.GroupRepository;
 import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.repository.MemberRepository;
+import com.example.muaring.domain.music.dto.MusicHistoryDTO;
 import com.example.muaring.domain.music.dto.MusicResponseDTO;
 import com.example.muaring.domain.music.entity.Music;
 import com.example.muaring.domain.music.exception.MusicErrorCode;
@@ -39,6 +40,25 @@ public class MusicPostService {
                         music.getAlbumImgUrl(),
                         music.getPopularity()
                 ))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public List<MusicHistoryDTO> getMusicHistoryByMember(Long memberId) {
+        if (!memberRepository.existsById(memberId)) {
+            throw new MusicException(MusicErrorCode.MEMBER_NOT_FOUND);
+        }
+
+        List<MusicPost> posts = musicPostRepository.findByMemberId(memberId);
+
+        return posts.stream()
+                .map(post -> MusicHistoryDTO.builder()
+                        .musicId(post.getMusic().getId())
+                        .title(post.getMusic().getName())
+                        .artist(post.getMusic().getArtistName())
+                        .albumImage(post.getMusic().getAlbumImgUrl())
+                        .createdAt(post.getCreatedAt())
+                        .build())
                 .collect(Collectors.toList());
     }
 

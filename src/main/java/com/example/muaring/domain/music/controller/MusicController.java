@@ -1,5 +1,6 @@
 package com.example.muaring.domain.music.controller;
 
+import com.example.muaring.domain.music.dto.MusicHistoryDTO;
 import com.example.muaring.domain.music.dto.MusicPostRequestDTO;
 import com.example.muaring.domain.music.dto.MusicResponseDTO;
 import com.example.muaring.domain.music.service.MusicPostService;
@@ -22,6 +23,12 @@ public class MusicController {
     public ResponseEntity<List<MusicResponseDTO>> searchMusic(@RequestParam String query) {
         List<MusicResponseDTO> result = musicPostService.searchMusic(query);
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/history/{memberId}")
+    public ResponseEntity<List<MusicHistoryDTO>> getMusicHistoryByMember(@PathVariable Long memberId) {
+        List<MusicHistoryDTO> history  = musicPostService.getMusicHistoryByMember(memberId);
+        return ResponseEntity.ok(history);
     }
 
     @PostMapping
