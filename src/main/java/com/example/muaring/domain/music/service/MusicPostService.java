@@ -6,6 +6,8 @@ import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.repository.MemberRepository;
 import com.example.muaring.domain.music.dto.MusicResponseDTO;
 import com.example.muaring.domain.music.entity.Music;
+import com.example.muaring.domain.music.exception.MusicErrorCode;
+import com.example.muaring.domain.music.exception.MusicException;
 import com.example.muaring.domain.music.repository.MusicPostRepository;
 import com.example.muaring.domain.music.repository.MusicRepository;
 import com.example.muaring.domain.social.entity.MusicPost;
@@ -43,13 +45,15 @@ public class MusicPostService {
     @Transactional
     public MusicPost createMusicPost(Long memberId, Long groupId, Long musicId, String content) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+                .orElseThrow(() -> new MusicException(MusicErrorCode.MEMBER_NOT_FOUND));
+
         Music music = musicRepository.findById(musicId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 음악입니다."));
+                .orElseThrow(() -> new MusicException(MusicErrorCode.MUSIC_NOT_FOUND));
+
         Group group = null;
         if (groupId != null) {
             group = groupRepository.findById(groupId)
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 그룹입니다."));
+                    .orElseThrow(() -> new MusicException(MusicErrorCode.GROUP_NOT_FOUND));
         }
 
         MusicPost post = MusicPost.builder()
