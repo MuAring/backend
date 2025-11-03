@@ -66,7 +66,7 @@ public class MemberService {
 
     private Image createImage(MemberProfileCreateRequestDTO requestDTO) {
         // 이미지를 선택하지 않은 경우 기본 이미지 반환
-        if (requestDTO.s3Key() == null | requestDTO.s3Key().isBlank()) {
+        if (requestDTO.s3Key() == null || requestDTO.s3Key().isEmpty()) {
             ImageProperties.DefaultImageProperties defaultProfileImage = imageProperties.defaultProfile();
             return imageRepository.findByImageTypeAndS3Key(ImageType.MEMBER, defaultProfileImage.s3Key())
                     .orElseThrow(() -> new FileException(FileErrorCode.IMAGE_NOT_FOUND));

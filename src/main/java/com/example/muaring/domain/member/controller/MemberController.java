@@ -6,21 +6,27 @@ import com.example.muaring.domain.member.dto.response.MemberProfileResponseDTO;
 import com.example.muaring.domain.member.dto.response.NicknameCheckResponseDTO;
 import com.example.muaring.domain.member.service.MemberService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/members")
 @RequiredArgsConstructor
+@Validated
 public class MemberController {
 
     private final MemberService memberService;
 
     // 닉네임 중복 체크
     @GetMapping("/check-nickname")
-    public ResponseEntity<ApiResponse<NicknameCheckResponseDTO>> checkNicknameDuplicated(@RequestParam("nickname") String nickname) {
+    public ResponseEntity<ApiResponse<NicknameCheckResponseDTO>> checkNicknameDuplicated(
+            @RequestParam("nickname")
+            @NotBlank(message = "낙네임 입력은 필수입니다.")
+            String nickname) {
         NicknameCheckResponseDTO response = memberService.checkNicknameDuplicated(nickname);
         return ResponseEntity
                 .status(HttpStatus.OK)
