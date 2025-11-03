@@ -1,5 +1,7 @@
 package com.example.muaring.domain.music.service;
 
+import com.example.muaring.domain.music.exception.MusicErrorCode;
+import com.example.muaring.domain.music.exception.MusicException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -41,7 +43,7 @@ public class SpotifyAuthService {
                 .block();
 
         if (response == null || response.getAccessToken() == null) {
-            throw new RuntimeException("Spotify access token 발급 실패");
+            throw new MusicException(MusicErrorCode.SPOTIFY_AUTH_FAILED);
         }
 
         return response.getAccessToken();

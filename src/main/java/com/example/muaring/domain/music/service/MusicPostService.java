@@ -18,6 +18,7 @@ import lombok.*;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,22 +50,36 @@ public class MusicPostService {
     }
 
     public List<SpotifyTrackDTO> searchMusic(String query) {
-        String token = spotifyAuthService.getAccessToken();
 
-        SpotifySearchResponse response = webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/v1/search")
-                        .queryParam("q", query)
-                        .queryParam("type", "track")
-                        .queryParam("limit", 10)
-                        .build())
-                .header("Authorization", "Bearer " + token)
-                .retrieve()
-                .bodyToMono(SpotifySearchResponse.class)
-                .block();
+        String token;
+        SpotifySearchResponse response;
 
-        if (response == null || response.getTracks() == null) {
-            return List.of();
+        try {
+            token = spotifyAuthService.getAccessToken();
+        } catch (Exception e) {
+            throw new MusicException(MusicErrorCode.SPOTIFY_AUTH_FAILED);
+        }
+
+        try {
+            response = webClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/v1/search")
+                            .queryParam("q", query)
+                            .queryParam("type", "track")
+                            .queryParam("limit", 10)
+                            .build())
+                    .header("Authorization", "Bearer " + token)
+                    .retrieve()
+                    .bodyToMono(SpotifySearchResponse.class)
+                    .block();
+            if (response == null || response.getTracks() == null) {
+                throw new MusicException(MusicErrorCode.SPOTIFY_NO_RESULTS);
+            }
+
+        }catch (WebClientResponseException.NotFound e) {
+            throw new MusicException(MusicErrorCode.SPOTIFY_NO_RESULTS);
+        } catch (Exception e) {
+            throw new MusicException(MusicErrorCode.SPOTIFY_SEARCH_FAILED);
         }
 
         return response.getTracks().getItems().stream()
