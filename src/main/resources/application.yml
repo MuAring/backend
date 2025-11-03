@@ -21,10 +21,6 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
-  jackson:
-    deserialization:
-      ACCEPT_EMPTY_STRING_AS_NULL_OBJECT: true  # 빈 문자열을 null으로 변환해준다.
-
 app:
   jwt:
     secret: ${JWT_SECRET}
