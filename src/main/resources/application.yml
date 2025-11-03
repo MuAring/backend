@@ -21,12 +21,24 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
+  jackson:
+    deserialization:
+      ACCEPT_EMPTY_STRING_AS_NULL_OBJECT: true  # 빈 문자열을 null으로 변환해준다.
+
 app:
   jwt:
     secret: ${JWT_SECRET}
     issuer: muaring
     access-ttl-seconds: 3600  # 1시간
     refresh-ttl-seconds: 604800  # 7일
+
+  image:
+    default-profile:
+      s3-key: public/default-profile-image.png
+      file-name: default-profile-image.png
+      file-type: image/png
+      file-size: 32768
+
 
 kakao:
   client-id: ${KAKAO_CLIENT_ID}

@@ -11,13 +11,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/image")
+@RequestMapping("/images")
 @RequiredArgsConstructor
 public class ImageController {
 
     private final ImageService imageService;
 
-    // 파일 업로드용 presigned URL 발급 API
+    // ⚪ 파일 업로드용 presigned URL 발급 API
     @PostMapping("/upload-presigned-url")
     @Operation(summary = "파일 업로드용 presigned URL 발급", description = "파일 업로드용 presigned URL 발급입니다.")
     public ResponseEntity<ApiResponse<PresignedUrlResponseDTO>> generateUploadPresignedUrl(
@@ -29,7 +29,7 @@ public class ImageController {
         );
     }
 
-    // 파일 다운로드용 presigned URL 발급 API
+    // ⚪ 파일 다운로드용 presigned URL 발급 API
     @PostMapping("/{imageId}/download-presigned-url")
     @Operation(summary = "파일 다운로드용 presigned URL 발급", description = "파일 다운로드용 presigned URL 발급입니다.")
     public ResponseEntity<ApiResponse<PresignedUrlResponseDTO>> generateDownloadPresignedUrl(@PathVariable Long imageId) {

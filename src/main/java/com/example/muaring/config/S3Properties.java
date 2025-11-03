@@ -14,5 +14,8 @@ public record S3Properties (
     ) {
         public record Presign(Integer uploadExpMinutes, Integer downloadExpMinutes) {}
         public record Credentials(String accessKey, String secretKey) {}
+        public String bucketUrl(String region) {
+            return "https://" + bucket + ".s3." + region + ".amazonaws.com";
+        }
     }
 }
