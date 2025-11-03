@@ -74,7 +74,7 @@ public class GroupMusicProfile {
     @Column(name = "active_member_ratio")
     private Double activeMemberRatio;
 
-    @Column(name = "caculated_period_days")
+    @Column(name = "calculated_period_days")
     private Integer calculatedPeriodDays;
 
     @CreatedDate
