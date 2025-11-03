@@ -2,7 +2,7 @@ package com.example.muaring.domain.music.controller;
 
 import com.example.muaring.domain.music.dto.MusicHistoryDTO;
 import com.example.muaring.domain.music.dto.MusicPostRequestDTO;
-import com.example.muaring.domain.music.dto.MusicResponseDTO;
+import com.example.muaring.domain.music.dto.SpotifyTrackDTO;
 import com.example.muaring.domain.music.service.MusicPostService;
 import com.example.muaring.domain.social.entity.MusicPost;
 import lombok.*;
@@ -20,8 +20,8 @@ public class MusicController {
     private final MusicPostService musicPostService;
 
     @GetMapping("/search")
-    public ResponseEntity<List<MusicResponseDTO>> searchMusic(@RequestParam String query) {
-        List<MusicResponseDTO> result = musicPostService.searchMusic(query);
+    public ResponseEntity<List<SpotifyTrackDTO>> searchMusic(@RequestParam String query) {
+        List<SpotifyTrackDTO> result = musicPostService.searchMusic(query);
         return ResponseEntity.ok(result);
     }
 

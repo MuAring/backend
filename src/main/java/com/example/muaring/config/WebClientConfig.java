@@ -28,4 +28,18 @@ public class WebClientConfig {
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
                 .build();
     }
+
+    @Bean(name = "spotifyAuthWebClient")
+    public WebClient spotifyAuthWebClient() {
+        return WebClient.builder()
+                .baseUrl("https://accounts.spotify.com")
+                .build();
+    }
+
+    @Bean(name = "spotifyApiWebClient")
+    public WebClient spotifyApiWebClient() {
+        return WebClient.builder()
+                .baseUrl("https://api.spotify.com")
+                .build();
+    }
 }

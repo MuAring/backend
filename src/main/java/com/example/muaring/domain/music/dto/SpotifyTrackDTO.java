@@ -4,11 +4,10 @@ import lombok.*;
 
 @Getter
 @AllArgsConstructor
-public class MusicResponseDTO {
-    private Long id;
+@Builder
+public class SpotifyTrackDTO {
     private String spotifyId;
     private String name;
-    private String artistId;
     private String artistName;
     private String albumName;
     private String albumImgUrl;
