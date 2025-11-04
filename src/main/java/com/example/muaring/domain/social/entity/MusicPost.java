@@ -43,4 +43,14 @@ public class MusicPost extends BaseEntity {
 
     @Column(name = "comment_count", nullable = false)
     private Integer commentCount = 0;
+
+    public void increaseLikeCount() {
+        this.likeCount++;
+    }
+
+    public void decreaseLikeCount() {
+        if (this.likeCount > 0) {
+            this.likeCount--;
+        }
+    }
 }
