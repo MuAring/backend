@@ -11,6 +11,8 @@ import lombok.*;
 @Table(name = "music_post")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class MusicPost extends BaseEntity {
 
     @Id
