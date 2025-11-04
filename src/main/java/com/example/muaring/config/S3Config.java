@@ -7,10 +7,11 @@ import org.springframework.context.annotation.Configuration;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 @Configuration
-@EnableConfigurationProperties({S3Properties.class, FilePolicyProperties.class})
+@EnableConfigurationProperties({S3Properties.class, FilePolicyProperties.class, ImageProperties.class})
 @RequiredArgsConstructor
 public class S3Config {
 
@@ -26,6 +27,19 @@ public class S3Config {
         return S3Presigner.builder()
                 .region(Region.of(s3Properties.region()))
                 .credentialsProvider(StaticCredentialsProvider.create(awsCredentials))
+                .build();
+    }
+
+    @Bean(destroyMethod = "close")
+    public S3Client s3Client() {
+        AwsBasicCredentials credentials = AwsBasicCredentials.create(
+                s3Properties.s3().credentials().accessKey(),
+                s3Properties.s3().credentials().secretKey()
+        );
+
+        return S3Client.builder()
+                .region(Region.of(s3Properties.region()))
+                .credentialsProvider(StaticCredentialsProvider.create(credentials))
                 .build();
     }
 }
