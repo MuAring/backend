@@ -9,6 +9,7 @@ import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.exception.MemberException;
 import com.example.muaring.domain.member.repository.MemberRepository;
 import com.example.muaring.domain.member.response.MemberErrorCode;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -249,11 +250,6 @@ public class GroupService {
         // 그룹 멤버 확인
         GroupMember groupMember = groupMemberRepository.findByGroupIdAndMemberId(groupId, memberId)
                 .orElseThrow(() -> new GroupException(GroupErrorCode.NOT_GROUP_MEMBER));
-
-        // 일단 관리자는 탈퇴 불가로...
-        if (groupMember.getRole() == GroupMember.GroupRole.ADMIN) {
-            throw new GroupException(GroupErrorCode.ADMIN_CANNOT_LEAVE);
-        }
 
         groupMemberRepository.delete(groupMember);
 
