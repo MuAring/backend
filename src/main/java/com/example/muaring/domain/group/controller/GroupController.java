@@ -117,4 +117,22 @@ public class GroupController {
                 .status(HttpStatus.OK)
                 .body(ApiResponse.ok("그룹에서 탈퇴했습니다."));
     }
+
+    // [POST] /groups/{groupId}/admin-leave
+    // 관리자 그룹 탈퇴
+    @PostMapping("/{groupId}/admin-leave")
+    public ResponseEntity<ApiResponse<Void>> adminLeaveGroup(
+            @PathVariable Long groupId,
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @RequestBody AdminLeaveReqeustDto request) {
+
+        Long memberId = principal.getMemberId();;
+        groupService.adminLeaveGroup(groupId, memberId, request);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.ok("관리자 권한을 양도하고 그룹에서 탈퇴했습니다."));
+    }
+
+
+
 }

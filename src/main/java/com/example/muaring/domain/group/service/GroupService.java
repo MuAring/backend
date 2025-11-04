@@ -256,4 +256,38 @@ public class GroupService {
         // 그룹 멤버 수 감소
         group.decrementMemberCount();
     }
+
+    // 관리자 탈퇴 시 관리자 지정 메서드
+    public void adminLeaveGroup(Long groupId, Long memberId, AdminLeaveReqeustDto request) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
+
+        GroupMember currentMember = groupMemberRepository.findByGroupIdAndMemberId(groupId, memberId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.NOT_GROUP_MEMBER));
+
+        // 현재 사용자가 관리자인지 확인
+        if (currentMember.getRole() != ADMIN) {
+            throw new GroupException(GroupErrorCode.NOT_GROUP_ADMIN);
+        }
+
+        // 자기 자신을 새 관리자로 지정하는지 확인
+        if (memberId.equals(request.getNewAdminId())) {
+            throw new GroupException(GroupErrorCode.CANNOT_TRANSFER_TO_SELF);
+        }
+
+        GroupMember newAdmin = groupMemberRepository.findByGroupIdAndMemberId(groupId, request.getNewAdminId())
+                .orElseThrow(() -> new GroupException(GroupErrorCode.NOT_GROUP_MEMBER));
+
+        Member newAdminMember = memberRepository.findById(request.getNewAdminId())
+                .orElseThrow(() -> new GroupException(GroupErrorCode.MEMBER_NOT_FOUND));
+
+        newAdmin.updateRole(ADMIN);
+
+        group.updateAdmin(newAdminMember);
+
+        groupMemberRepository.delete(currentMember);
+
+        // 그룹 멤버 수 감소
+        group.decrementMemberCount();
+    }
 }

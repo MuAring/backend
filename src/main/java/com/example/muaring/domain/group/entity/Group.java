@@ -76,4 +76,8 @@ public class Group extends BaseEntity {
     public void decrementMemberCount() {
         this.memberCount--;
     }
+
+    public void updateAdmin(Member admin) {
+        this.admin = admin;
+    }
 }
