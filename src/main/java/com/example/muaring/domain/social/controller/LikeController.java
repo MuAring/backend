@@ -3,6 +3,7 @@ package com.example.muaring.domain.social.controller;
 import com.example.muaring.common.response.ApiResponse;
 import com.example.muaring.domain.social.dto.LikeResponseDTO;
 import com.example.muaring.domain.social.service.LikeService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +19,7 @@ public class LikeController {
     private final LikeService likeService;
 
     @PostMapping
+    @Operation(summary = "좋아요 등록/취소", description = "좋아요 등록/취소 로직입니다.(토글)")
     public ResponseEntity<ApiResponse<LikeResponseDTO>> handleLike(
             @PathVariable("postId") Long postId
     ) {
