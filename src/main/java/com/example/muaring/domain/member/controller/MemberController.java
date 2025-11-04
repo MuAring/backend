@@ -28,9 +28,8 @@ public class MemberController {
             @NotBlank(message = "낙네임 입력은 필수입니다.")
             String nickname) {
         NicknameCheckResponseDTO response = memberService.checkNicknameDuplicated(nickname);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(ApiResponse.ok(response, "닉네임 중복체크가 완료되었습니다."));
+        return ResponseEntity.ok(
+                ApiResponse.ok(response, "닉네임 중복체크가 완료되었습니다."));
     }
 
     // 프로필 등록 (최초)
@@ -39,8 +38,7 @@ public class MemberController {
             @Valid @RequestBody MemberProfileCreateRequestDTO requestDTO
     ) {
         MemberProfileResponseDTO responseDTO = memberService.registerProfile(requestDTO);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(ApiResponse.ok(responseDTO, "프로필이 생성되었습니다."));
+        return ResponseEntity.ok(
+                ApiResponse.ok(responseDTO, "프로필이 생성되었습니다."));
     }
 }
