@@ -56,4 +56,15 @@ public class Member extends BaseEntity {
         member.email = email;
         return member;
     }
+
+    public void updateProfile(String nickname, Image image) {
+        if (nickname == null || nickname.trim().isEmpty()) {
+            throw new IllegalArgumentException("닉네임은 필수입니다.");
+        }
+        if (nickname.length() > 10) {
+            throw new IllegalArgumentException("닉네임은 10자를 초과할 수 없습니다.");
+        }
+        this.nickname = nickname;
+        this.profileImage = image;
+    }
 }

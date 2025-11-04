@@ -34,7 +34,7 @@ public class AuthController {
         log.info("카카오 로그인 요청 수신");
         LoginResponseDTO response = kakaoAuthService.login(socialLoginRequestDTO.code(), socialLoginRequestDTO.authProvider());
         return ResponseEntity
-                .status(HttpStatus.CREATED)
+                .status(HttpStatus.OK)
                 .body(ApiResponse.ok(response, socialLoginRequestDTO.authProvider() + "로그인에 성공했습니다."));
     }
 }

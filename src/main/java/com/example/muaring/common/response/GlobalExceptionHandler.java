@@ -28,7 +28,7 @@ public class GlobalExceptionHandler {
         ErrorCode errorCode = e.getErrorCode();
         return ResponseEntity
                 .status(errorCode.getStatus())
-                .body(ApiResponse.fail(errorCode));
+                .body(ApiResponse.fail(errorCode, null));
     }
 
     // ⚪ 요청 헤더 누락 예외 처리
@@ -36,7 +36,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleMissingHeader(MissingRequestHeaderException e) {
         ErrorCode errorCode = CommonErrorCode.REQUEST_HEADER_EMPTY;
         return ResponseEntity.status(errorCode.getStatus())
-                .body(ApiResponse.fail(errorCode));
+                .body(ApiResponse.fail(errorCode, null));
     }
 
     // ⚪ 지원하지 않는 HTTP 메서드 예외 처리
@@ -44,7 +44,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleMethodNotAllowed(Exception e) {
         ErrorCode errorCode = CommonErrorCode.METHOD_NOT_ALLOWED;
         return ResponseEntity.status(errorCode.getStatus())
-                .body(ApiResponse.fail(errorCode));
+                .body(ApiResponse.fail(errorCode, null));
     }
 
     // ⚪ 잘못된 URL 접근 예외 처리
@@ -52,7 +52,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleNoHandlerFound(NoHandlerFoundException e) {
         ErrorCode errorCode = CommonErrorCode.NOT_FOUND_URL;
         return ResponseEntity.status(errorCode.getStatus())
-                .body(ApiResponse.fail(errorCode));
+                .body(ApiResponse.fail(errorCode, null));
     }
 
     // ⚪ DTO Validation 예외 처리
@@ -81,7 +81,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponse<Void>> handleMediaTypeNotAcceptable(HttpMediaTypeNotAcceptableException e) {
         ErrorCode errorCode = CommonErrorCode.HTTP_MEDIA_TYPE_NOT_ACCEPTABLE;
         return ResponseEntity.status(errorCode.getStatus())
-                .body(ApiResponse.fail(errorCode));
+                .body(ApiResponse.fail(errorCode, null));
     }
 
     // ⚪ 그 외의 예외 처리
@@ -90,6 +90,6 @@ public class GlobalExceptionHandler {
         log.error("예상치 못한 예외가 발생했습니다.", e);
         ErrorCode errorCode = CommonErrorCode.INTERNAL_SERVER_ERROR;
         return ResponseEntity.status(errorCode.getStatus())
-                .body(ApiResponse.fail(errorCode));
+                .body(ApiResponse.fail(errorCode, null));
     }
 }

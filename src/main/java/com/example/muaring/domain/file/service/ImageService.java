@@ -12,11 +12,11 @@ import com.example.muaring.domain.file.validator.FileValidator;
 import com.example.muaring.domain.group.entity.Group;
 import com.example.muaring.domain.group.repository.GroupRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.ServerSideEncryption;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -28,10 +28,12 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @Transactional(readOnly = true)
 public class ImageService {
 
     private final S3Presigner s3Presigner;
+    private final S3Client s3Client;
     private final S3Properties s3Properties;
     private final ImageRepository imageRepository;
     private final FileValidator fileValidator;
@@ -92,14 +94,6 @@ public class ImageService {
 
         URL presignedUrl = s3Presigner.presignPutObject(putObjectPresignRequest).url();
 
-//        // image DB에 메타데이터 저장은 실제 프로필 수정 등에서 구현할 예정
-//        imageRepository.save(Image.create(
-//                request.fileName(),
-//                request.fileType(),
-//                request.imageType(),
-//                s3Key,
-//                request.fileSize()));
-
         return PresignedUrlResponseDTO.of(
                 presignedUrl.toString(),
                 s3Key
@@ -139,5 +133,21 @@ public class ImageService {
                 .replaceAll("[^a-zA-Z0-9._-]", "_")
                 .replaceAll("_+", "_")
                 .substring(0, Math.min(fileName.length(), 100));
+    }
+
+    // ⚪ 업로드된 s3 파일을 삭제하는 메서드
+    public void deleteObject(String s3Key) {
+        try {
+            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                    .bucket(s3Properties.s3().bucket())
+                    .key(s3Key)
+                    .build();
+
+            s3Client.deleteObject(deleteObjectRequest);
+            log.info("✅ S3 객체 삭제를 완료했습니다.");
+        } catch (S3Exception e) {
+            log.error("❌ S3 객체 삭제 도중 문제가 발생했습니다.: {}", s3Key, e);
+            throw new RuntimeException("❌ S3 객체 삭제 도중 문제가 발생했습니다." + s3Key, e);
+        }
     }
 }
