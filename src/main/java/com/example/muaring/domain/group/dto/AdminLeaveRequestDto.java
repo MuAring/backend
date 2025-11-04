@@ -5,6 +5,6 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class AdminLeaveReqeustDto {
+public class AdminLeaveRequestDto {
     private Long newAdminId;
 }

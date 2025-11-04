@@ -124,7 +124,7 @@ public class GroupController {
     public ResponseEntity<ApiResponse<Void>> adminLeaveGroup(
             @PathVariable Long groupId,
             @AuthenticationPrincipal MemberPrincipal principal,
-            @RequestBody AdminLeaveReqeustDto request) {
+            @RequestBody AdminLeaveRequestDto request) {
 
         Long memberId = principal.getMemberId();;
         groupService.adminLeaveGroup(groupId, memberId, request);

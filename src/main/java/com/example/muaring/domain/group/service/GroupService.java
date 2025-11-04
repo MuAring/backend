@@ -9,7 +9,6 @@ import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.exception.MemberException;
 import com.example.muaring.domain.member.repository.MemberRepository;
 import com.example.muaring.domain.member.response.MemberErrorCode;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -258,7 +257,7 @@ public class GroupService {
     }
 
     // 관리자 탈퇴 시 관리자 지정 메서드
-    public void adminLeaveGroup(Long groupId, Long memberId, AdminLeaveReqeustDto request) {
+    public void adminLeaveGroup(Long groupId, Long memberId, AdminLeaveRequestDto request) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
 
