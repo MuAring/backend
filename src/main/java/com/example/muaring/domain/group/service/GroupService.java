@@ -228,6 +228,7 @@ public class GroupService {
     }
 
     // 그룹 삭제 메서드
+    @Transactional
     public void deleteGroup(Long groupId, Long memberId) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
@@ -237,7 +238,7 @@ public class GroupService {
             throw new GroupException(GroupErrorCode.NOT_GROUP_ADMIN);
         }
 
-        groupRepository.delete(group);
+        group.softDelete();
     }
 
     // 그룹 탈퇴 메서드

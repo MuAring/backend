@@ -51,6 +51,13 @@ public class Group extends BaseEntity {
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GroupMember> groupMembers = new ArrayList<>();
 
+    public void softDelete() {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+        // 연관된 GroupMember들도 함께 soft delete
+        this.groupMembers.forEach(gm -> gm.softDelete());
+    }
+
     @Builder
     public Group(Member admin, String name, String description, Integer maxMembers, Boolean isPublic) {
         this.admin = admin;

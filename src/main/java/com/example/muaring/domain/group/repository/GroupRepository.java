@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface GroupRepository extends JpaRepository<Group, Long> {
@@ -22,7 +23,8 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
             value = """
             select g
             from Group g
-            where (:isPublic is null or g.isPublic = :isPublic)
+            where g.isDeleted = false
+              and (:isPublic is null or g.isPublic = :isPublic)
               and (:name is null or :name = ''
                    or lower(g.name) like lower(concat('%', :name, '%')))
               and (coalesce(:categoryIds, null) is null
@@ -36,7 +38,8 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
             countQuery = """
             select count(g)
             from Group g
-            where (:isPublic is null or g.isPublic = :isPublic)
+            where g.isDeleted = false
+              and (:isPublic is null or g.isPublic = :isPublic)
               and (:name is null or :name = ''
                    or lower(g.name) like lower(concat('%', :name, '%')))
               and (coalesce(:categoryIds, null) is null
@@ -54,4 +57,8 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
             @Param("categoryIds") List<Long> categoryIds,
             Pageable pageable
     );
+
+    // 삭제되지 않은 그룹만 조회
+    @Query("SELECT g FROM Group g WHERE g.id = :id AND g.isDeleted = false")
+    Optional<Group> findById(@Param("id") Long id);
 }

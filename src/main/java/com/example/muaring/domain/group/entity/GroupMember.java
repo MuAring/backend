@@ -5,6 +5,8 @@ import com.example.muaring.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(
         name = "group_member",
@@ -48,5 +50,10 @@ public class GroupMember extends BaseEntity {
 
     public void updateRole(GroupRole role) {
         this.role = role;
+    }
+
+    public void softDelete() {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
     }
 }
