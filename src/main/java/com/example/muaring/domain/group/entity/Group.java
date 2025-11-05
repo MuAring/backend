@@ -7,6 +7,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "`group`")
@@ -45,6 +47,10 @@ public class Group extends BaseEntity {
     @Column(name = "playlist_updated_at")
     private LocalDateTime playlistUpdatedAt;
 
+    // Group 삭제 시 모든 GroupMember도 함께 삭제하기 위해 GroupMember와의 양방향 관계 + CASCADE 설정
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GroupMember> groupMembers = new ArrayList<>();
+
     @Builder
     public Group(Member admin, String name, String description, Integer maxMembers, Boolean isPublic) {
         this.admin = admin;
@@ -53,5 +59,25 @@ public class Group extends BaseEntity {
         this.memberCount = 1; // 그룹 생성 시 멤버 수는 1명
         this.maxMembers = maxMembers;
         this.isPublic = isPublic;
+    }
+
+    public void updateDescription(String description) {
+        this.description = description;
+    }
+
+    public void updateMaxMembers(Integer maxMembers) {
+        this.maxMembers = maxMembers;
+    }
+
+    public void updateIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+
+    public void decrementMemberCount() {
+        this.memberCount--;
+    }
+
+    public void updateAdmin(Member admin) {
+        this.admin = admin;
     }
 }
