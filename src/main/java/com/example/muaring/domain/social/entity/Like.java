@@ -3,6 +3,7 @@ package com.example.muaring.domain.social.entity;
 import com.example.muaring.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
@@ -29,6 +30,16 @@ public class Like {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
+    @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    private Like(MusicPost post, Member member) {
+        this.post = post;
+        this.member = member;
+    }
+
+    public static Like create(MusicPost post, Member member) {
+        return new Like(post, member);
+    }
 }

@@ -1,4 +1,4 @@
-package com.example.muaring.domain.music.repository;
+package com.example.muaring.domain.social.repository;
 
 import com.example.muaring.domain.social.entity.MusicPost;
 import org.springframework.data.jpa.repository.JpaRepository;
