@@ -1,6 +1,9 @@
 package com.example.muaring.domain.group.controller;
 
 import com.example.muaring.common.response.ApiResponse;
+import com.example.muaring.domain.auth.security.MemberPrincipal;
+import com.example.muaring.domain.group.dto.*;
+import com.example.muaring.common.response.ApiResponse;
 import com.example.muaring.common.security.SecurityUtil;
 import com.example.muaring.domain.group.dto.GroupCreateRequestDto;
 import com.example.muaring.domain.group.dto.GroupCreateResponseDto;
@@ -11,7 +14,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -72,4 +77,81 @@ public class GroupController {
         ApiResponse<GroupListResponseDto> body = ApiResponse.ok(response, "그룹 리스트 조회에 성공했습니다.");
         return ResponseEntity.ok(body);
     }
+
+
+    // [GET] /groups/{groupId}/members
+    // 그룹 멤버 목록 조회
+    @GetMapping("/{groupId}/members")
+    public ResponseEntity<ApiResponse<List<GroupMemberResponseDto>>> getGroupMembers(
+            @PathVariable Long groupId,
+            @AuthenticationPrincipal MemberPrincipal principal) {
+        Long memberId = principal.getMemberId();
+        List<GroupMemberResponseDto> members = groupService.getGroupMembers(groupId, memberId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.ok(members, "그룹 멤버 목록을 조회했습니다."));
+    }
+
+
+    // [PATCH] /groups/{groupId}
+    // 그룹 정보 수정 (그룹 이름, 최대 멤버, 설명, 공개여부, 카테고리)
+    @PatchMapping("/{groupId}")
+    public ResponseEntity<ApiResponse<GroupUpdateResponseDto>> updateGroup(
+            @PathVariable Long groupId,
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @RequestBody GroupUpdateRequestDto request) {
+        Long memberId = principal.getMemberId();
+        GroupUpdateResponseDto response = groupService.updateGroup(groupId, memberId, request);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.ok(response, "그룹 정보가 수정되었습니다."));
+    }
+
+    // 그룹 프로필 이미지 수정
+
+
+    // [DELETE] /groups/{groupId}
+    // 그룹 삭제
+    @DeleteMapping("/{groupId}")
+    public ResponseEntity<ApiResponse<Void>> deleteGroup(
+            @PathVariable Long groupId,
+            @AuthenticationPrincipal MemberPrincipal principal) {
+        Long memberId = principal.getMemberId();
+        groupService.deleteGroup(groupId, memberId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.ok("그룹이 삭제되었습니다."));
+    }
+
+
+    // [DELETE] /groups/{groupId}/leave
+    // 그룹 탈퇴
+    @DeleteMapping("/{groupId}/leave")
+    public ResponseEntity<ApiResponse<Void>> leaveGroup(
+            @PathVariable Long groupId,
+            @AuthenticationPrincipal MemberPrincipal principal) {
+        Long memberId = principal.getMemberId();
+        groupService.leaveGroup(groupId, memberId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.ok("그룹에서 탈퇴했습니다."));
+    }
+
+    // [POST] /groups/{groupId}/admin-leave
+    // 관리자 그룹 탈퇴
+    @PostMapping("/{groupId}/admin-leave")
+    public ResponseEntity<ApiResponse<Void>> adminLeaveGroup(
+            @PathVariable Long groupId,
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @RequestBody AdminLeaveRequestDto request) {
+
+        Long memberId = principal.getMemberId();;
+        groupService.adminLeaveGroup(groupId, memberId, request);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.ok("관리자 권한을 양도하고 그룹에서 탈퇴했습니다."));
+    }
+
+
+
 }

@@ -150,4 +150,143 @@ public class GroupService {
 
     // 그룹 상세 조회 메서드
 
+
+    // 그룹 멤버 조회 메서드
+    public List<GroupMemberResponseDto> getGroupMembers(Long groupId, Long memberId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
+
+        // 비공개 그룹일 경우에는 요청자가 그룹 멤버인지 확인
+        if (!group.getIsPublic()) {
+            boolean isMember = groupMemberRepository.existsByGroupIdAndMemberId(groupId, memberId);
+            if (!isMember) {
+                throw new GroupException(GroupErrorCode.NOT_GROUP_MEMBER);
+            }
+        }
+
+        List<GroupMember> groupMembers = groupMemberRepository.findByGroupId(groupId);
+
+        return groupMembers.stream()
+                .map(GroupMemberResponseDto::from)
+                .toList();
+    }
+
+    // 그룹 정보 수정 메서드
+    @Transactional
+    public GroupUpdateResponseDto updateGroup(Long groupId, Long memberId, GroupUpdateRequestDto request) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
+
+        if (!group.getAdmin().getId().equals(memberId)) {
+            throw new GroupException(GroupErrorCode.NOT_GROUP_ADMIN);
+        }
+
+        // 설명 수정
+        if (request.getDescription() != null) {
+            group.updateDescription(request.getDescription());
+        }
+
+        // 최대 인원 수정
+        if (request.getMaxMembers() != null) {
+            if (request.getMaxMembers() < group.getMemberCount()) {
+                throw new GroupException(GroupErrorCode.MAX_MEMBERS_TOO_SMALL);
+            }
+            group.updateMaxMembers(request.getMaxMembers());
+        }
+
+        // 공개 여부 수정
+        if (request.getIsPublic() != null) {
+            group.updateIsPublic(request.getIsPublic());
+        }
+
+        // 그룹 카테고리 수정
+        if (request.getCategoryNames() != null) {
+            if (request.getCategoryNames().size() != 3) {
+                throw new GroupException(GroupErrorCode.CATEGORY_MUST_BE_THREE);
+            }
+
+            // 기존 매핑 삭제
+            mappingRepository.deleteByGroup(group);
+
+            List<GroupCategory> categories = request.getCategoryNames().stream()
+                    .map(name -> groupCategoryRepository.findByName(name)
+                            .orElseThrow(() -> new GroupException(GroupErrorCode.CATEGORY_NOT_FOUND)))
+                    .collect(Collectors.toList());
+
+            List<GroupCategoryMapping> newMappings = categories.stream()
+                    .map(category -> GroupCategoryMapping.builder()
+                            .group(group)
+                            .groupCategory(category)
+                            .build())
+                    .collect(Collectors.toList());
+
+            mappingRepository.saveAll(newMappings);
+        }
+
+        List<GroupCategoryMapping> mappings = mappingRepository.findByGroup(group);
+        return GroupUpdateResponseDto.from(group, mappings);
+    }
+
+    // 그룹 삭제 메서드
+    public void deleteGroup(Long groupId, Long memberId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
+
+        // 관리자 권한 확인
+        if (!group.getAdmin().getId().equals(memberId)) {
+            throw new GroupException(GroupErrorCode.NOT_GROUP_ADMIN);
+        }
+
+        groupRepository.delete(group);
+    }
+
+    // 그룹 탈퇴 메서드
+    @Transactional
+    public void leaveGroup(Long groupId, Long memberId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
+
+        // 그룹 멤버 확인
+        GroupMember groupMember = groupMemberRepository.findByGroupIdAndMemberId(groupId, memberId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.NOT_GROUP_MEMBER));
+
+        groupMemberRepository.delete(groupMember);
+
+        // 그룹 멤버 수 감소
+        group.decrementMemberCount();
+    }
+
+    // 관리자 탈퇴 시 관리자 지정 메서드
+    public void adminLeaveGroup(Long groupId, Long memberId, AdminLeaveRequestDto request) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
+
+        GroupMember currentMember = groupMemberRepository.findByGroupIdAndMemberId(groupId, memberId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.NOT_GROUP_MEMBER));
+
+        // 현재 사용자가 관리자인지 확인
+        if (currentMember.getRole() != ADMIN) {
+            throw new GroupException(GroupErrorCode.NOT_GROUP_ADMIN);
+        }
+
+        // 자기 자신을 새 관리자로 지정하는지 확인
+        if (memberId.equals(request.getNewAdminId())) {
+            throw new GroupException(GroupErrorCode.CANNOT_TRANSFER_TO_SELF);
+        }
+
+        GroupMember newAdmin = groupMemberRepository.findByGroupIdAndMemberId(groupId, request.getNewAdminId())
+                .orElseThrow(() -> new GroupException(GroupErrorCode.NOT_GROUP_MEMBER));
+
+        Member newAdminMember = memberRepository.findById(request.getNewAdminId())
+                .orElseThrow(() -> new GroupException(GroupErrorCode.MEMBER_NOT_FOUND));
+
+        newAdmin.updateRole(ADMIN);
+
+        group.updateAdmin(newAdminMember);
+
+        groupMemberRepository.delete(currentMember);
+
+        // 그룹 멤버 수 감소
+        group.decrementMemberCount();
+    }
 }

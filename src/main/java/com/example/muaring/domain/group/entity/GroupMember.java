@@ -45,4 +45,8 @@ public class GroupMember extends BaseEntity {
         this.member = member;
         this.role = role;
     }
+
+    public void updateRole(GroupRole role) {
+        this.role = role;
+    }
 }
