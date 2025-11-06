@@ -228,6 +228,7 @@ public class GroupService {
     }
 
     // 그룹 삭제 메서드
+    @Transactional
     public void deleteGroup(Long groupId, Long memberId) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
@@ -237,7 +238,7 @@ public class GroupService {
             throw new GroupException(GroupErrorCode.NOT_GROUP_ADMIN);
         }
 
-        groupRepository.delete(group);
+        group.softDelete();
     }
 
     // 그룹 탈퇴 메서드
@@ -289,4 +290,37 @@ public class GroupService {
         // 그룹 멤버 수 감소
         group.decrementMemberCount();
     }
+
+    // 그룹 멤버 추방 메서드
+    @Transactional
+    public void expelMember(Long groupId, Long adminId, Long expellerId){
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
+
+        GroupMember adminMember = groupMemberRepository.findByGroupIdAndMemberId(groupId, adminId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.NOT_GROUP_MEMBER));
+
+        if (adminMember.getRole() != ADMIN) {
+            throw new GroupException(GroupErrorCode.NOT_GROUP_ADMIN);
+        }
+
+        GroupMember expelMember = groupMemberRepository.findByGroupIdAndMemberId(groupId, expellerId)
+                        .orElseThrow(() -> new GroupException(GroupErrorCode.NOT_GROUP_MEMBER));
+
+        // 자기 자신 추방 방지
+        if (adminId.equals(expellerId)) {
+            throw new GroupException(GroupErrorCode.CANNOT_EXPEL_SELF);
+        }
+
+        // 이미 삭제된 멤버인지 확인
+        if (expelMember.getIsDeleted()) {
+            throw new GroupException(GroupErrorCode.ALREADY_EXPELLED_MEMBER);
+        }
+
+        expelMember.softDelete();
+
+        // 그룹 멤버 수 감소
+        group.decrementMemberCount();
+    }
+
 }
