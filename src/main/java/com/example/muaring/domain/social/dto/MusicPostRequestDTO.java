@@ -1,4 +1,4 @@
-package com.example.muaring.domain.music.dto;
+package com.example.muaring.domain.social.dto;
 
 import lombok.Data;
 
