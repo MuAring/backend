@@ -10,6 +10,7 @@ import com.example.muaring.domain.music.dto.SpotifyTrackDTO;
 import com.example.muaring.domain.music.entity.Music;
 import com.example.muaring.domain.music.exception.MusicErrorCode;
 import com.example.muaring.domain.music.exception.MusicException;
+import com.example.muaring.domain.music.response.SpotifyTrackDetailResponse;
 import com.example.muaring.domain.music.service.SpotifyAuthService;
 import com.example.muaring.domain.social.repository.MusicPostRepository;
 import com.example.muaring.domain.music.repository.MusicRepository;
@@ -115,34 +116,72 @@ public class MusicPostService {
                 .collect(Collectors.toList());
     }
 
+    private MusicRequestDTO fetchSpotifyTrackDetail(String spotifyId) {
+
+        String token = spotifyAuthService.getAccessToken();
+
+        SpotifyTrackDetailResponse response = webClient.get()
+                .uri("/v1/tracks/{spotifyId}", spotifyId)
+                .header("Authorization", "Bearer " + token)
+                .retrieve()
+                .bodyToMono(SpotifyTrackDetailResponse.class)
+                .block();
+
+        if (response == null) {
+            throw new MusicException(MusicErrorCode.SPOTIFY_NO_RESULTS);
+        }
+
+        LocalDateTime releaseDate = null;
+        if (response.getAlbum().getReleaseDate() != null) {
+            releaseDate = LocalDateTime.parse(response.getAlbum().getReleaseDate() + "T00:00:00");
+        }
+
+        return MusicRequestDTO.builder()
+                .spotifyId(response.getId())
+                .name(response.getName())
+                .artistId(response.getArtists().get(0).getId())
+                .artistName(response.getArtists().get(0).getName())
+                .albumName(response.getAlbum().getName())
+                .albumImgUrl(response.getAlbum().getImages().isEmpty() ? null : response.getAlbum().getImages().get(0).getUrl())
+                .popularity(response.getPopularity())
+                .durationMs(response.getDurationMs())
+                .releaseDate(releaseDate)
+                .build();
+    }
+
+
     @Transactional
-    public MusicPost createMusicPost(Long memberId, Long groupId, MusicRequestDTO musicRequest, String content) {
+    public MusicPost createMusicPost(Long memberId, Long groupId, String spotifyId, String content) {
+
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MusicException(MusicErrorCode.MEMBER_NOT_FOUND));
-
-        Music music = musicRepository.findBySpotifyId(musicRequest.getSpotifyId())
-                .orElseGet(() -> {
-                    Music newMusic = Music.builder()
-                            .spotifyId(musicRequest.getSpotifyId())
-                            .name(musicRequest.getName())
-                            .artistId(musicRequest.getArtistId())
-                            .artistName(musicRequest.getArtistName())
-                            .albumName(musicRequest.getAlbumName())
-                            .albumImgUrl(musicRequest.getAlbumImgUrl())
-                            .durationMs(musicRequest.getDurationMs())
-                            .popularity(musicRequest.getPopularity())
-                            .releaseDate(musicRequest.getReleaseDate())
-                            .createdAt(LocalDateTime.now())
-                            .build();
-
-                    return musicRepository.save(newMusic);
-                });
 
         Group group = null;
         if (groupId != null) {
             group = groupRepository.findById(groupId)
                     .orElseThrow(() -> new MusicException(MusicErrorCode.GROUP_NOT_FOUND));
         }
+
+        Music music = musicRepository.findBySpotifyId(spotifyId)
+                .orElseGet(() -> {
+
+                    MusicRequestDTO track = fetchSpotifyTrackDetail(spotifyId);
+
+                    Music newMusic = Music.builder()
+                            .spotifyId(track.getSpotifyId())
+                            .name(track.getName())
+                            .artistId(track.getArtistId())
+                            .artistName(track.getArtistName())
+                            .albumName(track.getAlbumName())
+                            .albumImgUrl(track.getAlbumImgUrl())
+                            .popularity(track.getPopularity())
+                            .durationMs(track.getDurationMs())
+                            .releaseDate(track.getReleaseDate())
+                            .createdAt(LocalDateTime.now())
+                            .build();
+
+                    return musicRepository.save(newMusic);
+                });
 
         MusicPost post = MusicPost.builder()
                 .member(member)
