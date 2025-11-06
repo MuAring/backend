@@ -18,11 +18,21 @@ import java.time.LocalDateTime;
 public abstract class BaseEntity {
 
     @Column(nullable = false)
-    protected Boolean isDeleted = false;
+    private Boolean isDeleted = false;
 
     @CreatedDate
     @Column(updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
-    protected LocalDateTime deletedAt;
+    private LocalDateTime deletedAt;
+
+    protected void d() {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+    }
+
+    protected void restore() {
+        this.isDeleted = false;
+        this.deletedAt = null;
+    }
 }

@@ -52,10 +52,9 @@ public class Group extends BaseEntity {
     private List<GroupMember> groupMembers = new ArrayList<>();
 
     public void softDelete() {
-        this.isDeleted = true;
-        this.deletedAt = LocalDateTime.now();
+        this.markDeleted();
         // 연관된 GroupMember들도 함께 soft delete
-        this.groupMembers.forEach(gm -> gm.softDelete());
+        this.groupMembers.forEach(GroupMember::softDelete);
     }
 
     @Builder

@@ -58,7 +58,7 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
             Pageable pageable
     );
 
-    // 삭제되지 않은 그룹만 조회
+    // id로 검색할 때, 삭제되지 않은 그룹만 반환
     @Query("SELECT g FROM Group g WHERE g.id = :id AND g.isDeleted = false")
     Optional<Group> findById(@Param("id") Long id);
 }
