@@ -4,7 +4,7 @@ import com.example.muaring.common.response.ApiResponse;
 import com.example.muaring.domain.music.dto.MusicHistoryDTO;
 import com.example.muaring.domain.music.dto.MusicPostRequestDTO;
 import com.example.muaring.domain.music.dto.SpotifyTrackDTO;
-import com.example.muaring.domain.music.service.MusicPostService;
+import com.example.muaring.domain.social.service.MusicPostService;
 import com.example.muaring.domain.social.entity.MusicPost;
 import lombok.*;
 import org.springframework.http.HttpStatus;

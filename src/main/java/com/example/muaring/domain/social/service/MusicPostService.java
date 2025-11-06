@@ -1,4 +1,4 @@
-package com.example.muaring.domain.music.service;
+package com.example.muaring.domain.social.service;
 
 import com.example.muaring.domain.group.entity.Group;
 import com.example.muaring.domain.group.repository.GroupRepository;
@@ -10,12 +10,12 @@ import com.example.muaring.domain.music.dto.SpotifyTrackDTO;
 import com.example.muaring.domain.music.entity.Music;
 import com.example.muaring.domain.music.exception.MusicErrorCode;
 import com.example.muaring.domain.music.exception.MusicException;
-import com.example.muaring.domain.music.repository.MusicPostRepository;
+import com.example.muaring.domain.music.service.SpotifyAuthService;
+import com.example.muaring.domain.social.repository.MusicPostRepository;
 import com.example.muaring.domain.music.repository.MusicRepository;
 import com.example.muaring.domain.music.response.SpotifySearchResponse;
 import com.example.muaring.domain.social.entity.MusicPost;
 import jakarta.transaction.Transactional;
-import lombok.*;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
