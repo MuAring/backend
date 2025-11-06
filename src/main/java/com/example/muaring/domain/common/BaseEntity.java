@@ -25,14 +25,4 @@ public abstract class BaseEntity {
     private LocalDateTime createdAt;
 
     private LocalDateTime deletedAt;
-
-    protected void markDeleted() {
-        this.isDeleted = true;
-        this.deletedAt = LocalDateTime.now();
-    }
-
-    protected void restore() {
-        this.isDeleted = false;
-        this.deletedAt = null;
-    }
 }
