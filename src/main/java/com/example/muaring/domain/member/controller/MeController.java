@@ -1,6 +1,10 @@
 package com.example.muaring.domain.member.controller;
 
+import com.example.muaring.common.response.ApiResponse;
+import com.example.muaring.common.security.SecurityUtil;
+import com.example.muaring.domain.auth.exception.AuthErrorCode;
 import com.example.muaring.domain.group.dto.MyGroupListResponseDto;
+import com.example.muaring.domain.group.exception.GroupErrorCode;
 import com.example.muaring.domain.group.service.GroupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +20,15 @@ public class MeController {
 
     private final GroupService groupService;
 
-    @GetMapping("/groups/{memberId}")
-    public ResponseEntity<MyGroupListResponseDto> getMyGroups(@PathVariable Long memberId) {
-        return ResponseEntity.ok(groupService.getMyGroups(memberId));
+    @GetMapping("/groups")
+    public ResponseEntity<ApiResponse<MyGroupListResponseDto>> getMyGroups() {
+        Long memberId = SecurityUtil.getMemberId();
+        if (memberId == null) {
+            return ResponseEntity.status(401)
+                    .body(ApiResponse.fail(AuthErrorCode.UNAUTHORIZED_MEMBER,null));
+        }
+
+        ApiResponse<MyGroupListResponseDto> body = ApiResponse.ok(groupService.getMyGroups(memberId));
+        return ResponseEntity.ok(body);
     }
 }
