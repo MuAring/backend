@@ -24,7 +24,7 @@ public class MeController {
         Long memberId = SecurityUtil.getMemberId();
         if (memberId == null) {
             return ResponseEntity.status(401)
-                    .body(ApiResponse.fail(GroupErrorCode.NULL_MEMBER,null));
+                    .body(ApiResponse.fail(GroupErrorCode.UNAUTHORIZED_USER,null));
         }
 
         ApiResponse<MyGroupListResponseDto> body = ApiResponse.ok(groupService.getMyGroups(memberId));

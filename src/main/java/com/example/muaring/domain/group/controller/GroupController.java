@@ -35,8 +35,8 @@ public class GroupController {
             @RequestBody GroupCreateRequestDto requestDto) {
         Long adminId = SecurityUtil.getMemberId();
         if (adminId == null) {
-            return ResponseEntity.status(401)
-                    .body(ApiResponse.fail(GroupErrorCode.NULL_MEMBER,null));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.fail(GroupErrorCode.UNAUTHORIZED_USER,null));
         }
 
         GroupCreateResponseDto responseDto = groupService.createGroup(requestDto, adminId);
