@@ -18,6 +18,7 @@ public enum AuthErrorCode implements ErrorCode {
     UNSUPPORTED_TOKEN(1004, HttpStatus.UNAUTHORIZED, "지원되지 않는 토큰 형식입니다."),
     MALFORMED_TOKEN(1005, HttpStatus.UNAUTHORIZED, "손상된 토큰입니다."),
     UNAUTHORIZED_ACCESS(1006, HttpStatus.UNAUTHORIZED, "로그인이 필요한 요청입니다."),
+    UNAUTHORIZED_USER(1011, HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
 
     // 500
     KAKAO_MEMBER_FETCH_FAILED(1007, HttpStatus.INTERNAL_SERVER_ERROR, "카카오 사용자 정보 조회에 실패했습니다."),

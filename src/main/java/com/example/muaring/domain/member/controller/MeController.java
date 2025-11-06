@@ -2,6 +2,7 @@ package com.example.muaring.domain.member.controller;
 
 import com.example.muaring.common.response.ApiResponse;
 import com.example.muaring.common.security.SecurityUtil;
+import com.example.muaring.domain.auth.exception.AuthErrorCode;
 import com.example.muaring.domain.group.dto.MyGroupListResponseDto;
 import com.example.muaring.domain.group.exception.GroupErrorCode;
 import com.example.muaring.domain.group.service.GroupService;
@@ -24,7 +25,7 @@ public class MeController {
         Long memberId = SecurityUtil.getMemberId();
         if (memberId == null) {
             return ResponseEntity.status(401)
-                    .body(ApiResponse.fail(GroupErrorCode.UNAUTHORIZED_USER,null));
+                    .body(ApiResponse.fail(AuthErrorCode.UNAUTHORIZED_USER,null));
         }
 
         ApiResponse<MyGroupListResponseDto> body = ApiResponse.ok(groupService.getMyGroups(memberId));

@@ -16,9 +16,6 @@ public enum GroupErrorCode implements ErrorCode {
     MAX_MEMBERS_TOO_SMALL(5008, HttpStatus.BAD_REQUEST, "최대 인원은 현재 멤버 수보다 작을 수 없습니다."),
     CANNOT_TRANSFER_TO_SELF(5011, HttpStatus.BAD_REQUEST, "자기 자신에게 관리자 권한을 이양할 수 없습니다."),
 
-    // 401 에러
-    UNAUTHORIZED_USER(5013, HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
-
     // 403 에러
     NOT_GROUP_ADMIN(5009, HttpStatus.FORBIDDEN, "그룹 관리자만 수정할 수 있습니다."),
     NOT_GROUP_MEMBER(5010, HttpStatus.FORBIDDEN, "그룹 멤버만 조회할 수 있습니다."),
