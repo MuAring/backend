@@ -1,32 +1,22 @@
 package com.example.muaring.domain.social.service;
 
+import com.example.muaring.common.security.SecurityUtil;
 import com.example.muaring.domain.group.entity.Group;
 import com.example.muaring.domain.group.repository.GroupRepository;
 import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.repository.MemberRepository;
 import com.example.muaring.domain.music.dto.MusicHistoryDTO;
-import com.example.muaring.domain.music.dto.MusicRequestDTO;
-import com.example.muaring.domain.music.dto.SpotifyTrackDTO;
 import com.example.muaring.domain.music.entity.Music;
 import com.example.muaring.domain.music.exception.MusicErrorCode;
 import com.example.muaring.domain.music.exception.MusicException;
-import com.example.muaring.domain.music.response.SpotifyTrackDetailResponse;
 import com.example.muaring.domain.music.service.MusicService;
-import com.example.muaring.domain.music.service.SpotifyAuthService;
 import com.example.muaring.domain.social.repository.MusicPostRepository;
-import com.example.muaring.domain.music.repository.MusicRepository;
-import com.example.muaring.domain.music.response.SpotifySearchResponse;
 import com.example.muaring.domain.social.entity.MusicPost;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,27 +28,29 @@ public class PostService {
     private final MusicService musicService;
 
     @Transactional
-    public List<MusicHistoryDTO> getMusicHistoryByMember(Long memberId) {
+    public Page<MusicHistoryDTO> getMusicHistoryByMember(Integer year, Integer month, Pageable pageable) {
+
+        Long memberId = SecurityUtil.getMemberId();
 
         if (!memberRepository.existsById(memberId)) {
             throw new MusicException(MusicErrorCode.MEMBER_NOT_FOUND);
         }
 
-        List<MusicPost> posts = musicPostRepository.findByMemberId(memberId);
+        Page<MusicPost> posts = musicPostRepository.findByMemberAndYearMonth(memberId, year, month, pageable);
 
-        return posts.stream()
-                .map(post -> MusicHistoryDTO.builder()
+        return posts.map(post -> MusicHistoryDTO.builder()
                         .musicId(post.getMusic().getId())
                         .title(post.getMusic().getName())
                         .artist(post.getMusic().getArtistName())
                         .albumImage(post.getMusic().getAlbumImgUrl())
                         .createdAt(post.getCreatedAt())
-                        .build())
-                .collect(Collectors.toList());
+                        .build());
     }
 
     @Transactional
-    public MusicPost createMusicPost(Long memberId, Long groupId, String spotifyId, String content) {
+    public MusicPost createMusicPost(Long groupId, String spotifyId, String content) {
+
+        Long memberId = SecurityUtil.getMemberId();
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MusicException(MusicErrorCode.MEMBER_NOT_FOUND));
