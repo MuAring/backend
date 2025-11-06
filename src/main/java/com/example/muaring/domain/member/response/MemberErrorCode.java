@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum MemberErrorCode implements ErrorCode {
 
-    // 400
+    // 400 에러
     ALREADY_HAS_PROFILE(2001, HttpStatus.BAD_REQUEST, "이미 프로필 정보가 존재하는 회원입니다."),
 
     // 404 에러

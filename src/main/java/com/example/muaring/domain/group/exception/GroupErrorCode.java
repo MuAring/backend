@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum GroupErrorCode implements ErrorCode {
 
-    // 400번 에러
+    // 400 에러
     CATEGORY_SELECTION_REQUIRED(5001, HttpStatus.BAD_REQUEST, "그룹 카테고리를 1개 이상 선택해주세요."),
     CATEGORY_SELECTION_EXCEEDED(5002, HttpStatus.BAD_REQUEST, "그룹 카테고리는 3개 이하로 선택해야 합니다."),
     CATEGORY_MUST_BE_THREE(5007, HttpStatus.BAD_REQUEST, "카테고리는 정확히 3개를 선택해야 합니다."),
