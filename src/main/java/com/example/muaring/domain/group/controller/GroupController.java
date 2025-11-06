@@ -11,6 +11,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -134,5 +135,19 @@ public class GroupController {
     }
 
 
+    // [DELETE] /groups/{groupId}/members/{expellerId}
+    // 그룹 멤버 추방
+    @DeleteMapping("/{groupId}/members/{expellerId}")
+    public ResponseEntity<ApiResponse<Void>> expelMember(
+            @PathVariable Long groupId,
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @PathVariable Long expellerId) {
+
+        Long adminId = principal.getMemberId();
+        groupService.expelMember(groupId, adminId, expellerId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.ok("그룹 멤버 추방을 완료했습니다."));
+    }
 
 }
