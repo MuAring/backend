@@ -47,4 +47,21 @@ public class Music {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Builder
+    public Music(String spotifyId, String name, String artistId, String artistName,
+                 String albumName, String albumImgUrl, Integer durationMs,
+                 Integer popularity, LocalDateTime releaseDate, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.spotifyId = spotifyId;
+        this.name = name;
+        this.artistId = artistId;
+        this.artistName = artistName;
+        this.albumName = albumName;
+        this.albumImgUrl = albumImgUrl;
+        this.durationMs = durationMs;
+        this.popularity = popularity;
+        this.releaseDate = releaseDate;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
 }

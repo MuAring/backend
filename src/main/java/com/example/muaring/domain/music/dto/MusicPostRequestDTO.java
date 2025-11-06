@@ -6,6 +6,6 @@ import lombok.Data;
 public class MusicPostRequestDTO {
     private Long memberId;
     private Long groupId;
-    private Long musicId;
+    private MusicRequestDTO music;
     private String content;
 }

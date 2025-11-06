@@ -5,6 +5,7 @@ import com.example.muaring.domain.group.repository.GroupRepository;
 import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.repository.MemberRepository;
 import com.example.muaring.domain.music.dto.MusicHistoryDTO;
+import com.example.muaring.domain.music.dto.MusicRequestDTO;
 import com.example.muaring.domain.music.dto.SpotifyTrackDTO;
 import com.example.muaring.domain.music.entity.Music;
 import com.example.muaring.domain.music.exception.MusicErrorCode;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -114,12 +116,27 @@ public class MusicPostService {
     }
 
     @Transactional
-    public MusicPost createMusicPost(Long memberId, Long groupId, Long musicId, String content) {
+    public MusicPost createMusicPost(Long memberId, Long groupId, MusicRequestDTO musicRequest, String content) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MusicException(MusicErrorCode.MEMBER_NOT_FOUND));
 
-        Music music = musicRepository.findById(musicId)
-                .orElseThrow(() -> new MusicException(MusicErrorCode.MUSIC_NOT_FOUND));
+        Music music = musicRepository.findBySpotifyId(musicRequest.getSpotifyId())
+                .orElseGet(() -> {
+                    Music newMusic = Music.builder()
+                            .spotifyId(musicRequest.getSpotifyId())
+                            .name(musicRequest.getName())
+                            .artistId(musicRequest.getArtistId())
+                            .artistName(musicRequest.getArtistName())
+                            .albumName(musicRequest.getAlbumName())
+                            .albumImgUrl(musicRequest.getAlbumImgUrl())
+                            .durationMs(musicRequest.getDurationMs())
+                            .popularity(musicRequest.getPopularity())
+                            .releaseDate(musicRequest.getReleaseDate())
+                            .createdAt(LocalDateTime.now())
+                            .build();
+
+                    return musicRepository.save(newMusic);
+                });
 
         Group group = null;
         if (groupId != null) {

@@ -42,7 +42,7 @@ public class MusicController {
         MusicPost post = musicPostService.createMusicPost(
                 request.getMemberId(),
                 request.getGroupId(),
-                request.getMusicId(),
+                request.getMusic(),
                 request.getContent()
         );
         return ResponseEntity
