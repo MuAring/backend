@@ -1,9 +1,11 @@
 package com.example.muaring.domain.group.controller;
 
 import com.example.muaring.common.response.ApiResponse;
+import com.example.muaring.common.security.SecurityUtil;
 import com.example.muaring.domain.group.dto.GroupCreateRequestDto;
 import com.example.muaring.domain.group.dto.GroupCreateResponseDto;
 import com.example.muaring.domain.group.dto.GroupListResponseDto;
+import com.example.muaring.domain.group.exception.GroupErrorCode;
 import com.example.muaring.domain.group.service.GroupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -24,8 +26,15 @@ public class GroupController {
 
     // [POST] /groups
     @PostMapping
-    public ResponseEntity<ApiResponse<GroupCreateResponseDto>> createGroup(@RequestBody GroupCreateRequestDto requestDto) {
-        GroupCreateResponseDto responseDto = groupService.createGroup(requestDto);
+    public ResponseEntity<ApiResponse<GroupCreateResponseDto>> createGroup(
+            @RequestBody GroupCreateRequestDto requestDto) {
+        Long adminId = SecurityUtil.getMemberId();
+        if (adminId == null) {
+            return ResponseEntity.status(401)
+                    .body(ApiResponse.fail(GroupErrorCode.NULL_MEMBER,null));
+        }
+
+        GroupCreateResponseDto responseDto = groupService.createGroup(requestDto, adminId);
         Long newGroupId = responseDto.getGroupId();
 
         URI location = URI.create("/groups/" + newGroupId);

@@ -33,8 +33,8 @@ public class GroupService {
 
     // 그룹 생성
     @Transactional
-    public GroupCreateResponseDto createGroup(GroupCreateRequestDto requestDto) {
-        Member admin = memberRepository.findById(requestDto.getAdminId())
+    public GroupCreateResponseDto createGroup(GroupCreateRequestDto requestDto, Long adminId) {
+        Member admin = memberRepository.findById(adminId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         List<Long> groupCategoryIds = requestDto.getGroupCategoryId();

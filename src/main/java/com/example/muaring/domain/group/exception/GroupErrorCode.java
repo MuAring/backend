@@ -13,6 +13,9 @@ public enum GroupErrorCode implements ErrorCode {
     CATEGORY_SELECTION_REQUIRED(5001, HttpStatus.BAD_REQUEST, "그룹 카테고리를 1개 이상 선택해주세요."),
     CATEGORY_SELECTION_EXCEEDED(5002, HttpStatus.BAD_REQUEST, "그룹 카테고리는 3개 이하로 선택해야 합니다."),
 
+    // 403 에러
+    NULL_MEMBER(5013, HttpStatus.FORBIDDEN, "멤버를 찾을 수 없습니다."),
+
     // 404 에러
     GROUP_NOT_FOUND(5003, HttpStatus.NOT_FOUND, "해당 그룹을 찾을 수 없습니다."),
     CATEGORY_NOT_FOUND(5004, HttpStatus.NOT_FOUND, "해당 카테고리를 찾을 수 없습니다."),

@@ -6,7 +6,6 @@ import java.util.List;
 
 @Getter
 public class GroupCreateRequestDto {
-    private Long adminId;
     private List<Long> groupCategoryId;
     private String name;
     private String description;
