@@ -54,7 +54,7 @@ public class LibraryService {
     }
 
     @Transactional
-    public void addMusicToLibrary(Long musicId, String category) {
+    public LibraryMusicDTO addMusicToLibrary(Long musicId, String category) {
 
         Long memberId = SecurityUtil.getMemberId();
 
@@ -66,7 +66,8 @@ public class LibraryService {
                 .orElseThrow(() -> new MusicException(MusicErrorCode.MUSIC_NOT_FOUND));
 
         if (libraryRepository.existsByMemberIdAndMusicId(memberId, musicId)) {
-            return;
+            throw new MusicException(MusicErrorCode.MUSIC_ALREADY_EXISTS);
+
         }
 
         Library library = Library.builder()
@@ -76,7 +77,15 @@ public class LibraryService {
                 .createdAt(LocalDateTime.now())
                 .build();
 
-        libraryRepository.save(library);
+        Library savedLibrary = libraryRepository.save(library);
+
+        return LibraryMusicDTO.builder()
+                .musicId(savedLibrary.getMusic().getId())
+                .title(savedLibrary.getMusic().getName())
+                .artist(savedLibrary.getMusic().getArtistName())
+                .albumImage(savedLibrary.getMusic().getAlbumImgUrl())
+                .createdAt(savedLibrary.getCreatedAt())
+                .build();
     }
 
     @Transactional

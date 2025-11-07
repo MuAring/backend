@@ -1,6 +1,7 @@
 package com.example.muaring.domain.library.controller;
 
 import com.example.muaring.common.response.ApiResponse;
+import com.example.muaring.domain.library.dto.LibraryMusicDTO;
 import com.example.muaring.domain.library.dto.LibraryMusicListResponseDTO;
 import com.example.muaring.domain.library.service.LibraryService;
 import lombok.RequiredArgsConstructor;
@@ -29,13 +30,17 @@ public class LibraryController {
     }
 
     @PostMapping("add/{musicId}")
-    public ResponseEntity<ApiResponse<Void>> addMusicToLibrary(
+    public ResponseEntity<ApiResponse<LibraryMusicDTO>> addMusicToLibrary(
             @PathVariable Long musicId,
             @RequestParam(required = false, defaultValue = "DEFAULT") String category
     ) {
-        libraryService.addMusicToLibrary(musicId, category);
-        return ResponseEntity.ok(ApiResponse.ok(null, "보관함에 음악이 추가되었습니다."));
+        LibraryMusicDTO addedMusic = libraryService.addMusicToLibrary(musicId, category);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.ok(addedMusic, "보관함에 음악이 추가되었습니다."));
     }
+
 
     @DeleteMapping("delete")
     public ResponseEntity<ApiResponse<Void>> deleteMultiple(
