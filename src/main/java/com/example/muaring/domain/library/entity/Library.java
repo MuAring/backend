@@ -1,5 +1,6 @@
-package com.example.muaring.domain.member.entity;
+package com.example.muaring.domain.library.entity;
 
+import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.music.entity.Music;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,6 +12,8 @@ import java.time.LocalDateTime;
 @Table(name = "library")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class Library {
 
     @Id

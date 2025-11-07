@@ -17,7 +17,8 @@ public enum MusicErrorCode implements ErrorCode {
 
     SPOTIFY_AUTH_FAILED(4006, HttpStatus.INTERNAL_SERVER_ERROR, "Spotify access token 발급 실패"),
     SPOTIFY_SEARCH_FAILED(4007, HttpStatus.INTERNAL_SERVER_ERROR, "Spotify 음악 검색 실패"),
-    SPOTIFY_NO_RESULTS(4008, HttpStatus.NOT_FOUND, "Spotify에서 검색 결과를 찾을 수 없습니다.");
+    SPOTIFY_NO_RESULTS(4008, HttpStatus.NOT_FOUND, "Spotify에서 검색 결과를 찾을 수 없습니다."),
+    MUSIC_ALREADY_EXISTS(4009, HttpStatus.FOUND , "이미 존재하는 음악입니다.");
 
     private final int code;
     private final HttpStatus status;
