@@ -6,10 +6,13 @@ import com.example.muaring.domain.group.repository.GroupRepository;
 import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.repository.MemberRepository;
 import com.example.muaring.domain.music.dto.MusicHistoryDTO;
+import com.example.muaring.domain.music.dto.MusicResponseDTO;
 import com.example.muaring.domain.music.entity.Music;
 import com.example.muaring.domain.music.exception.MusicErrorCode;
 import com.example.muaring.domain.music.exception.MusicException;
 import com.example.muaring.domain.music.service.MusicService;
+import com.example.muaring.domain.social.dto.MusicPostDTO;
+import com.example.muaring.domain.social.dto.MusicPostRequestDTO;
 import com.example.muaring.domain.social.repository.MusicPostRepository;
 import com.example.muaring.domain.social.entity.MusicPost;
 import jakarta.transaction.Transactional;
@@ -48,7 +51,7 @@ public class PostService {
     }
 
     @Transactional
-    public MusicPost createMusicPost(Long groupId, String spotifyId, String content) {
+    public MusicPostDTO createMusicPost(MusicPostRequestDTO request) {
 
         Long memberId = SecurityUtil.getMemberId();
 
@@ -56,23 +59,32 @@ public class PostService {
                 .orElseThrow(() -> new MusicException(MusicErrorCode.MEMBER_NOT_FOUND));
 
         Group group = null;
-        if (groupId != null) {
-            group = groupRepository.findById(groupId)
+        if (request.getGroupId() != null) {
+            group = groupRepository.findById(request.getGroupId())
                     .orElseThrow(() -> new MusicException(MusicErrorCode.GROUP_NOT_FOUND));
         }
 
-        Music music = musicService.findOrCreateMusic(spotifyId);
+        Music music = musicService.findOrCreateMusic(request.getSpotifyId());
 
         MusicPost post = MusicPost.builder()
                 .member(member)
                 .music(music)
                 .group(group)
                 .isProfile(true)
-                .content(content)
+                .content(request.getContent())
                 .likeCount(0)
                 .commentCount(0)
                 .build();
 
-        return musicPostRepository.save(post);
+        MusicPost savedPost = musicPostRepository.save(post);
+
+        return MusicPostDTO.builder()
+                .postId(savedPost.getId())
+                .memberId(member.getId())
+                .groupId(group != null ? group.getId() : null)
+                .spotifyId(music.getSpotifyId())
+                .content(savedPost.getContent())
+                .build();
+
     }
 }

@@ -1,11 +1,13 @@
 package com.example.muaring.domain.social.dto;
 
-import lombok.Data;
+import lombok.*;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class MusicPostRequestDTO {
-    private Long memberId;
-    private Long groupId;
-    private String spotifyId;
-    private String content;
+    private Long groupId;        // 선택적
+    private String spotifyId;    // 필수
+    private String content;      // 필수
 }
