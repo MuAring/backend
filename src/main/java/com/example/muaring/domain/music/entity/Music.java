@@ -2,6 +2,9 @@ package com.example.muaring.domain.music.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -42,9 +45,28 @@ public class Music {
     @Column(name = "release_date", nullable = false)
     private LocalDateTime releaseDate;
 
+    @CreatedDate
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Builder
+    public Music(String spotifyId, String name, String artistId, String artistName,
+                 String albumName, String albumImgUrl, Integer durationMs,
+                 Integer popularity, LocalDateTime releaseDate, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.spotifyId = spotifyId;
+        this.name = name;
+        this.artistId = artistId;
+        this.artistName = artistName;
+        this.albumName = albumName;
+        this.albumImgUrl = albumImgUrl;
+        this.durationMs = durationMs;
+        this.popularity = popularity;
+        this.releaseDate = releaseDate;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
 }
