@@ -1,15 +1,14 @@
 package com.example.muaring.domain.auth.client;
 
-import com.example.muaring.domain.auth.dto.response.KakaoMemberInfoResponseDTO;
-import com.example.muaring.domain.auth.dto.response.KakaoTokenResponseDTO;
-import com.example.muaring.domain.auth.dto.response.OAuthMemberInfoResponseDTO;
-import com.example.muaring.domain.auth.dto.response.OAuthTokenResponseDTO;
+import com.example.muaring.domain.auth.dto.response.*;
 import com.example.muaring.domain.auth.entity.AuthProvider;
 import com.example.muaring.domain.auth.exception.AuthErrorCode;
 import com.example.muaring.domain.auth.exception.AuthException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -19,29 +18,32 @@ import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
-public class KakaoOAuthClient implements OAuthProviderClient{
+public class SpotifyOAuthClient implements OAuthProviderClient{
 
     private final WebClient webClient;
 
     // ⚪ application.yml의 설정값 불러오기
-    @Value("${kakao.client-id}")
+    @Value("${spotify.client-id}")
     private String clientId;
 
-    @Value("${kakao.client-secret}")
+    @Value("${spotify.client-secret}")
     private String clientSecret;
 
-    @Value("${kakao.redirect-uri}")
+    @Value("${spotify.redirect-uri}")
     private String redirectUri;
 
-    @Value("${kakao.token-uri}")
+    @Value("${spotify.token-uri}")
     private String tokenUri;
 
-    @Value("${kakao.user-info-uri}")
+    @Value("${spotify.user-info-uri}")
     private String userInfoUri;
+
+    @Value("${spotify.scope}")
+    private String scope;
 
     @Override
     public AuthProvider getAuthProvider() {
-        return AuthProvider.KAKAO;
+        return AuthProvider.SPOTIFY;
     }
 
     // ⚪ 인가 코드(code) -> 엑세스 토큰(access_token)
@@ -53,33 +55,34 @@ public class KakaoOAuthClient implements OAuthProviderClient{
         formData.add("client_secret", clientSecret);
         formData.add("redirect_uri", redirectUri);
         formData.add("code", code);
+        formData.add("scope", scope);
 
-        KakaoTokenResponseDTO res = webClient.post()
+        SpotifyTokenResponseDTO res = webClient.post()
                 .uri(tokenUri)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(BodyInserters.fromFormData(formData))
                 .retrieve()
                 .onStatus(HttpStatusCode::isError,
                         response -> Mono.error(new AuthException(AuthErrorCode.SOCIAL_TOKEN_EXCHANGE_FAILED)))
-                .bodyToMono(KakaoTokenResponseDTO.class)
+                .bodyToMono(SpotifyTokenResponseDTO.class)
                 .block();
 
-        if (res == null || res.kakaoAccessToken() == null) {
+        if (res == null || res.spotifyAccessToken() == null) {
             throw new AuthException(AuthErrorCode.SOCIAL_TOKEN_EXCHANGE_FAILED);
         }
 
         return new OAuthTokenResponseDTO(
-                res.kakaoAccessToken(),
-                res.kakaoTokenType(),
-                res.kakaoExpiresIn(),
-                res.kakaoRefreshToken(),
-                res.kakaoRefreshTokenExpiresIn()
+                res.spotifyAccessToken(),
+                res.spotifyTokenType(),
+                res.spotifyExpiresIn(),
+                res.spotifyRefreshToken(),
+                null
         );
     }
 
     @Override
     public OAuthMemberInfoResponseDTO fetchMemberInfo(String accessToken) {
-        KakaoMemberInfoResponseDTO res = webClient.get()
+        SpotifyMemberInfoResponseDTO res = webClient.get()
                 .uri(userInfoUri)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .retrieve()
@@ -87,17 +90,17 @@ public class KakaoOAuthClient implements OAuthProviderClient{
                         response -> Mono.error(new AuthException(AuthErrorCode.SOCIAL_MEMBER_FETCH_FAILED)))
                 .onStatus(HttpStatusCode::is5xxServerError,
                         response -> Mono.error(new AuthException(AuthErrorCode.SOCIAL_MEMBER_FETCH_FAILED)))
-                .bodyToMono(KakaoMemberInfoResponseDTO.class)
+                .bodyToMono(SpotifyMemberInfoResponseDTO.class)
                 .block();
 
-        if (res == null || res.kakaoProviderId() == null) {
+        if (res == null || res.spotifyProviderId() == null) {
             throw new AuthException(AuthErrorCode.SOCIAL_MEMBER_FETCH_FAILED);
         }
 
         return new OAuthMemberInfoResponseDTO(
-                AuthProvider.KAKAO,
-                String.valueOf(res.kakaoProviderId()),
-                res.kakaoAccount() != null ? res.kakaoAccount().kakaoEmail() : null
+                AuthProvider.SPOTIFY,
+                String.valueOf(res.spotifyProviderId()),
+                res.email()
         );
     }
 }

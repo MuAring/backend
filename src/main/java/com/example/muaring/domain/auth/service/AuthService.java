@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-// ✨ 카카오 로그인의 "인가코드(code) -> 엑세스 토큰(access_token) -> 사용자 정보 -> JWT 발급" 을 담당하는 클래스
+// ✨ 소셜 로그인의 "인가코드(code) -> 엑세스 토큰(access_token) -> 사용자 정보 -> JWT 발급" 을 담당하는 클래스
 @Service
 @RequiredArgsConstructor
 public class AuthService {
