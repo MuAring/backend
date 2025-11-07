@@ -1,7 +1,9 @@
 package com.example.muaring.domain.social.dto.comment.response;
 
 import com.example.muaring.domain.social.entity.Comment;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
+@JsonInclude(JsonInclude.Include.ALWAYS)  // null 값도 보여주도록
 public record CommentResponseDTO(
         Long commentId,
         Long postId,
