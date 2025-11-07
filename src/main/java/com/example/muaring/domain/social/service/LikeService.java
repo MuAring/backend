@@ -5,11 +5,11 @@ import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.exception.MemberException;
 import com.example.muaring.domain.member.repository.MemberRepository;
 import com.example.muaring.domain.member.response.MemberErrorCode;
-import com.example.muaring.domain.social.dto.LikeResponseDTO;
+import com.example.muaring.domain.social.dto.like.response.LikeResponseDTO;
 import com.example.muaring.domain.social.entity.Like;
 import com.example.muaring.domain.social.entity.MusicPost;
-import com.example.muaring.domain.social.exception.SocialErrorCode;
-import com.example.muaring.domain.social.exception.SocialException;
+import com.example.muaring.domain.social.exception.PostErrorCode;
+import com.example.muaring.domain.social.exception.PostException;
 import com.example.muaring.domain.social.repository.LikeRepository;
 import com.example.muaring.domain.social.repository.MusicPostRepository;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +34,7 @@ public class LikeService {
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
         MusicPost post = postRepository.findById(postId)
-                .orElseThrow(() -> new SocialException(SocialErrorCode.POST_NOT_FOUND));
+                .orElseThrow(() -> new PostException(PostErrorCode.POST_NOT_FOUND));
 
         Optional<Like> existingLike = likeRepository.findByPostIdAndMemberId(postId, memberId);
         if (existingLike.isPresent()) {

@@ -2,8 +2,8 @@ package com.example.muaring.domain.social.exception;
 
 import com.example.muaring.common.exception.GeneralException;
 
-public class SocialException extends GeneralException {
-    public SocialException(SocialErrorCode errorCode) {
+public class PostException extends GeneralException {
+    public PostException(PostErrorCode errorCode) {
         super(errorCode);
     }
 }

@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
-public enum SocialErrorCode implements ErrorCode {
+public enum PostErrorCode implements ErrorCode {
 
     // 404
     POST_NOT_FOUND(6001, HttpStatus.NOT_FOUND, "게시물이 존재하지 않습니다.");
