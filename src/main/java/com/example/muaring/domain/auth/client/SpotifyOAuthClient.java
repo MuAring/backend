@@ -67,15 +67,15 @@ public class SpotifyOAuthClient implements OAuthProviderClient{
                 .bodyToMono(SpotifyTokenResponseDTO.class)
                 .block();
 
-        if (res == null || res.spotifyAccessToken() == null) {
+        if (res == null || res.accessToken() == null) {
             throw new AuthException(AuthErrorCode.SOCIAL_TOKEN_EXCHANGE_FAILED);
         }
 
         return new OAuthTokenResponseDTO(
-                res.spotifyAccessToken(),
-                res.spotifyTokenType(),
-                res.spotifyExpiresIn(),
-                res.spotifyRefreshToken(),
+                res.accessToken(),
+                res.tokenType(),
+                res.expiresIn(),
+                res.refreshToken(),
                 null
         );
     }

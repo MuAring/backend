@@ -64,16 +64,16 @@ public class KakaoOAuthClient implements OAuthProviderClient{
                 .bodyToMono(KakaoTokenResponseDTO.class)
                 .block();
 
-        if (res == null || res.kakaoAccessToken() == null) {
+        if (res == null || res.accessToken() == null) {
             throw new AuthException(AuthErrorCode.SOCIAL_TOKEN_EXCHANGE_FAILED);
         }
 
         return new OAuthTokenResponseDTO(
-                res.kakaoAccessToken(),
-                res.kakaoTokenType(),
-                res.kakaoExpiresIn(),
-                res.kakaoRefreshToken(),
-                res.kakaoRefreshTokenExpiresIn()
+                res.accessToken(),
+                res.tokenType(),
+                res.expiresIn(),
+                res.refreshToken(),
+                res.refreshTokenExpiresIn()
         );
     }
 
