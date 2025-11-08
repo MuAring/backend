@@ -1,0 +1,140 @@
+package com.example.muaring.domain.member.service;
+
+import com.example.muaring.common.security.SecurityUtil;
+import com.example.muaring.domain.member.dto.response.FollowResponseDTO;
+import com.example.muaring.domain.member.entity.Follow;
+import com.example.muaring.domain.member.entity.FollowRequest;
+import com.example.muaring.domain.member.entity.Member;
+import com.example.muaring.domain.member.exception.MemberException;
+import com.example.muaring.domain.member.repository.FollowRepository;
+import com.example.muaring.domain.member.repository.FollowRequestRepository;
+import com.example.muaring.domain.member.repository.MemberRepository;
+import com.example.muaring.domain.member.response.MemberErrorCode;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+@RequiredArgsConstructor
+@Service
+@Transactional
+public class FollowService {
+
+    private final FollowRepository followRepository;
+    private final FollowRequestRepository followRequestRepository;
+    private final MemberRepository memberRepository;
+
+    public FollowResponseDTO sendFollowRequest(Long followeeId) {
+
+        Long followerId = SecurityUtil.getMemberId();
+
+        Member follower = memberRepository.findById(followerId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.FOLLOWER_NOT_FOUND));
+        Member followee = memberRepository.findById(followeeId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.FOLLOWEE_NOT_FOUND));
+
+        if(Objects.equals(followerId, followeeId)) {
+            throw new MemberException(MemberErrorCode.MEMBER_CONFLICT);
+        }
+        if (followRepository.findByFollowerAndFollowee(follower, followee).isPresent()) {
+            throw new MemberException(MemberErrorCode.FOLLOW_ALREADY_EXISTS);
+        }
+
+        if (followRequestRepository.findByFollowerAndFollowee(follower, followee).isPresent()) {
+            throw new MemberException(MemberErrorCode.FOLLOW_REQUEST_ALREADY_EXISTS);
+        }
+
+        if (followee.getIsPublic()) {
+            Follow follow = Follow.builder()
+                    .follower(follower)
+                    .followee(followee)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            followRepository.save(follow);
+
+            return FollowResponseDTO.builder()
+                    .followId(follow.getId())
+                    .followerId(follower.getId())
+                    .followeeId(followee.getId())
+                    .status("APPROVED")
+                    .createdAt(follow.getCreatedAt())
+                    .build();
+        }
+
+        FollowRequest request = FollowRequest.builder()
+                .follower(follower)
+                .followee(followee)
+                .status(FollowRequest.FollowRequestStatus.PENDING)
+                .createdAt(LocalDateTime.now())
+                .build();
+        followRequestRepository.save(request);
+
+        return FollowResponseDTO.builder()
+                .followId(request.getId())
+                .followerId(follower.getId())
+                .followeeId(followee.getId())
+                .status(request.getStatus().name())
+                .createdAt(request.getCreatedAt())
+                .build();
+    }
+
+    public FollowResponseDTO approveFollowRequest(Long requestId) {
+
+        Long followeeId = SecurityUtil.getMemberId();
+
+        FollowRequest request = followRequestRepository.findById(requestId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.FOLLOW_REQUEST_NOT_FOUND));
+
+        if (!request.getFollowee().getId().equals(followeeId)) {
+            throw new MemberException(MemberErrorCode.UNAUTHORIZED_ACTION);
+        }
+
+        if (request.getStatus() == FollowRequest.FollowRequestStatus.APPROVED) {
+            throw new MemberException(MemberErrorCode.FOLLOW_ALREADY_EXISTS);
+        }
+
+        request.setStatus(FollowRequest.FollowRequestStatus.APPROVED);
+        request.setUpdatedAt(LocalDateTime.now());
+
+        Follow follow = Follow.builder()
+                .follower(request.getFollower())
+                .followee(request.getFollowee())
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        followRepository.save(follow);
+        followRequestRepository.save(request);
+
+        return FollowResponseDTO.builder()
+                .followId(follow.getId())
+                .followerId(request.getFollower().getId())
+                .followeeId(request.getFollowee().getId())
+                .status(request.getStatus().name())
+                .createdAt(follow.getCreatedAt())
+                .build();
+    }
+
+    @Transactional
+    public void unfollow(Long followeeId) {
+
+//        Long followerId = SecurityUtil.getMemberId();
+        Long followerId = 6L;
+
+        if (Objects.equals(followerId, followeeId)) {
+            throw new MemberException(MemberErrorCode.MEMBER_CONFLICT);
+        }
+
+        Member follower = memberRepository.findById(followerId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        Member followee = memberRepository.findById(followeeId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.FOLLOWEE_NOT_FOUND));
+
+        Follow follow = followRepository.findByFollowerAndFollowee(follower, followee)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.FOLLOWEE_NOT_FOUND));
+
+        followRepository.delete(follow);
+    }
+}

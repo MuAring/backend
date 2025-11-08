@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
         }
 )
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Follow {
 
@@ -32,4 +33,11 @@ public class Follow {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Builder
+    private Follow(Member follower, Member followee, LocalDateTime createdAt) {
+        this.follower = follower;
+        this.followee = followee;
+        this.createdAt = createdAt;
+    }
 }

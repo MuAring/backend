@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
         }
 )
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FollowRequest {
 
@@ -45,5 +46,16 @@ public class FollowRequest {
         PENDING,
         APPROVED,
         REJECTED
+    }
+
+    @Builder
+    private FollowRequest(Member follower, Member followee,
+                          FollowRequestStatus status,
+                          LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.follower = follower;
+        this.followee = followee;
+        this.status = status;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 }
