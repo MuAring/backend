@@ -2,9 +2,8 @@ package com.example.muaring.domain.social.controller;
 
 import com.example.muaring.common.response.ApiResponse;
 import com.example.muaring.domain.music.dto.MusicHistoryDTO;
-import com.example.muaring.domain.social.dto.MusicPostDTO;
-import com.example.muaring.domain.social.dto.MusicPostRequestDTO;
-import com.example.muaring.domain.social.entity.MusicPost;
+import com.example.muaring.domain.social.dto.post.MusicPostDTO;
+import com.example.muaring.domain.social.dto.post.MusicPostRequestDTO;
 import com.example.muaring.domain.social.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

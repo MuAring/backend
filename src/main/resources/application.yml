@@ -76,7 +76,3 @@ file:
 logging:
   level:
     org.springframework.security: DEBUG
-
-spotify:
-  client-id: ${SPOTIFY_CLIENT_ID}
-  client-secret: ${SPOTIFY_CLIENT_SECRET}

@@ -1,4 +1,4 @@
-package com.example.muaring.domain.social.dto;
+package com.example.muaring.domain.social.dto.like.response;
 
 public record LikeResponseDTO(
         Long postId,

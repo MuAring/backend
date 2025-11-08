@@ -28,7 +28,22 @@ public class Comment extends BaseEntity {
     @JoinColumn(name = "parent_comment_id")
     private Comment parentComment;
 
-    @Column(length = 255, nullable = false)
+    @Column(length = 255, nullable = false, columnDefinition = "TEXT")
     private String content;
 
+    private Comment(MusicPost post, Member member, Comment parentComment, String content) {
+        this.post = post;
+        this.member = member;
+        this.parentComment = parentComment;
+        this.content = content;
+    }
+
+    public static Comment create(MusicPost post, Member member, Comment parentComment, String content) {
+        return new Comment(
+                post,
+                member,
+                parentComment,
+                content
+        );
+    }
 }

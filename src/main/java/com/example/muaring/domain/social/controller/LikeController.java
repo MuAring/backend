@@ -1,7 +1,7 @@
 package com.example.muaring.domain.social.controller;
 
 import com.example.muaring.common.response.ApiResponse;
-import com.example.muaring.domain.social.dto.LikeResponseDTO;
+import com.example.muaring.domain.social.dto.like.response.LikeResponseDTO;
 import com.example.muaring.domain.social.service.LikeService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/posts/{postId}/like")
+@RequestMapping("/posts/{postId}/likes")
 @RequiredArgsConstructor
 public class LikeController {
 
