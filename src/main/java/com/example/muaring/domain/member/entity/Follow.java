@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
         }
 )
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Follow {
 

@@ -96,7 +96,6 @@ public class FollowService {
         }
 
         request.setStatus(FollowRequest.FollowRequestStatus.APPROVED);
-        request.setUpdatedAt(LocalDateTime.now());
 
         Follow follow = Follow.builder()
                 .follower(request.getFollower())
@@ -116,11 +115,9 @@ public class FollowService {
                 .build();
     }
 
-    @Transactional
     public void unfollow(Long followeeId) {
 
-//        Long followerId = SecurityUtil.getMemberId();
-        Long followerId = 6L;
+        Long followerId = SecurityUtil.getMemberId();
 
         if (Objects.equals(followerId, followeeId)) {
             throw new MemberException(MemberErrorCode.MEMBER_CONFLICT);

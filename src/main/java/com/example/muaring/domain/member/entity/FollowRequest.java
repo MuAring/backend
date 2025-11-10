@@ -2,6 +2,9 @@ package com.example.muaring.domain.member.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -12,7 +15,6 @@ import java.time.LocalDateTime;
         }
 )
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FollowRequest {
 
@@ -35,9 +37,11 @@ public class FollowRequest {
     @Column(length = 20, nullable = false)
     private FollowRequestStatus status;
 
+    @CreatedDate
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
@@ -57,5 +61,10 @@ public class FollowRequest {
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+    }
+
+    public void setStatus(FollowRequestStatus status) {
+        this.status = status;
+        this.updatedAt = LocalDateTime.now();
     }
 }
