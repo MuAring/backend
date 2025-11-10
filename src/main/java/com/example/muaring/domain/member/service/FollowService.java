@@ -115,6 +115,33 @@ public class FollowService {
                 .build();
     }
 
+    public FollowResponseDTO rejectFollowRequest(Long requestId) {
+
+        Long followeeId = SecurityUtil.getMemberId();
+
+        FollowRequest request = followRequestRepository.findById(requestId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.FOLLOW_REQUEST_NOT_FOUND));
+
+        if (!request.getFollowee().getId().equals(followeeId)) {
+            throw new MemberException(MemberErrorCode.UNAUTHORIZED_ACTION);
+        }
+
+        if (request.getStatus() == FollowRequest.FollowRequestStatus.APPROVED) {
+            throw new MemberException(MemberErrorCode.FOLLOW_ALREADY_EXISTS);
+        }
+
+        request.setStatus(FollowRequest.FollowRequestStatus.REJECTED);
+        followRequestRepository.save(request);
+
+        return FollowResponseDTO.builder()
+                .followId(request.getId())
+                .followerId(request.getFollower().getId())
+                .followeeId(request.getFollowee().getId())
+                .status(request.getStatus().name())
+                .createdAt(request.getCreatedAt())
+                .build();
+    }
+
     public void unfollow(Long followeeId) {
 
         Long followerId = SecurityUtil.getMemberId();

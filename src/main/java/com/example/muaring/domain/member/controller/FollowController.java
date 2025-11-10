@@ -26,6 +26,11 @@ public class FollowController {
         FollowResponseDTO response = followService.approveFollowRequest(requestId);
         return ResponseEntity.ok(ApiResponse.ok(response, "팔로우 요청을 승인하였습니다."));
     }
+    @PostMapping("/reject")
+    public ResponseEntity<ApiResponse<FollowResponseDTO>> rejectFollowRequest(@RequestParam Long requestId) {
+        FollowResponseDTO response = followService.rejectFollowRequest(requestId);
+        return ResponseEntity.ok(ApiResponse.ok(response, "팔로우 요청을 거절하였습니다."));
+    }
 
     @DeleteMapping("/unfollow")
     public ResponseEntity<ApiResponse<Void>> deleteFollowRequest(@RequestParam Long followeeId) {
