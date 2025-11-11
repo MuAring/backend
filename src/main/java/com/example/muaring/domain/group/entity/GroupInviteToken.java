@@ -5,6 +5,8 @@ import com.example.muaring.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(
         name = "group_invite_token",
@@ -31,6 +33,10 @@ public class GroupInviteToken extends BaseEntity {
 
     @Column(name = "invite_token", length = 36, nullable = false, unique = true)
     private String inviteToken;
+
+    @Column(name="expires_at", nullable = false)
+    private LocalDateTime expiresAt;
+
 }
 
 
