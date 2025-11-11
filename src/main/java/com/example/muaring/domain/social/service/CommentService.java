@@ -9,6 +9,8 @@ import com.example.muaring.domain.social.dto.comment.request.CommentCreateReques
 import com.example.muaring.domain.social.dto.comment.response.CommentResponseDTO;
 import com.example.muaring.domain.social.entity.Comment;
 import com.example.muaring.domain.social.entity.MusicPost;
+import com.example.muaring.domain.social.exception.comment.CommentErrorCode;
+import com.example.muaring.domain.social.exception.comment.CommentException;
 import com.example.muaring.domain.social.exception.post.PostErrorCode;
 import com.example.muaring.domain.social.exception.post.PostException;
 import com.example.muaring.domain.social.repository.CommentRepository;
@@ -41,6 +43,30 @@ public class CommentService {
 
     @Transactional
     public void deleteComment(Long commentId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CommentException(CommentErrorCode.COMMENT_NOT_FOUND));
+        if (comment.getIsDeleted() == true) {
+            throw new CommentException(CommentErrorCode.COMMENT_ALREADY_DELETED);
+        }
         commentRepository.deleteById(commentId);
+    }
+
+    @Transactional
+    public CommentResponseDTO createReply(Long commentId, CommentCreateRequestDTO requestDTO) {
+        Long memberId = SecurityUtil.getMemberId();
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CommentException(CommentErrorCode.COMMENT_NOT_FOUND));
+        if (comment.getIsDeleted() == true) {
+            throw new CommentException(CommentErrorCode.CANNOT_REPLY_TO_DELETED_COMMENT);
+        }
+
+        MusicPost post = comment.getPost();
+        Comment reply = Comment.create(post, member, comment, requestDTO.content());
+        commentRepository.save(reply);
+
+        return CommentResponseDTO.of(reply);
     }
 }

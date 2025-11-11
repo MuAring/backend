@@ -37,4 +37,16 @@ public class CommentController {
         commentService.deleteComment(commentId);
         return ResponseEntity.ok(ApiResponse.ok("댓글이 삭제되었습니다."));
     }
+
+    @PostMapping("/comments/{commentId}/replies")
+    @Operation(summary = "답글 등록", description = "답글 등록 로직입니다.")
+    public ResponseEntity<ApiResponse<CommentResponseDTO>> createReply(
+            @PathVariable("commentId") Long commentId,
+            @RequestBody CommentCreateRequestDTO requestDTO
+    ) {
+        CommentResponseDTO responseDTO = commentService.createReply(commentId, requestDTO);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.ok(responseDTO, "답글이 등록되었습니다."));
+    }
 }
