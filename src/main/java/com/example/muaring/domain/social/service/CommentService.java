@@ -9,8 +9,8 @@ import com.example.muaring.domain.social.dto.comment.request.CommentCreateReques
 import com.example.muaring.domain.social.dto.comment.response.CommentResponseDTO;
 import com.example.muaring.domain.social.entity.Comment;
 import com.example.muaring.domain.social.entity.MusicPost;
-import com.example.muaring.domain.social.exception.PostErrorCode;
-import com.example.muaring.domain.social.exception.PostException;
+import com.example.muaring.domain.social.exception.post.PostErrorCode;
+import com.example.muaring.domain.social.exception.post.PostException;
 import com.example.muaring.domain.social.repository.CommentRepository;
 import com.example.muaring.domain.social.repository.MusicPostRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,5 +37,10 @@ public class CommentService {
         commentRepository.save(comment);
 
         return CommentResponseDTO.of(comment);
+    }
+
+    @Transactional
+    public void deleteComment(Long commentId) {
+        commentRepository.deleteById(commentId);
     }
 }
