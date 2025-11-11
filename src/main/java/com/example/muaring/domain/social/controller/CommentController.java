@@ -13,13 +13,12 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "댓글 API", description = "댓글 관련 API입니다.")
 @RestController
-@RequestMapping("/posts/{postId}/comments")
 @RequiredArgsConstructor
 public class CommentController {
 
     private final CommentService commentService;
 
-    @PostMapping
+    @PostMapping("/posts/{postId}/comments")
     @Operation(summary = "댓글 등록", description = "댓글 등록 로직입니다.")
     public ResponseEntity<ApiResponse<CommentResponseDTO>> createComment(
             @PathVariable("postId") Long postId,
@@ -33,8 +32,8 @@ public class CommentController {
 
     @DeleteMapping("/{commentId}")
     @Operation(summary = "댓글 삭제", description = "댓글 삭제 로직입니다.")
+    @DeleteMapping("comments/{commentId}")
     public ResponseEntity<ApiResponse<Void>> deleteComment(
-            @PathVariable("postId") Long postId,
             @PathVariable("commentId") Long commentId) {
         commentService.deleteComment(commentId);
         return ResponseEntity.ok(ApiResponse.ok("댓글이 삭제되었습니다."));
