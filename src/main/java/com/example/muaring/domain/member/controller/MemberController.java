@@ -33,7 +33,7 @@ public class MemberController {
     }
 
     // 프로필 등록 (최초)
-    @PostMapping("/profile")
+    @PostMapping
     public ResponseEntity<ApiResponse<MemberProfileResponseDTO>> updateProfile(
             @Valid @RequestBody MemberProfileCreateRequestDTO requestDTO
     ) {
