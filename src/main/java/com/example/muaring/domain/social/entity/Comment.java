@@ -36,7 +36,8 @@ public class Comment extends BaseEntity {
     @Column(length = 255, nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = false)
+    @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, orphanRemoval = false)
+    @OrderBy("createdAt ASC ")
     private List<Comment> replies = new ArrayList<>();
 
     private Comment(MusicPost post, Member member, Comment parentComment, String content) {

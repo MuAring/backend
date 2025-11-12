@@ -6,6 +6,7 @@ import com.example.muaring.domain.member.exception.MemberException;
 import com.example.muaring.domain.member.repository.MemberRepository;
 import com.example.muaring.domain.member.response.MemberErrorCode;
 import com.example.muaring.domain.social.dto.comment.request.CommentCreateRequestDTO;
+import com.example.muaring.domain.social.dto.comment.response.CommentReadResponseDTO;
 import com.example.muaring.domain.social.dto.comment.response.CommentResponseDTO;
 import com.example.muaring.domain.social.entity.Comment;
 import com.example.muaring.domain.social.entity.MusicPost;
@@ -19,8 +20,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CommentService {
 
     private final MemberRepository memberRepository;
@@ -69,5 +73,22 @@ public class CommentService {
         parentComment.getReplies().add(reply);
 
         return CommentResponseDTO.of(reply);
+    }
+
+    public List<CommentReadResponseDTO> getCommentsByPostId(Long postId) {
+        MusicPost post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException(PostErrorCode.POST_NOT_FOUND));
+        List<Comment> comments = commentRepository.findAllByPostIdOrderByCreatedAtAsc(postId);
+        return comments.stream()
+                .filter(c -> c.getParentComment() == null)  // 답글이 아닌 댓글만 필터링
+                .filter(c -> {
+                    boolean isParentDeleted = c.getIsDeleted();
+                    boolean isAllRepliesDeleted = c.getReplies().stream().allMatch(Comment::getIsDeleted);  // 모든 답글이 삭제된 댓글만 필터링
+                    return !(isParentDeleted && (c.getReplies().isEmpty() || isAllRepliesDeleted)); // 부모 댓글이 삭제되고, 답글이 없거나 모두 삭제된 경우를 제외한 댓글만 필터링
+
+                })
+
+                .map(CommentReadResponseDTO::from)
+                .toList();
     }
 }
