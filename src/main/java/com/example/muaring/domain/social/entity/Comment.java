@@ -6,6 +6,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "comment")
 @Getter
@@ -32,6 +35,9 @@ public class Comment extends BaseEntity {
 
     @Column(length = 255, nullable = false, columnDefinition = "TEXT")
     private String content;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = false)
+    private List<Comment> replies = new ArrayList<>();
 
     private Comment(MusicPost post, Member member, Comment parentComment, String content) {
         this.post = post;

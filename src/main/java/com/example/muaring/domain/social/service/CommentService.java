@@ -57,15 +57,16 @@ public class CommentService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        Comment comment = commentRepository.findById(commentId)
+        Comment parentComment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new CommentException(CommentErrorCode.COMMENT_NOT_FOUND));
-        if (comment.getIsDeleted() == true) {
+        if (parentComment.getIsDeleted() == true) {
             throw new CommentException(CommentErrorCode.CANNOT_REPLY_TO_DELETED_COMMENT);
         }
 
-        MusicPost post = comment.getPost();
-        Comment reply = Comment.create(post, member, comment, requestDTO.content());
+        MusicPost post = parentComment.getPost();
+        Comment reply = Comment.create(post, member, parentComment, requestDTO.content());
         commentRepository.save(reply);
+        parentComment.getReplies().add(reply);
 
         return CommentResponseDTO.of(reply);
     }
