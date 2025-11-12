@@ -63,8 +63,7 @@ public class FollowRequest {
         this.updatedAt = updatedAt;
     }
 
-    public void setStatus(FollowRequestStatus status) {
+    public void updateStatus(FollowRequestStatus status) {
         this.status = status;
-        this.updatedAt = LocalDateTime.now();
     }
 }

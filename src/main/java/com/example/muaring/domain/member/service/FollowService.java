@@ -98,7 +98,7 @@ public class FollowService {
             throw new MemberException(MemberErrorCode.FOLLOW_ALREADY_EXISTS);
         }
 
-        request.setStatus(FollowRequest.FollowRequestStatus.APPROVED);
+        request.updateStatus(FollowRequest.FollowRequestStatus.APPROVED);
 
         Follow follow = Follow.builder()
                 .follower(request.getFollower())
