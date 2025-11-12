@@ -1,6 +1,7 @@
 package com.example.muaring.domain.member.service;
 
 import com.example.muaring.common.security.SecurityUtil;
+import com.example.muaring.domain.member.dto.FollowMemberListDTO;
 import com.example.muaring.domain.member.dto.response.FollowResponseDTO;
 import com.example.muaring.domain.member.entity.Follow;
 import com.example.muaring.domain.member.entity.FollowRequest;
@@ -15,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -160,5 +163,51 @@ public class FollowService {
                 .orElseThrow(() -> new MemberException(MemberErrorCode.FOLLOWEE_NOT_FOUND));
 
         followRepository.delete(follow);
+    }
+
+    public List<FollowMemberListDTO> getFollowers(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        List<Follow> followers = followRepository.findAllByFollowee(member);
+
+        return followers.stream()
+                .map(follow -> {
+                    Member follower = follow.getFollower();
+                    return FollowMemberListDTO.builder()
+                            .memberId(follower.getId())
+                            .name(follower.getNickname())
+                            .profileImage(
+                                    follower.getProfileImage() != null
+                                            ? follower.getProfileImage().getUrl()  // 실제 필드명에 맞게 변경 (예: getFilePath())
+                                            : null
+                            )                            .isPublic(follower.getIsPublic())
+                            .followStatus("FOLLOWER")
+                            .build();
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<FollowMemberListDTO> getFollowings(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        List<Follow> followings = followRepository.findAllByFollower(member);
+
+        return followings.stream()
+                .map(follow -> {
+                    Member followee = follow.getFollowee();
+                    return FollowMemberListDTO.builder()
+                            .memberId(followee.getId())
+                            .name(followee.getNickname())
+                            .profileImage(
+                                    followee.getProfileImage() != null
+                                            ? followee.getProfileImage().getUrl()  // 실제 필드명에 맞게 변경 (예: getFilePath())
+                                            : null
+                            )                              .isPublic(followee.getIsPublic())
+                            .followStatus("FOLLOWING")
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 }
