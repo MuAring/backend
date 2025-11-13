@@ -57,7 +57,7 @@ public class Member extends BaseEntity {
         return member;
     }
 
-    public void updateProfile(String nickname, Image image) {
+    public void createProfile(String nickname, Image image) {
         if (nickname == null || nickname.trim().isEmpty()) {
             throw new IllegalArgumentException("닉네임은 필수입니다.");
         }
@@ -66,5 +66,21 @@ public class Member extends BaseEntity {
         }
         this.nickname = nickname;
         this.profileImage = image;
+    }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void updateProfileImage(Image image) {
+        this.profileImage = image;
+    }
+
+    public void updateIsPublic(Boolean isPublic) {
+        this.isPublic = isPublic;
+    }
+
+    public void updateDiscoveryEnabled(Boolean discoveryEnabled) {
+        this.discoveryEnabled = discoveryEnabled;
     }
 }
