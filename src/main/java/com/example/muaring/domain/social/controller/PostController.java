@@ -3,6 +3,7 @@ package com.example.muaring.domain.social.controller;
 import com.example.muaring.common.response.ApiResponse;
 import com.example.muaring.domain.music.dto.MusicHistoryDTO;
 import com.example.muaring.domain.social.dto.post.MusicPostDTO;
+import com.example.muaring.domain.social.dto.post.MusicPostListResponseDTO;
 import com.example.muaring.domain.social.dto.post.MusicPostRequestDTO;
 import com.example.muaring.domain.social.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/post")
@@ -28,8 +31,6 @@ public class PostController {
         return ResponseEntity.ok(ApiResponse.ok(postDTO, "음악 게시글이 작성되었습니다."));
     }
 
-
-
     @GetMapping("/history")
     public ResponseEntity<ApiResponse<Page<MusicHistoryDTO>>> getMusicHistoryByMember(
         @RequestParam(required = false) Integer year,
@@ -40,5 +41,11 @@ public class PostController {
             return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.ok(history, "회원의 음악 히스토리 조회가 완료되었습니다."));
+    }
+
+    @GetMapping("/followee/today")
+    public ResponseEntity<ApiResponse<List<MusicPostListResponseDTO>>> getTodayFolloweePosts() {
+        List<MusicPostListResponseDTO> response = postService.getTodayFolloweePosts();
+        return ResponseEntity.ok(ApiResponse.ok(response, "팔로우한 사용자의 게시물을 조회했습니다."));
     }
 }
