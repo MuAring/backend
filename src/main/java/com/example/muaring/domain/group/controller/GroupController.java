@@ -151,6 +151,19 @@ public class GroupController {
                 .body(ApiResponse.ok("관리자 권한을 양도하고 그룹에서 탈퇴했습니다."));
     }
 
+    // [DELETE] /groups/{groupId}/members/{expellerId}
+    // 그룹 멤버 추방
+    @DeleteMapping("/{groupId}/members/{expellerId}")
+    public ResponseEntity<ApiResponse<Void>> expelMember(
+            @PathVariable Long groupId,
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @PathVariable Long expellerId) {
 
+        Long adminId = principal.getMemberId();
+        groupService.expelMember(groupId, adminId, expellerId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.ok("그룹 멤버 추방을 완료했습니다."));
+    }
 
 }
