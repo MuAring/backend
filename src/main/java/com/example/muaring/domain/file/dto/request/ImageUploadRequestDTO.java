@@ -1,4 +1,4 @@
-package com.example.muaring.domain.file.dto;
+package com.example.muaring.domain.file.dto.request;
 
 import com.example.muaring.domain.file.entity.ImageType;
 import com.example.muaring.domain.file.exception.FileErrorCode;

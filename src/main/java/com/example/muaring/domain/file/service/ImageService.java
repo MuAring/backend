@@ -2,8 +2,8 @@ package com.example.muaring.domain.file.service;
 
 import com.example.muaring.common.security.SecurityUtil;
 import com.example.muaring.config.S3Properties;
-import com.example.muaring.domain.file.dto.ImageUploadRequestDTO;
-import com.example.muaring.domain.file.dto.PresignedUrlResponseDTO;
+import com.example.muaring.domain.file.dto.request.ImageUploadRequestDTO;
+import com.example.muaring.domain.file.dto.response.PresignedUrlResponseDTO;
 import com.example.muaring.domain.file.entity.Image;
 import com.example.muaring.domain.file.exception.FileErrorCode;
 import com.example.muaring.domain.file.exception.FileException;

@@ -1,4 +1,4 @@
-package com.example.muaring.domain.file.dto;
+package com.example.muaring.domain.file.dto.response;
 
 public record PresignedUrlResponseDTO(
         String presignedUrl,

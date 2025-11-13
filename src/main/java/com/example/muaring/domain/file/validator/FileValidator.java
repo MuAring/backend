@@ -1,7 +1,7 @@
 package com.example.muaring.domain.file.validator;
 
 import com.example.muaring.config.FilePolicyProperties;
-import com.example.muaring.domain.file.dto.ImageUploadRequestDTO;
+import com.example.muaring.domain.file.dto.request.ImageUploadRequestDTO;
 import com.example.muaring.domain.file.exception.FileErrorCode;
 import com.example.muaring.domain.file.exception.FileException;
 import lombok.RequiredArgsConstructor;
