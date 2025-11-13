@@ -20,6 +20,7 @@ public class GroupInviteController {
 
     private final GroupInviteService groupInviteService;
 
+    // [POST] /groups/{groupId}/invites
     // 초대 링크 생성 (모든 그룹 멤버 가능)
     @PostMapping
     public ResponseEntity<ApiResponse<GroupInviteResponseDto>> createInviteToken(
@@ -36,6 +37,7 @@ public class GroupInviteController {
                 .body(ApiResponse.ok(response, "초대 링크가 생성되었습니다."));
     }
 
+    // [GET] /groups/{groupId}/invites
     // 활성화된 초대 링크 목록 조회
     @GetMapping
     public ResponseEntity<ApiResponse<List<GroupInviteResponseDto>>> getActiveInviteTokens(
@@ -52,6 +54,7 @@ public class GroupInviteController {
                 .body(ApiResponse.ok(response));
     }
 
+    // [DELETE] /groups/{groupId}/invites/{inviteId}
     // 초대 링크 삭제
     @DeleteMapping("/{inviteId}")
     public ResponseEntity<ApiResponse<Void>> deleteInviteToken(
@@ -67,6 +70,7 @@ public class GroupInviteController {
     }
 
 
+    // [GET] /groups/{groupId}/invites/{inviteToken}
     // 초대 링크 미리보기
     @GetMapping("/{inviteToken}")
     public ResponseEntity<ApiResponse<InvitePreviewResponseDto>> getInvitePreview(
@@ -79,6 +83,7 @@ public class GroupInviteController {
                 .body(ApiResponse.ok(response));
     }
 
+    // [POST] /groups/{groupId}/invites/{inviteToken}/join
     // 초대 링크로 그룹 가입
     @PostMapping("/{inviteToken}/join")
     public ResponseEntity<ApiResponse<Void>> joinByInviteToken(
