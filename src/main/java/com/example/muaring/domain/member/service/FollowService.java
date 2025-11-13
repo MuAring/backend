@@ -133,7 +133,7 @@ public class FollowService {
             throw new MemberException(MemberErrorCode.FOLLOW_ALREADY_EXISTS);
         }
 
-        request.setStatus(FollowRequest.FollowRequestStatus.REJECTED);
+        request.updateStatus(FollowRequest.FollowRequestStatus.REJECTED);
         followRequestRepository.save(request);
 
         return FollowResponseDTO.builder()
