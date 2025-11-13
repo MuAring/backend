@@ -61,6 +61,20 @@ public class Group extends BaseEntity {
         this.isPublic = isPublic;
     }
 
+    // 그룹 이미지 URL 반환
+    public String getGroupImage() {
+        if (image != null) {
+            return image.getUrl();
+        }
+        // 기본 이미지 반환
+        return "https://your-bucket.s3.amazonaws.com/default-group-image.png";
+    }
+
+    public boolean isFull() {
+        return memberCount >= maxMembers;
+    }
+
+
     public void updateDescription(String description) {
         this.description = description;
     }
@@ -73,11 +87,18 @@ public class Group extends BaseEntity {
         this.isPublic = isPublic;
     }
 
+    public void incrementMemberCount() {
+        this.memberCount++;
+    }
     public void decrementMemberCount() {
         this.memberCount--;
     }
 
     public void updateAdmin(Member admin) {
         this.admin = admin;
+    }
+
+    public void updateImage(Image image) {
+        this.image = image;
     }
 }

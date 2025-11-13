@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(
@@ -28,8 +29,8 @@ public class GroupInviteToken extends BaseEntity {
     private Group group;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
-    private Member member;
+    @JoinColumn(name = "created_by", nullable = false)
+    private Member createdBy;
 
     @Column(name = "invite_token", length = 36, nullable = false, unique = true)
     private String inviteToken;
@@ -37,6 +38,28 @@ public class GroupInviteToken extends BaseEntity {
     @Column(name="expires_at", nullable = false)
     private LocalDateTime expiresAt;
 
+
+    @Builder
+    public GroupInviteToken(Group group, Member createdBy) {
+        this.group = group;
+        this.createdBy = createdBy;
+        this.inviteToken = UUID.randomUUID().toString();
+        this.expiresAt = LocalDateTime.now().plusDays(7);  // 기본 7일
+    }
+
+    // 만료 여부 확인
+    public boolean isExpired() {
+        return LocalDateTime.now().isAfter(expiresAt);
+    }
+
+    // 사용 가능 여부 확인
+    public boolean isUsable() {
+        return !getIsDeleted() && !isExpired();
+    }
+
+    public void softDelete() {
+        this.markDeleted();
+    }
 }
 
 
