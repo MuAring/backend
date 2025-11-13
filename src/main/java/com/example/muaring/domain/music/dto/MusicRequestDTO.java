@@ -18,5 +18,6 @@ public class MusicRequestDTO {
     private Integer durationMs;
     private Integer popularity;
     private LocalDateTime releaseDate;
+    private String previewUrl;
 }
 
