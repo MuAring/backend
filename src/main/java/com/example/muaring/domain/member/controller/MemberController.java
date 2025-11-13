@@ -1,6 +1,7 @@
 package com.example.muaring.domain.member.controller;
 
 import com.example.muaring.common.response.ApiResponse;
+import com.example.muaring.common.security.SecurityUtil;
 import com.example.muaring.domain.member.dto.request.MemberProfileCreateRequestDTO;
 import com.example.muaring.domain.member.dto.response.MemberProfileCreateResponseDTO;
 import com.example.muaring.domain.member.dto.response.NicknameCheckResponseDTO;
@@ -36,7 +37,8 @@ public class MemberController {
     public ResponseEntity<ApiResponse<MemberProfileCreateResponseDTO>> updateProfile(
             @Valid @RequestBody MemberProfileCreateRequestDTO requestDTO
     ) {
-        MemberProfileCreateResponseDTO responseDTO = memberService.registerProfile(requestDTO);
+        Long memberId = SecurityUtil.getMemberId();
+        MemberProfileCreateResponseDTO responseDTO = memberService.registerProfile(memberId, requestDTO);
         return ResponseEntity.ok(
                 ApiResponse.ok(responseDTO, "프로필이 생성되었습니다."));
     }

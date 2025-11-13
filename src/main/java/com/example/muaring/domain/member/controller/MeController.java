@@ -42,7 +42,8 @@ public class MeController {
     public ResponseEntity<ApiResponse<MemberProfileUpdateResponseDTO>> updateProfile(
             @Valid @RequestBody MemberProfileUpdateRequestDTO requestDTO
     ) {
-        MemberProfileUpdateResponseDTO responseDTO = memberService.updateProfile(requestDTO);
+        Long memberId = SecurityUtil.getMemberId();
+        MemberProfileUpdateResponseDTO responseDTO = memberService.updateProfile(memberId, requestDTO);
         return ResponseEntity.ok(ApiResponse.ok(responseDTO, "프로필이 수정되었습니다."));
     }
 }

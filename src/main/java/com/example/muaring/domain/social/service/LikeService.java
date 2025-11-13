@@ -28,8 +28,7 @@ public class LikeService {
     private final MusicPostRepository postRepository;
 
     @Transactional
-    public LikeResponseDTO handleLike(Long postId) {
-        Long memberId = SecurityUtil.getMemberId();
+    public LikeResponseDTO handleLike(Long memberId, Long postId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 

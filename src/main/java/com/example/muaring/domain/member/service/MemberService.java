@@ -41,11 +41,10 @@ public class MemberService {
     }
 
     @Transactional
-    public MemberProfileCreateResponseDTO registerProfile(MemberProfileCreateRequestDTO requestDTO) {
+    public MemberProfileCreateResponseDTO registerProfile(Long memberId, MemberProfileCreateRequestDTO requestDTO) {
         String s3Key = requestDTO.s3Key();
 
         try {
-            Long memberId = SecurityUtil.getMemberId();
             Member member = memberRepository.findById(memberId)
                     .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
@@ -91,10 +90,9 @@ public class MemberService {
     }
 
     @Transactional
-    public MemberProfileUpdateResponseDTO updateProfile(MemberProfileUpdateRequestDTO requestDTO) {
+    public MemberProfileUpdateResponseDTO updateProfile(Long memberId, MemberProfileUpdateRequestDTO requestDTO) {
         String s3Key = null;
         try {
-            Long memberId = SecurityUtil.getMemberId();
             Member member = memberRepository.findById(memberId).
                     orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
