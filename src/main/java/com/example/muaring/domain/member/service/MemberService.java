@@ -1,6 +1,5 @@
 package com.example.muaring.domain.member.service;
 
-import com.example.muaring.common.security.SecurityUtil;
 import com.example.muaring.config.ImageProperties;
 import com.example.muaring.config.S3Properties;
 import com.example.muaring.domain.file.dto.request.ImageCreateRequestDTO;
@@ -9,16 +8,20 @@ import com.example.muaring.domain.file.exception.FileErrorCode;
 import com.example.muaring.domain.file.exception.FileException;
 import com.example.muaring.domain.file.repository.ImageRepository;
 import com.example.muaring.domain.file.service.ImageService;
+import com.example.muaring.domain.group.repository.GroupMemberRepository;
 import com.example.muaring.domain.member.dto.request.MemberProfileCreateRequestDTO;
 import com.example.muaring.domain.member.dto.request.MemberProfileUpdateRequestDTO;
 import com.example.muaring.domain.member.dto.response.MemberProfileCreateResponseDTO;
+import com.example.muaring.domain.member.dto.response.MemberProfileReadResponseDTO;
 import com.example.muaring.domain.member.dto.response.MemberProfileUpdateResponseDTO;
 import com.example.muaring.domain.member.dto.response.NicknameCheckResponseDTO;
 import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.file.entity.Image;
 import com.example.muaring.domain.member.exception.MemberException;
+import com.example.muaring.domain.member.repository.FollowRepository;
 import com.example.muaring.domain.member.repository.MemberRepository;
 import com.example.muaring.domain.member.response.MemberErrorCode;
+import com.example.muaring.domain.social.repository.MusicPostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,11 +33,14 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class MemberService {
 
-    private final MemberRepository memberRepository;
-    private final ImageRepository imageRepository;
     private final ImageService imageService;
     private final S3Properties s3Properties;
     private final ImageProperties imageProperties;
+    private final MemberRepository memberRepository;
+    private final ImageRepository imageRepository;
+    private final MusicPostRepository musicPostRepository;
+    private final FollowRepository followRepository;
+    private final GroupMemberRepository groupMemberRepository;
 
     public NicknameCheckResponseDTO checkNicknameDuplicated(String nickname) {
         boolean isDuplicated = memberRepository.existsByNicknameAndIsDeletedFalse(nickname);
@@ -125,5 +131,52 @@ public class MemberService {
             }
             throw e;
         }
+    }
+
+    public MemberProfileReadResponseDTO getProfile(Long targetId, Long loginMemberId) {
+        Member member = memberRepository.findById(targetId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        String imageUrl = resolveProfileImageUrl(member);
+
+        boolean isMe = loginMemberId.equals(member.getId());  // 내 프로필 여부
+        boolean isPublic = member.getIsPublic();  // 비공개 계정 여부
+        boolean isFollowing = followRepository.existsByFollowerIdAndFolloweeId(loginMemberId, targetId);  // 팔로우 여부
+
+        long sharedMusicCount = musicPostRepository.countByMemberIdAndIsDeletedIsFalse(targetId);
+        long followerCount = followRepository.countByFolloweeId(targetId); // targetId 회원을 팔로우하는 사람 수
+        long followeeCount = followRepository.countByFollowerId(targetId);  // targetId 회원이 팔로우하는 사람 수
+        long joinedGroupCount = groupMemberRepository.countByMemberId(targetId);
+
+        return MemberProfileReadResponseDTO.from(
+                member,
+                imageUrl,
+                isMe,
+                isPublic,
+                isFollowing,
+                sharedMusicCount,
+                followerCount,
+                followeeCount,
+                joinedGroupCount
+        );
+    }
+
+    private String resolveProfileImageUrl(Member member) {
+        Image image = member.getProfileImage();
+
+        if (image != null) {
+            return imageService
+                    .generateDownloadPresignedUrl(image.getId())
+                    .presignedUrl();
+        }
+
+        Image defaultImage = imageRepository.findByImageTypeAndS3Key(
+                ImageType.MEMBER,
+                imageProperties.defaultProfile().s3Key()
+        ).orElseThrow(() -> new FileException(FileErrorCode.IMAGE_NOT_FOUND));
+
+        return imageService
+                .generateDownloadPresignedUrl(defaultImage.getId())
+                .presignedUrl();
     }
 }

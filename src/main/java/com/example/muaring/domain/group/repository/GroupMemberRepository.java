@@ -5,6 +5,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -25,4 +26,12 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> 
 
     @Query("SELECT gm FROM GroupMember gm WHERE gm.group.id = :groupId AND gm.member.id = :memberId AND gm.isDeleted = false")
     Optional<GroupMember> findByGroupIdAndMemberId(Long groupId, Long memberId);
+
+    @Query("""
+        SELECT COUNT(*)
+        FROM GroupMember gm
+        WHERE gm.member.id = :memberId
+            AND gm.member.isDeleted = false
+    """)
+    long countByMemberId(@Param("memberId") Long memberId);
 }
