@@ -14,7 +14,7 @@ public class GroupInviteResponseDto {
     private String inviteToken;
     private LocalDateTime createdAt;
     private LocalDateTime expiresAt;
-    private String createdByName;
+    private String inviterName;
 
     public static GroupInviteResponseDto from(GroupInviteToken token, String baseUrl) {
         return GroupInviteResponseDto.builder()
@@ -23,7 +23,7 @@ public class GroupInviteResponseDto {
                 .inviteToken(token.getInviteToken())
                 .createdAt(token.getCreatedAt())
                 .expiresAt(token.getExpiresAt())
-                .createdByName(token.getCreatedBy().getNickname())
+                .inviterName(token.getInviter().getNickname())
                 .build();
     }
 }

@@ -45,7 +45,7 @@ public class GroupInviteService {
         // 초대 토큰 생성 (UUID로 생성, 우선 만료일 7일로 설정함)
         GroupInviteToken inviteToken = GroupInviteToken.builder()
                 .group(group)
-                .createdBy(groupMember.getMember())
+                .inviter(groupMember.getMember())
                 .build();
 
         inviteTokenRepository.save(inviteToken);
@@ -133,7 +133,7 @@ public class GroupInviteService {
             throw new GroupException(GroupErrorCode.INVALID_INVITE);
         }
 
-        if (!token.getCreatedBy().getId().equals(memberId)) {
+        if (!token.getInviter().getId().equals(memberId)) {
             throw new GroupException(GroupErrorCode.NOT_INVITE_CREATOR);
         }
 

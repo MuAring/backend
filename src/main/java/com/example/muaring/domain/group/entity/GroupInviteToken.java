@@ -29,8 +29,8 @@ public class GroupInviteToken extends BaseEntity {
     private Group group;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by", nullable = false)
-    private Member createdBy;
+    @JoinColumn(name = "inviter_id", nullable = false)
+    private Member inviter;
 
     @Column(name = "invite_token", length = 36, nullable = false, unique = true)
     private String inviteToken;
@@ -40,9 +40,9 @@ public class GroupInviteToken extends BaseEntity {
 
 
     @Builder
-    public GroupInviteToken(Group group, Member createdBy) {
+    public GroupInviteToken(Group group, Member inviter) {
         this.group = group;
-        this.createdBy = createdBy;
+        this.inviter = inviter;
         this.inviteToken = UUID.randomUUID().toString();
         this.expiresAt = LocalDateTime.now().plusDays(7);  // 기본 7일
     }
