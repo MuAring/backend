@@ -1,4 +1,4 @@
-package com.example.muaring.domain.social.exception;
+package com.example.muaring.domain.social.exception.post;
 
 import com.example.muaring.common.exception.GeneralException;
 

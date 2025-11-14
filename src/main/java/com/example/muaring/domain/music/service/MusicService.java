@@ -109,6 +109,7 @@ public class MusicService {
                 .popularity(response.getPopularity())
                 .durationMs(response.getDurationMs())
                 .releaseDate(releaseDate)
+                .previewUrl(response.getPreviewUrl())
                 .build();
     }
 
@@ -130,6 +131,7 @@ public class MusicService {
                             .durationMs(track.getDurationMs())
                             .releaseDate(track.getReleaseDate())
                             .createdAt(LocalDateTime.now())
+                            .previewUrl(track.getPreviewUrl())
                             .build();
 
                     return musicRepository.save(newMusic);
