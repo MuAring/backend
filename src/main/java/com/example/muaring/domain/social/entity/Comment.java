@@ -4,11 +4,16 @@ import com.example.muaring.domain.common.BaseEntity;
 import com.example.muaring.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "comment")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@SQLDelete(sql = "UPDATE comment SET deleted_at = NOW(), is_deleted = true WHERE comment_id = ?")
 public class Comment extends BaseEntity {
 
     @Id
@@ -30,6 +35,10 @@ public class Comment extends BaseEntity {
 
     @Column(length = 255, nullable = false, columnDefinition = "TEXT")
     private String content;
+
+    @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, orphanRemoval = false)
+    @OrderBy("createdAt ASC ")
+    private List<Comment> replies = new ArrayList<>();
 
     private Comment(MusicPost post, Member member, Comment parentComment, String content) {
         this.post = post;
