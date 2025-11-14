@@ -4,7 +4,7 @@ import com.example.muaring.common.exception.GeneralException;
 import com.example.muaring.common.response.ErrorCode;
 
 public class FileException extends GeneralException {
-    public FileException(ErrorCode errorCode) {
+    public FileException(FileErrorCode errorCode) {
         super(errorCode);
     }
 }

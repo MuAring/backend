@@ -1,8 +1,8 @@
 package com.example.muaring.domain.file.controller;
 
 import com.example.muaring.common.response.ApiResponse;
-import com.example.muaring.domain.file.dto.ImageUploadRequestDTO;
-import com.example.muaring.domain.file.dto.PresignedUrlResponseDTO;
+import com.example.muaring.domain.file.dto.request.ImageUploadRequestDTO;
+import com.example.muaring.domain.file.dto.response.PresignedUrlResponseDTO;
 import com.example.muaring.domain.file.service.ImageService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;

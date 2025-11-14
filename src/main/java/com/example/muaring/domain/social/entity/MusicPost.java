@@ -38,9 +38,11 @@ public class MusicPost extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    @Builder.Default
     @Column(name = "like_count", nullable = false)
     private Integer likeCount = 0;
 
+    @Builder.Default
     @Column(name = "comment_count", nullable = false)
     private Integer commentCount = 0;
 

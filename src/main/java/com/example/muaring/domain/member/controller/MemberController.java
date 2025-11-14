@@ -2,13 +2,12 @@ package com.example.muaring.domain.member.controller;
 
 import com.example.muaring.common.response.ApiResponse;
 import com.example.muaring.domain.member.dto.request.MemberProfileCreateRequestDTO;
-import com.example.muaring.domain.member.dto.response.MemberProfileResponseDTO;
+import com.example.muaring.domain.member.dto.response.MemberProfileCreateResponseDTO;
 import com.example.muaring.domain.member.dto.response.NicknameCheckResponseDTO;
 import com.example.muaring.domain.member.service.MemberService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -33,11 +32,11 @@ public class MemberController {
     }
 
     // 프로필 등록 (최초)
-    @PostMapping("/profile")
-    public ResponseEntity<ApiResponse<MemberProfileResponseDTO>> updateProfile(
+    @PostMapping
+    public ResponseEntity<ApiResponse<MemberProfileCreateResponseDTO>> updateProfile(
             @Valid @RequestBody MemberProfileCreateRequestDTO requestDTO
     ) {
-        MemberProfileResponseDTO responseDTO = memberService.registerProfile(requestDTO);
+        MemberProfileCreateResponseDTO responseDTO = memberService.registerProfile(requestDTO);
         return ResponseEntity.ok(
                 ApiResponse.ok(responseDTO, "프로필이 생성되었습니다."));
     }
