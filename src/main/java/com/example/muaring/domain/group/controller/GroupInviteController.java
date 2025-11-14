@@ -1,6 +1,7 @@
 package com.example.muaring.domain.group.controller;
 
 import com.example.muaring.common.response.ApiResponse;
+import com.example.muaring.common.security.SecurityUtil;
 import com.example.muaring.domain.auth.security.MemberPrincipal;
 import com.example.muaring.domain.group.dto.GroupInviteResponseDto;
 import com.example.muaring.domain.group.dto.InvitePreviewResponseDto;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Security;
 import java.util.List;
 
 @RestController
@@ -24,12 +26,11 @@ public class GroupInviteController {
     // 초대 링크 생성 (모든 그룹 멤버 가능)
     @PostMapping
     public ResponseEntity<ApiResponse<GroupInviteResponseDto>> createInviteToken(
-            @PathVariable Long groupId,
-            @AuthenticationPrincipal MemberPrincipal principal) {
+            @PathVariable Long groupId) {
 
         GroupInviteResponseDto response = groupInviteService.createInviteToken(
                 groupId,
-                principal.getMemberId()
+                SecurityUtil.getMemberId()
         );
 
         return ResponseEntity
@@ -41,12 +42,11 @@ public class GroupInviteController {
     // 활성화된 초대 링크 목록 조회
     @GetMapping
     public ResponseEntity<ApiResponse<List<GroupInviteResponseDto>>> getActiveInviteTokens(
-            @PathVariable Long groupId,
-            @AuthenticationPrincipal MemberPrincipal principal) {
+            @PathVariable Long groupId) {
 
         List<GroupInviteResponseDto> response = groupInviteService.getActiveInviteTokens(
                 groupId,
-                principal.getMemberId()
+                SecurityUtil.getMemberId()
         );
 
         return ResponseEntity
@@ -59,10 +59,9 @@ public class GroupInviteController {
     @DeleteMapping("/{inviteId}")
     public ResponseEntity<ApiResponse<Void>> deleteInviteToken(
             @PathVariable Long groupId,
-            @PathVariable Long inviteId,
-            @AuthenticationPrincipal MemberPrincipal principal) {
+            @PathVariable Long inviteId) {
 
-        groupInviteService.deleteInviteToken(groupId, inviteId, principal.getMemberId());
+        groupInviteService.deleteInviteToken(groupId, inviteId, SecurityUtil.getMemberId());
 
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -87,10 +86,9 @@ public class GroupInviteController {
     // 초대 링크로 그룹 가입
     @PostMapping("/{inviteToken}/join")
     public ResponseEntity<ApiResponse<Void>> joinByInviteToken(
-            @PathVariable String inviteToken,
-            @AuthenticationPrincipal MemberPrincipal principal) {
+            @PathVariable String inviteToken) {
 
-        groupInviteService.joinByInviteToken(inviteToken, principal.getMemberId());
+        groupInviteService.joinByInviteToken(inviteToken, SecurityUtil.getMemberId());
 
         return ResponseEntity
                 .status(HttpStatus.OK)
