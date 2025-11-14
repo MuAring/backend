@@ -3,6 +3,7 @@ package com.example.muaring.domain.member.service;
 import com.example.muaring.common.security.SecurityUtil;
 import com.example.muaring.config.ImageProperties;
 import com.example.muaring.config.S3Properties;
+import com.example.muaring.domain.file.dto.request.ImageCreateRequestDTO;
 import com.example.muaring.domain.file.entity.ImageType;
 import com.example.muaring.domain.file.exception.FileErrorCode;
 import com.example.muaring.domain.file.exception.FileException;
@@ -42,8 +43,6 @@ public class MemberService {
 
     @Transactional
     public MemberProfileCreateResponseDTO registerProfile(Long memberId, MemberProfileCreateRequestDTO requestDTO) {
-        String s3Key = requestDTO.s3Key();
-
         try {
             Member member = memberRepository.findById(memberId)
                     .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
@@ -52,46 +51,39 @@ public class MemberService {
                 throw new MemberException(MemberErrorCode.ALREADY_HAS_PROFILE);
             }
 
-            Image image = createImage(
-                    requestDTO.fileName(),
-                    requestDTO.fileType(),
-                    requestDTO.imageType(),
-                    requestDTO.s3Key(),
-                    requestDTO.fileSize());
+            Image image = createImageIfExists(requestDTO.imageRequestDTO());
 
             member.createProfile(requestDTO.nickname(), image);
             return MemberProfileCreateResponseDTO.of(member, s3Properties.s3().bucketUrl(s3Properties.region()));
         } catch (Exception e) {
-            if (s3Key != null && !s3Key.isBlank()) {
+            if (requestDTO.imageRequestDTO() != null
+                    && requestDTO.imageRequestDTO().isCompleteImage()) {
                 log.warn("❌ 프로필 정보 생성 도중 문제가 발생했습니다.");
-                imageService.deleteObject(s3Key);
+                imageService.deleteObject(requestDTO.imageRequestDTO().s3Key());
             }
             throw e;
         }
     }
 
-    private Image createImage(String fileName, String fileType, ImageType imageType, String s3Key, Long fileSize) {
+    private Image createImageIfExists(ImageCreateRequestDTO requestDTO) {
         // 이미지를 선택하지 않은 경우 기본 이미지 반환
-        if (s3Key == null || s3Key.isEmpty()) {
-            ImageProperties.DefaultImageProperties defaultProfileImage = imageProperties.defaultProfile();
-            return imageRepository.findByImageTypeAndS3Key(ImageType.MEMBER, defaultProfileImage.s3Key())
-                    .orElseThrow(() -> new FileException(FileErrorCode.IMAGE_NOT_FOUND));
+        if (requestDTO == null || !requestDTO.isCompleteImage()) {
+            return null;
         }
 
         // 이미지를 선택한 경우 presigned 업로드 이미지 메타데이터 생성
         Image image = Image.create(
-                fileName,
-                fileType,
-                imageType,
-                s3Key,
-                fileSize
+                requestDTO.fileName(),
+                requestDTO.fileType(),
+                requestDTO.imageType(),
+                requestDTO.s3Key(),
+                requestDTO.fileSize()
         );
         return imageRepository.save(image);
     }
 
     @Transactional
     public MemberProfileUpdateResponseDTO updateProfile(Long memberId, MemberProfileUpdateRequestDTO requestDTO) {
-        String s3Key = null;
         try {
             Member member = memberRepository.findById(memberId).
                     orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
@@ -107,19 +99,12 @@ public class MemberService {
                 member.updateNickname(requestDTO.nickname());
             }
 
-            if (requestDTO.imageRequestDTO() != null) {
-                s3Key = requestDTO.imageRequestDTO().s3Key();
+            if (requestDTO.imageRequestDTO() != null && requestDTO.imageRequestDTO().isCompleteImage()) {
                 if (!requestDTO.isValidImageRequest()) {
                     throw new FileException(FileErrorCode.INVALID_IMAGE_REQUEST);
                 }
 
-                Image image = createImage(
-                        requestDTO.imageRequestDTO().fileName(),
-                        requestDTO.imageRequestDTO().fileType(),
-                        requestDTO.imageRequestDTO().imageType(),
-                        requestDTO.imageRequestDTO().s3Key(),
-                        requestDTO.imageRequestDTO().fileSize()
-                );
+                Image image = createImageIfExists(requestDTO.imageRequestDTO());
                 member.updateProfileImage(image);
             }
 
@@ -133,9 +118,10 @@ public class MemberService {
 
             return MemberProfileUpdateResponseDTO.from(member, s3Properties.s3().bucketUrl(s3Properties.region()));
         } catch (Exception e) {
-            if (s3Key != null && !s3Key.isBlank()) {
+            if (requestDTO.imageRequestDTO() != null
+                    && requestDTO.imageRequestDTO().isCompleteImage()) {
                 log.warn("❌ 프로필 정보 수정 도중 문제가 발생했습니다.");
-                imageService.deleteObject(s3Key);
+                imageService.deleteObject(requestDTO.imageRequestDTO().s3Key());
             }
             throw e;
         }
