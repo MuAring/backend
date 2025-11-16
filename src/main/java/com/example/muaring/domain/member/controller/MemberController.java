@@ -1,10 +1,13 @@
 package com.example.muaring.domain.member.controller;
 
 import com.example.muaring.common.response.ApiResponse;
+import com.example.muaring.common.security.SecurityUtil;
 import com.example.muaring.domain.member.dto.request.MemberProfileCreateRequestDTO;
 import com.example.muaring.domain.member.dto.response.MemberProfileCreateResponseDTO;
+import com.example.muaring.domain.member.dto.response.MemberProfileReadResponseDTO;
 import com.example.muaring.domain.member.dto.response.NicknameCheckResponseDTO;
 import com.example.muaring.domain.member.service.MemberService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -36,8 +39,19 @@ public class MemberController {
     public ResponseEntity<ApiResponse<MemberProfileCreateResponseDTO>> updateProfile(
             @Valid @RequestBody MemberProfileCreateRequestDTO requestDTO
     ) {
-        MemberProfileCreateResponseDTO responseDTO = memberService.registerProfile(requestDTO);
+        Long memberId = SecurityUtil.getMemberId();
+        MemberProfileCreateResponseDTO responseDTO = memberService.registerProfile(memberId, requestDTO);
         return ResponseEntity.ok(
                 ApiResponse.ok(responseDTO, "프로필이 생성되었습니다."));
     }
+
+    @Operation(summary = "프로필 조회", description = "프로필 조회 로직입니다.")
+    @GetMapping("/{memberId}/profile")
+    public ResponseEntity<ApiResponse<MemberProfileReadResponseDTO>> getProfile(@PathVariable Long memberId) {
+        Long loginMemberId = SecurityUtil.getMemberId();
+        MemberProfileReadResponseDTO responseDTO = memberService.getProfile(memberId, loginMemberId);
+        return ResponseEntity.ok(
+                ApiResponse.ok(responseDTO, "프로필이 조회되었습니다."));
+    }
+
 }

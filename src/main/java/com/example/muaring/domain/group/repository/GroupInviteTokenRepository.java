@@ -26,7 +26,7 @@ public interface GroupInviteTokenRepository extends JpaRepository<GroupInviteTok
 
     // 특정 멤버가 생성한 초대 링크 목록
     @Query("SELECT git FROM GroupInviteToken git " +
-            "WHERE git.createdBy.id = :memberId " +
+            "WHERE git.inviter.id = :memberId " +
             "AND git.isDeleted = false " +
             "ORDER BY git.createdAt DESC")
     List<GroupInviteToken> findByCreatedById(@Param("memberId") Long memberId);

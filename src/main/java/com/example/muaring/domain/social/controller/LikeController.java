@@ -1,6 +1,7 @@
 package com.example.muaring.domain.social.controller;
 
 import com.example.muaring.common.response.ApiResponse;
+import com.example.muaring.common.security.SecurityUtil;
 import com.example.muaring.domain.social.dto.like.response.LikeResponseDTO;
 import com.example.muaring.domain.social.service.LikeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,7 +24,8 @@ public class LikeController {
     public ResponseEntity<ApiResponse<LikeResponseDTO>> handleLike(
             @PathVariable("postId") Long postId
     ) {
-        LikeResponseDTO responseDTO = likeService.handleLike(postId);
+        Long memberId = SecurityUtil.getMemberId();
+        LikeResponseDTO responseDTO = likeService.handleLike(memberId, postId);
         return ResponseEntity.ok(
                 ApiResponse.ok(responseDTO, "좋아요 상태가 변경되었습니다.")
         );

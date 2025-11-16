@@ -41,4 +41,6 @@ public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
     """, nativeQuery = true)
     List<MusicPost> findTodayPostsByFollowees(@Param("memberId") Long memberId);
 
+
+    long countByMemberIdAndIsDeletedIsFalse( Long memberId);
 }

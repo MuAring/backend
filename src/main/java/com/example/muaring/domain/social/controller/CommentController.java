@@ -1,6 +1,7 @@
 package com.example.muaring.domain.social.controller;
 
 import com.example.muaring.common.response.ApiResponse;
+import com.example.muaring.common.security.SecurityUtil;
 import com.example.muaring.domain.social.dto.comment.request.CommentCreateRequestDTO;
 import com.example.muaring.domain.social.dto.comment.response.CommentReadResponseDTO;
 import com.example.muaring.domain.social.dto.comment.response.CommentResponseDTO;
@@ -27,7 +28,8 @@ public class CommentController {
             @PathVariable("postId") Long postId,
             @RequestBody CommentCreateRequestDTO requestDTO
     ) {
-        CommentResponseDTO responseDTO = commentService.createComment(postId, requestDTO);
+        Long memberId = SecurityUtil.getMemberId();
+        CommentResponseDTO responseDTO = commentService.createComment(memberId, postId, requestDTO);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(responseDTO, "댓글이 등록되었습니다."));

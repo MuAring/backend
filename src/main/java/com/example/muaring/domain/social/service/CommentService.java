@@ -32,8 +32,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
 
     @Transactional
-    public CommentResponseDTO createComment(Long postId, CommentCreateRequestDTO requestDTO) {
-        Long memberId = SecurityUtil.getMemberId();
+    public CommentResponseDTO createComment(Long memberId, Long postId, CommentCreateRequestDTO requestDTO) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
         MusicPost post = postRepository.findById(postId)
