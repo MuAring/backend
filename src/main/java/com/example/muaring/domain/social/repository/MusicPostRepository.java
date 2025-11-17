@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 import java.time.LocalDateTime;
 
 public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
@@ -25,6 +27,23 @@ public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
             @Param("month") Integer month,
             Pageable pageable
     );
+
+    @Query(value = """
+    SELECT *
+    FROM music_post mp
+    WHERE mp.member_id IN (
+        SELECT f.followee_id
+        FROM follow f
+        WHERE f.follower_id = :memberId
+    )
+    AND mp.created_at >= CURRENT_DATE
+    AND mp.created_at < CURRENT_DATE + INTERVAL '1 day'
+    ORDER BY mp.created_at DESC
+    """, nativeQuery = true)
+    List<MusicPost> findTodayPostsByFollowees(@Param("memberId") Long memberId);
+
+
+    long countByMemberIdAndIsDeletedIsFalse( Long memberId);
 
     @Query("select count(mp) from MusicPost mp where mp.group.id = :groupId and mp.isDeleted = false")
     int countActiveByGroupId(@Param("groupId") Long groupId);

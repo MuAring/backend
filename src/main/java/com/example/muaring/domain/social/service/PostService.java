@@ -11,14 +11,17 @@ import com.example.muaring.domain.music.exception.MusicErrorCode;
 import com.example.muaring.domain.music.exception.MusicException;
 import com.example.muaring.domain.music.service.MusicService;
 import com.example.muaring.domain.social.dto.post.MusicPostDTO;
+import com.example.muaring.domain.social.dto.post.MusicPostListResponseDTO;
 import com.example.muaring.domain.social.dto.post.MusicPostRequestDTO;
 import com.example.muaring.domain.social.repository.MusicPostRepository;
 import com.example.muaring.domain.social.entity.MusicPost;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -84,6 +87,34 @@ public class PostService {
                 .spotifyId(music.getSpotifyId())
                 .content(savedPost.getContent())
                 .build();
-
     }
+
+    @Transactional(readOnly = true)
+    public List<MusicPostListResponseDTO> getTodayFolloweePosts() {
+
+        Long memberId = SecurityUtil.getMemberId();
+
+        if (!memberRepository.existsById(memberId)) {
+            throw new MusicException(MusicErrorCode.MEMBER_NOT_FOUND);
+        }
+
+        List<MusicPost> posts = musicPostRepository.findTodayPostsByFollowees(memberId);
+
+        return posts.stream()
+                .map(post -> MusicPostListResponseDTO.builder()
+                        .postId(post.getId())
+                        .memberId(post.getMember().getId())
+                        .memberName(post.getMember().getNickname())
+                        .profileImage(post.getMember().getProfileImage())
+                        .content(post.getContent())
+                        .albumImgUrl(post.getMusic().getAlbumImgUrl())
+                        .musicName(post.getMusic().getName())
+                        .artistName(post.getMusic().getArtistName())
+                        .previewUrl(post.getMusic().getPreviewUrl())
+                        .likeCount(post.getLikeCount().longValue())
+                        .commentCount(post.getCommentCount().longValue())
+                        .build())
+                .toList();
+    }
+
 }

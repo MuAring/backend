@@ -8,8 +8,8 @@ import com.example.muaring.domain.member.response.MemberErrorCode;
 import com.example.muaring.domain.social.dto.like.response.LikeResponseDTO;
 import com.example.muaring.domain.social.entity.Like;
 import com.example.muaring.domain.social.entity.MusicPost;
-import com.example.muaring.domain.social.exception.PostErrorCode;
-import com.example.muaring.domain.social.exception.PostException;
+import com.example.muaring.domain.social.exception.post.PostErrorCode;
+import com.example.muaring.domain.social.exception.post.PostException;
 import com.example.muaring.domain.social.repository.LikeRepository;
 import com.example.muaring.domain.social.repository.MusicPostRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +28,7 @@ public class LikeService {
     private final MusicPostRepository postRepository;
 
     @Transactional
-    public LikeResponseDTO handleLike(Long postId) {
-        Long memberId = SecurityUtil.getMemberId();
+    public LikeResponseDTO handleLike(Long memberId, Long postId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 

@@ -1,9 +1,6 @@
-package com.example.muaring.domain.file.dto;
+package com.example.muaring.domain.file.dto.request;
 
 import com.example.muaring.domain.file.entity.ImageType;
-import com.example.muaring.domain.file.exception.FileErrorCode;
-import com.example.muaring.domain.file.exception.FileException;
-import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.*;
 
 public record ImageUploadRequestDTO(
@@ -21,15 +18,18 @@ public record ImageUploadRequestDTO(
         @Positive(message = "파일 크기는 양수여야 합니다.")
         Long fileSize,
 
-        @Nullable  // GROUP 이미지 수정시에만 필요
+        // GROUP 이미지 수정시에만 필요
         Long targetId
 ) {
-        public ImageUploadRequestDTO {
-                if (imageType == ImageType.GROUP && targetId == null) {
-                        throw new FileException(FileErrorCode.TARGET_ID_REQUIRED_FOR_GROUP);
-                }
-                if (imageType == ImageType.MEMBER && targetId != null) {
-                        throw new FileException(FileErrorCode.TARGET_ID_NOT_ALLOWED_FOR_MEMBER);
-                }
+        @AssertTrue(message = "GROUP 이미지 업로드시 targetId는 필수입니다.")
+        public boolean isGroupTargetIdValid() {
+                return imageType != ImageType.GROUP || targetId != null;
         }
+
+        @AssertTrue(message = "MEMBER 이미지 업로드에는 targetId가 사용될 수 없습니다.")
+        public boolean isMemberTargetIdValid() {
+                return imageType != ImageType.MEMBER || targetId == null;
+        }
+
+
 }

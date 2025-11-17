@@ -16,6 +16,9 @@ public class SpotifyTrackDetailResponse {
     @JsonProperty("duration_ms")
     private Integer durationMs;
 
+    @JsonProperty("preview_url")
+    private String previewUrl;
+
     private Album album;
     private List<Artist> artists;
 
