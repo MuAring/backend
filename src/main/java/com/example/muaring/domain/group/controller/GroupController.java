@@ -9,7 +9,9 @@ import com.example.muaring.domain.group.dto.GroupCreateRequestDto;
 import com.example.muaring.domain.group.dto.GroupCreateResponseDto;
 import com.example.muaring.domain.group.dto.GroupListResponseDto;
 import com.example.muaring.domain.group.service.GroupService;
+import com.example.muaring.domain.social.dto.post.MusicPostFeedResponseDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -78,6 +80,15 @@ public class GroupController {
     }
 
 
+    // [GET] /group/{groupId}
+    @GetMapping("/{groupId}")
+    public ResponseEntity<ApiResponse<GroupProfileResponseDto>> getGroupProfile(@PathVariable Long groupId) {
+        GroupProfileResponseDto response = groupService.getGroupProfile(groupId);
+        ApiResponse<GroupProfileResponseDto> body = ApiResponse.ok(response, "그룹 프로필 조회를 성공했습니다.");
+        return ResponseEntity.ok(body);
+    }
+
+
     // [GET] /groups/{groupId}/members
     // 그룹 멤버 목록 조회
     @GetMapping("/{groupId}/members")
@@ -106,6 +117,28 @@ public class GroupController {
 
     // 그룹 프로필 이미지 수정
 
+
+    // [GET] /groups/{groupId}/posts
+    // 그룹 피드 조회
+    @GetMapping("/{groupId}/posts")
+    public ResponseEntity<ApiResponse<Page<MusicPostFeedResponseDto>>> getGroupFeed(
+            @PathVariable Long groupId,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month,
+            @PageableDefault(
+                    size = 20,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            ) Pageable pageable
+    ) {
+
+        Page<MusicPostFeedResponseDto> post =
+                groupService.getGroupFeed(groupId, year, month, pageable);
+
+        return ResponseEntity.ok(
+                ApiResponse.ok(post, "그룹 피드 조회 성공")
+        );
+    }
 
     // [DELETE] /groups/{groupId}
     // 그룹 삭제
