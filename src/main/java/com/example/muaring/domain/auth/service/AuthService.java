@@ -1,6 +1,7 @@
 package com.example.muaring.domain.auth.service;
 
 import com.example.muaring.domain.auth.client.OAuthProviderClient;
+import com.example.muaring.domain.auth.dto.request.KakaoLoginRequest;
 import com.example.muaring.domain.auth.dto.response.*;
 import com.example.muaring.domain.auth.entity.AuthProvider;
 import com.example.muaring.domain.auth.exception.AuthErrorCode;
@@ -51,6 +52,22 @@ public class AuthService {
         return new LoginResponseDTO(accessToken, refreshToken, account.getMember().getId(), account.getMember().getEmail(), hasNickname);
     }
 
+    @Transactional
+    public LoginResponseDTO kakaoLogin(KakaoLoginRequest request) {
+        OAuthProviderClient client = findClient("KAKAO");
+
+        OAuthMemberInfoResponseDTO memberInfoResponseDTO = client.fetchMemberInfo(request.kakaoAccessToken());
+        System.out.println("1"+memberInfoResponseDTO.email());
+        OAuthAccount account = findOrCreateAccount(memberInfoResponseDTO, "KAKAO");
+        Member member = account.getMember();
+        String accessToken = jwtTokenProvider.generateAccessToken(member.getId(), member.getEmail());
+        System.out.println("2"+accessToken);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(member.getId(), member.getEmail());
+        boolean hasNickname = member.getNickname() != null && !member.getNickname().isEmpty();
+
+        return LoginResponseDTO.of(member, accessToken, refreshToken, hasNickname);
+    }
+
     private OAuthAccount createMemberAndAccount(OAuthMemberInfoResponseDTO memberInfoResponseDTO, AuthProvider authProvider) {
         Member member = memberRepository.findByEmail(memberInfoResponseDTO.email())
                 .orElseGet(() -> memberRepository.save(Member.CreateOAuthMember(memberInfoResponseDTO.email())
@@ -58,5 +75,23 @@ public class AuthService {
 
         // oAuthAccount 정보 생성
         return oauthAccountRepository.save(OAuthAccount.createOAuthAccount(authProvider, memberInfoResponseDTO.providerId(), member));
+    }
+
+    // ⚪ provider에 맞는 구현체를 찾아주는 메서드
+    private OAuthProviderClient findClient(String provider) {
+        AuthProvider authProvider = AuthProvider.valueOf(provider.toUpperCase());
+        return providerClients.stream()
+                .filter(c -> c.getAuthProvider() == authProvider)
+                .findFirst()
+                .orElseThrow(() -> new AuthException(AuthErrorCode.PROVIDER_NOT_SUPPORTED));
+    }
+
+    // ⚪ 가입된 계정이 없으면 계정을 생성하는 메서드
+    private OAuthAccount findOrCreateAccount(OAuthMemberInfoResponseDTO memberInfoResponseDTO,
+                                             String provider) {
+        AuthProvider authProvider = AuthProvider.valueOf(provider.toUpperCase());
+        return oauthAccountRepository
+                .findByAuthProviderAndAuthProviderId(authProvider, memberInfoResponseDTO.providerId())
+                .orElseGet(() -> createMemberAndAccount(memberInfoResponseDTO, authProvider));
     }
 }
