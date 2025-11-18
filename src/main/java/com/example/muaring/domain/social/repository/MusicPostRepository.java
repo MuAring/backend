@@ -9,6 +9,8 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
+import java.time.LocalDateTime;
+
 public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
 
     @Query("""
@@ -19,7 +21,6 @@ public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
       AND MONTH(mp.createdAt) = :month
     ORDER BY mp.createdAt DESC
     """)
-
     Page<MusicPost> findByMemberAndYearMonth(
             @Param("memberId") Long memberId,
             @Param("year") Integer year,
@@ -43,4 +44,18 @@ public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
 
 
     long countByMemberIdAndIsDeletedIsFalse( Long memberId);
+
+    @Query("select count(mp) from MusicPost mp where mp.group.id = :groupId and mp.isDeleted = false")
+    int countActiveByGroupId(@Param("groupId") Long groupId);
+
+    // 전체 조회 (그룹 기준)
+    Page<MusicPost> findByGroup_Id(Long groupId, Pageable pageable);
+
+    // 특정 월 범위 조회
+    Page<MusicPost> findByGroup_IdAndCreatedAtBetween(
+            Long groupId,
+            LocalDateTime start,
+            LocalDateTime end,
+            Pageable pageable
+    );
 }

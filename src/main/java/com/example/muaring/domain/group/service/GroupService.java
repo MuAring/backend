@@ -9,11 +9,16 @@ import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.exception.MemberException;
 import com.example.muaring.domain.member.repository.MemberRepository;
 import com.example.muaring.domain.member.response.MemberErrorCode;
+import com.example.muaring.domain.social.dto.post.MusicPostFeedResponseDto;
+import com.example.muaring.domain.social.entity.MusicPost;
+import com.example.muaring.domain.social.repository.MusicPostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -30,6 +35,8 @@ public class GroupService {
     private final MemberRepository memberRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final GroupMusicProfileRepository groupMusicProfileRepository;
+    private final MusicPostRepository musicPostRepository;
+    private final GroupPlaylistRepository groupPlaylistRepository;
 
     // 그룹 생성
     @Transactional
@@ -137,9 +144,9 @@ public class GroupService {
     // 내 소속 그룹 조회 메서드
     @Transactional
     public MyGroupListResponseDto getMyGroups(Long memberId) {
-        List<MyGroupSummaryDto> groups = groupMemberRepository.findByMember_IdOrderByGroup_NameAsc(memberId)
+        List<GroupSummaryDto> groups = groupMemberRepository.findByMember_IdOrderByGroup_NameAsc(memberId)
                 .stream()
-                .map(tuple -> MyGroupSummaryDto.of(
+                .map(tuple -> GroupSummaryDto.of(
                         tuple.getGroup(),
                         tuple.getRole().name()
                 ))
@@ -149,7 +156,56 @@ public class GroupService {
     }
 
     // 그룹 상세 조회 메서드
+    @Transactional
+    public GroupProfileResponseDto getGroupProfile(Long groupId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
 
+        List<Long> categoryIds = groupCategoryRepository.findCategoryIdsByGroupId(groupId);
+        int totalPostCount = musicPostRepository.countActiveByGroupId(groupId);
+        int totalMusicCount = groupPlaylistRepository.countByGroupId(groupId);
+
+        return GroupProfileResponseDto.of(
+                group,
+                categoryIds,
+                totalMusicCount,
+                totalPostCount
+        );
+    }
+
+    // 그룹 내 피드 조회 메서드
+    @Transactional
+    public Page<MusicPostFeedResponseDto> getGroupFeed(
+            Long groupId,
+            Integer year,
+            Integer month,
+            Pageable pageable
+    ) {
+
+        Page<MusicPost> posts;
+
+        // year & month 있으면 → 특정 월 조회
+        if (year != null && month != null) {
+            YearMonth yearMonth = YearMonth.of(year, month);
+
+            LocalDateTime start = yearMonth.atDay(1).atStartOfDay();
+            LocalDateTime end = yearMonth.plusMonths(1).atDay(1).atStartOfDay();
+
+            posts = musicPostRepository.findByGroup_IdAndCreatedAtBetween(
+                    groupId,
+                    start,
+                    end,
+                    pageable
+            );
+        }
+        // 둘 다 없으면 전체 조회
+        else {
+            posts = musicPostRepository.findByGroup_Id(groupId, pageable);
+        }
+
+        // DTO 변환
+        return posts.map(MusicPostFeedResponseDto::from);
+    }
 
     // 그룹 멤버 조회 메서드
     public List<GroupMemberResponseDto> getGroupMembers(Long groupId, Long memberId) {
