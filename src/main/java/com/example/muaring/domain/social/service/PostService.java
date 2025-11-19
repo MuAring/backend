@@ -13,6 +13,7 @@ import com.example.muaring.domain.music.service.MusicService;
 import com.example.muaring.domain.social.dto.post.MusicPostDTO;
 import com.example.muaring.domain.social.dto.post.MusicPostListResponseDTO;
 import com.example.muaring.domain.social.dto.post.MusicPostRequestDTO;
+import com.example.muaring.domain.social.dto.post.TodayPostResponse;
 import com.example.muaring.domain.social.exception.post.PostErrorCode;
 import com.example.muaring.domain.social.repository.MusicPostRepository;
 import com.example.muaring.domain.social.entity.MusicPost;
@@ -34,26 +35,6 @@ public class PostService {
     private final MemberRepository memberRepository;
     private final MusicPostRepository musicPostRepository;
     private final MusicService musicService;
-
-    @Transactional
-    public Page<MusicHistoryDTO> getMusicHistoryByMember(Integer year, Integer month, Pageable pageable) {
-
-        Long memberId = SecurityUtil.getMemberId();
-
-        if (!memberRepository.existsById(memberId)) {
-            throw new MusicException(MusicErrorCode.MEMBER_NOT_FOUND);
-        }
-
-        Page<MusicPost> posts = musicPostRepository.findByMemberAndYearMonth(memberId, year, month, pageable);
-
-        return posts.map(post -> MusicHistoryDTO.builder()
-                        .musicId(post.getMusic().getId())
-                        .title(post.getMusic().getName())
-                        .artist(post.getMusic().getArtistName())
-                        .albumImage(post.getMusic().getAlbumImgUrl())
-                        .createdAt(post.getCreatedAt())
-                        .build());
-    }
 
     @Transactional
     public MusicPostDTO createMusicPost(MusicPostRequestDTO request) {
@@ -103,6 +84,26 @@ public class PostService {
                 .build();
     }
 
+    @Transactional
+    public Page<MusicHistoryDTO> getMusicHistoryByMember(Integer year, Integer month, Pageable pageable) {
+
+        Long memberId = SecurityUtil.getMemberId();
+
+        if (!memberRepository.existsById(memberId)) {
+            throw new MusicException(MusicErrorCode.MEMBER_NOT_FOUND);
+        }
+
+        Page<MusicPost> posts = musicPostRepository.findByMemberAndYearMonth(memberId, year, month, pageable);
+
+        return posts.map(post -> MusicHistoryDTO.builder()
+                .musicId(post.getMusic().getId())
+                .title(post.getMusic().getName())
+                .artist(post.getMusic().getArtistName())
+                .albumImage(post.getMusic().getAlbumImgUrl())
+                .createdAt(post.getCreatedAt())
+                .build());
+    }
+
     @Transactional(readOnly = true)
     public List<MusicPostListResponseDTO> getTodayFolloweePosts() {
 
@@ -131,4 +132,28 @@ public class PostService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public TodayPostResponse getTodayPostByMember() {
+
+        Long memberId = SecurityUtil.getMemberId();
+
+        if (!memberRepository.existsById(memberId)) {
+            throw new MusicException(MusicErrorCode.MEMBER_NOT_FOUND);
+        }
+
+        MusicPost post = musicPostRepository.findTodayPostByMember(memberId)
+                .orElseThrow(() -> new MusicException(PostErrorCode.POST_NOT_FOUND));
+
+        Music music = post.getMusic();
+
+        return TodayPostResponse.builder()
+                .postId(post.getId())
+                .musicId(music.getId())
+                .musicName(music.getName())
+                .artistName(music.getArtistName())
+                .albumImageUrl(music.getAlbumImgUrl())
+                .likeCount(post.getLikeCount())
+                .commentCount(post.getCommentCount())
+                .build();
+    }
 }

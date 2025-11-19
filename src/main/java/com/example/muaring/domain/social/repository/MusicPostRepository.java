@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
 
@@ -42,6 +43,14 @@ public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
         """, nativeQuery = true)
 
     List<MusicPost> findTodayPostsByFollowees(@Param("memberId") Long memberId);
+
+    @Query(value = "SELECT * FROM music_post " +
+            "WHERE member_id = :memberId " +
+            "AND created_at >= CURRENT_DATE " +
+            "AND created_at < CURRENT_DATE + INTERVAL '1 day'",
+            nativeQuery = true)
+    Optional<MusicPost> findTodayPostByMember(@Param("memberId") Long memberId);
+
 
     long countByMemberIdAndIsDeletedIsFalse( Long memberId);
 
