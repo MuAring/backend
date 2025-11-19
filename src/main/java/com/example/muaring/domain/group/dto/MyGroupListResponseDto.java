@@ -13,9 +13,9 @@ import java.util.List;
 @NoArgsConstructor
 public class MyGroupListResponseDto {
     private Long totalCount;
-    private List<MyGroupSummaryDto> groups;
+    private List<GroupSummaryDto> groups;
 
-    public static MyGroupListResponseDto of(List<MyGroupSummaryDto> groups) {
+    public static MyGroupListResponseDto of(List<GroupSummaryDto> groups) {
         return MyGroupListResponseDto.builder()
                 .totalCount((long) groups.size())
                 .groups(groups)

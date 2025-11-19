@@ -13,6 +13,7 @@ import com.example.muaring.domain.music.service.MusicService;
 import com.example.muaring.domain.social.dto.post.MusicPostDTO;
 import com.example.muaring.domain.social.dto.post.MusicPostListResponseDTO;
 import com.example.muaring.domain.social.dto.post.MusicPostRequestDTO;
+import com.example.muaring.domain.social.exception.post.PostErrorCode;
 import com.example.muaring.domain.social.repository.MusicPostRepository;
 import com.example.muaring.domain.social.entity.MusicPost;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -64,6 +67,17 @@ public class PostService {
         if (request.getGroupId() != null) {
             group = groupRepository.findById(request.getGroupId())
                     .orElseThrow(() -> new MusicException(MusicErrorCode.GROUP_NOT_FOUND));
+        }
+
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
+
+        boolean alreadyPostedToday = musicPostRepository.existsTodayPostByMember(
+                memberId, startOfDay, endOfDay);
+
+        if (alreadyPostedToday) {
+            throw new MusicException(PostErrorCode.ALREADY_POSTED_TODAY);
         }
 
         Music music = musicService.findOrCreateMusic(request.getSpotifyId());
