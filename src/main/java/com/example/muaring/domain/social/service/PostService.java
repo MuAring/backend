@@ -15,7 +15,7 @@ import com.example.muaring.domain.music.service.MusicService;
 import com.example.muaring.domain.social.dto.post.MusicPostDTO;
 import com.example.muaring.domain.social.dto.post.MusicPostListResponseDTO;
 import com.example.muaring.domain.social.dto.post.MusicPostRequestDTO;
-import com.example.muaring.domain.social.dto.post.TodayPostResponse;
+import com.example.muaring.domain.social.dto.post.TodayPostResponseDTO;
 import com.example.muaring.domain.social.exception.post.PostErrorCode;
 import com.example.muaring.domain.social.repository.MusicPostRepository;
 import com.example.muaring.domain.social.entity.MusicPost;
@@ -42,8 +42,7 @@ public class PostService {
     @Transactional
     public MusicPostDTO createMusicPost(MusicPostRequestDTO request) {
 
-//        Long memberId = SecurityUtil.getMemberId();
-        Long memberId = 6l;
+        Long memberId = SecurityUtil.getMemberId();
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MusicException(MusicErrorCode.MEMBER_NOT_FOUND));
@@ -155,7 +154,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public TodayPostResponse getTodayPostByMember() {
+    public TodayPostResponseDTO getTodayPostByMember() {
 
         Long memberId = SecurityUtil.getMemberId();
 
@@ -168,7 +167,7 @@ public class PostService {
 
         Music music = post.getMusic();
 
-        return TodayPostResponse.builder()
+        return TodayPostResponseDTO.builder()
                 .postId(post.getId())
                 .musicId(music.getId())
                 .musicName(music.getName())

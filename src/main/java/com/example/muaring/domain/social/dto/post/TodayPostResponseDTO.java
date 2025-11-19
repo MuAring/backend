@@ -6,7 +6,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TodayPostResponse {
+public class TodayPostResponseDTO {
     private Long postId;
     private Long musicId;
     private String musicName;

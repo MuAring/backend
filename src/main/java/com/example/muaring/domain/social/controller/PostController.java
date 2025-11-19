@@ -5,7 +5,7 @@ import com.example.muaring.domain.music.dto.MusicHistoryDTO;
 import com.example.muaring.domain.social.dto.post.MusicPostDTO;
 import com.example.muaring.domain.social.dto.post.MusicPostListResponseDTO;
 import com.example.muaring.domain.social.dto.post.MusicPostRequestDTO;
-import com.example.muaring.domain.social.dto.post.TodayPostResponse;
+import com.example.muaring.domain.social.dto.post.TodayPostResponseDTO;
 import com.example.muaring.domain.social.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -51,8 +51,8 @@ public class PostController {
     }
 
     @GetMapping("/today")
-    public ResponseEntity<ApiResponse<TodayPostResponse>> getTodayPost() {
-        TodayPostResponse response = postService.getTodayPostByMember();
+    public ResponseEntity<ApiResponse<TodayPostResponseDTO>> getTodayPost() {
+        TodayPostResponseDTO response = postService.getTodayPostByMember();
         return ResponseEntity.ok(ApiResponse.ok(response, "오늘의 게시물 조회 완료"));
     }
 
