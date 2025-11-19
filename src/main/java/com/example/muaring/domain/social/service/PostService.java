@@ -2,6 +2,8 @@ package com.example.muaring.domain.social.service;
 
 import com.example.muaring.common.security.SecurityUtil;
 import com.example.muaring.domain.group.entity.Group;
+import com.example.muaring.domain.group.entity.GroupPlaylist;
+import com.example.muaring.domain.group.repository.GroupPlaylistRepository;
 import com.example.muaring.domain.group.repository.GroupRepository;
 import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.repository.MemberRepository;
@@ -32,6 +34,7 @@ import java.util.List;
 public class PostService {
 
     private final GroupRepository groupRepository;
+    private final GroupPlaylistRepository groupPlaylistRepository;
     private final MemberRepository memberRepository;
     private final MusicPostRepository musicPostRepository;
     private final MusicService musicService;
@@ -39,7 +42,8 @@ public class PostService {
     @Transactional
     public MusicPostDTO createMusicPost(MusicPostRequestDTO request) {
 
-        Long memberId = SecurityUtil.getMemberId();
+//        Long memberId = SecurityUtil.getMemberId();
+        Long memberId = 6l;
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MusicException(MusicErrorCode.MEMBER_NOT_FOUND));
@@ -75,6 +79,10 @@ public class PostService {
 
         MusicPost savedPost = musicPostRepository.save(post);
 
+        if (group != null) {
+            addMusicToGroupPlaylist(group, music);
+        }
+
         return MusicPostDTO.builder()
                 .postId(savedPost.getId())
                 .memberId(member.getId())
@@ -82,6 +90,20 @@ public class PostService {
                 .spotifyId(music.getSpotifyId())
                 .content(savedPost.getContent())
                 .build();
+    }
+
+    private void addMusicToGroupPlaylist(Group group, Music music) {
+        if (groupPlaylistRepository.existsByGroupAndMusic(group, music)) {
+            return;
+        }
+
+        GroupPlaylist groupPlaylist = GroupPlaylist.builder()
+                .group(group)
+                .music(music)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        groupPlaylistRepository.save(groupPlaylist);
     }
 
     @Transactional

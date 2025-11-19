@@ -26,4 +26,11 @@ public class GroupPlaylist {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Builder
+    private GroupPlaylist(Group group, Music music, LocalDateTime createdAt) {
+        this.group = group;
+        this.music = music;
+        this.createdAt = createdAt;
+    }
 }
