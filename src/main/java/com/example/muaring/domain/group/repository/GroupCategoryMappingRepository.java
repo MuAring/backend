@@ -22,11 +22,13 @@ public interface GroupCategoryMappingRepository extends JpaRepository<GroupCateg
     List<GroupIdCategoryIdProjection> findPairsByGroupIds(@Param("groupIds") List<Long> groupIds);
 
     @Query("""
-        select gcm.group.id as groupId,
-               gcm.groupCategory.name as categoryName
-        from GroupCategoryMapping gcm
-        where gcm.group.id in :groupIds
-    """)
+    select 
+        gm.group.id as groupId,
+        gc.name as categoryCode
+    from GroupCategoryMapping gm
+    join gm.groupCategory gc
+    where gm.group.id in :groupIds
+""")
     List<GroupIdCategoryNameProjection> findPairsWithNamesByGroupIds(@Param("groupIds") List<Long> groupIds);
 
     List<GroupCategoryMapping> findByGroup(Group group);

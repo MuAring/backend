@@ -138,9 +138,9 @@ public class GroupService {
                                 GroupIdCategoryNameProjection::getGroupId,
                                 Collectors.mapping(
                                         projection -> {
-                                            String codeName = projection.getCategoryDisplayName();   // "pop"
-                                            return GroupCategoryType.fromName(codeName)
-                                                    .getDisplayName();                        // "팝"
+                                            String code = projection.getCategoryCode(); // "k_pop", "indie", ...
+                                            return GroupCategoryType.fromName(code)
+                                                    .getDisplayName();                 // "케이팝", "인디 / 어쿠스틱", ...
                                         },
                                         Collectors.toList()
                                 )
