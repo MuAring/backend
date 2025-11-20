@@ -49,4 +49,8 @@ public class GroupMember extends BaseEntity {
     public void updateRole(GroupRole role) {
         this.role = role;
     }
+
+    public void softDelete() {
+        this.markDeleted();
+    }
 }

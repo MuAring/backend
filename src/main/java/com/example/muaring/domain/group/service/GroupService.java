@@ -1,21 +1,30 @@
 package com.example.muaring.domain.group.service;
 
+import com.example.muaring.common.security.SecurityUtil;
 import com.example.muaring.domain.group.dto.*;
 import com.example.muaring.domain.group.entity.*;
 import com.example.muaring.domain.group.exception.GroupErrorCode;
 import com.example.muaring.domain.group.repository.*;
+import com.example.muaring.domain.group.repository.projection.GroupIdCategoryNameProjection;
 import com.example.muaring.domain.group.response.GroupException;
 import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.exception.MemberException;
 import com.example.muaring.domain.member.repository.MemberRepository;
 import com.example.muaring.domain.member.response.MemberErrorCode;
+import com.example.muaring.domain.social.dto.post.MusicPostFeedResponseDto;
+import com.example.muaring.domain.social.entity.MusicPost;
+import com.example.muaring.domain.social.repository.MusicPostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.example.muaring.domain.group.entity.GroupMember.GroupRole.ADMIN;
@@ -30,6 +39,8 @@ public class GroupService {
     private final MemberRepository memberRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final GroupMusicProfileRepository groupMusicProfileRepository;
+    private final MusicPostRepository musicPostRepository;
+    private final GroupPlaylistRepository groupPlaylistRepository;
 
     // 그룹 생성
     @Transactional
@@ -95,6 +106,8 @@ public class GroupService {
             Sort sort               // 정렬 조건
     ) {
         Pageable pageable = PageRequest.of(page, size, sort);   // 0-based
+//        Long memberId = 1L; // 테스트용
+        Long memberId = SecurityUtil.getMemberId(); // 실사용
 
         // 빈 리스트일 경우, categoryIds를 null로 변경 (IN () 방지)
         List<Long> normalizedCategoryIds =
@@ -117,29 +130,45 @@ public class GroupService {
                 .map(Group::getId)
                 .toList();
 
+        // 1) groupId -> [카테고리 displayName] 매핑
+        Map<Long, List<String>> categoryNamesByGroup =
+                mappingRepository.findPairsWithNamesByGroupIds(groupIds)
+                        .stream()
+                        .collect(Collectors.groupingBy(
+                                GroupIdCategoryNameProjection::getGroupId,
+                                Collectors.mapping(
+                                        projection -> {
+                                            String codeName = projection.getCategoryDisplayName();   // "pop"
+                                            return GroupCategoryType.fromName(codeName)
+                                                    .getDisplayName();                        // "팝"
+                                        },
+                                        Collectors.toList()
+                                )
+                        ));
 
-        // 매핑 테이블 한 번에 조회 → Map<groupId, List<categoryId>> 형태로 변환
-        Map<Long, List<Long>> categoryIdsByGroup = mappingRepository.findPairsByGroupIds(groupIds)
-                .stream()
-                .collect(Collectors.groupingBy(
-                        GroupIdCategoryIdProjection::getGroupId,
-                        Collectors.mapping(GroupIdCategoryIdProjection::getGroupCategoryId, Collectors.toList())
-                ));
+        // 2) 내가 가입한 그룹 id들
+        Set<Long> myJoinedGroupIds = Collections.emptySet();
+        if (memberId != null) {
+            myJoinedGroupIds = groupMemberRepository.findGroupIdsByMemberId(memberId)
+                    .stream()
+                    .collect(Collectors.toSet());
+        }
 
-        // DTO 조립
+        // 3) DTO 조립
         return GroupListResponseDto.of(
-                groupPage.getTotalElements(),   // 전체 개수
-                groups,                         // 현재 페이지 그룹 리스트
-                categoryIdsByGroup              // 그룹별 카테고리 매핑
+                groupPage.getTotalElements(),
+                groups,
+                categoryNamesByGroup,
+                myJoinedGroupIds
         );
     }
 
     // 내 소속 그룹 조회 메서드
     @Transactional
     public MyGroupListResponseDto getMyGroups(Long memberId) {
-        List<MyGroupSummaryDto> groups = groupMemberRepository.findByMember_IdOrderByGroup_NameAsc(memberId)
+        List<GroupSummaryDto> groups = groupMemberRepository.findByMember_IdOrderByGroup_NameAsc(memberId)
                 .stream()
-                .map(tuple -> MyGroupSummaryDto.of(
+                .map(tuple -> GroupSummaryDto.of(
                         tuple.getGroup(),
                         tuple.getRole().name()
                 ))
@@ -149,7 +178,56 @@ public class GroupService {
     }
 
     // 그룹 상세 조회 메서드
+    @Transactional
+    public GroupProfileResponseDto getGroupProfile(Long groupId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
 
+        List<Long> categoryIds = groupCategoryRepository.findCategoryIdsByGroupId(groupId);
+        int totalPostCount = musicPostRepository.countActiveByGroupId(groupId);
+        int totalMusicCount = groupPlaylistRepository.countByGroupId(groupId);
+
+        return GroupProfileResponseDto.of(
+                group,
+                categoryIds,
+                totalMusicCount,
+                totalPostCount
+        );
+    }
+
+    // 그룹 내 피드 조회 메서드
+    @Transactional
+    public Page<MusicPostFeedResponseDto> getGroupFeed(
+            Long groupId,
+            Integer year,
+            Integer month,
+            Pageable pageable
+    ) {
+
+        Page<MusicPost> posts;
+
+        // year & month 있으면 → 특정 월 조회
+        if (year != null && month != null) {
+            YearMonth yearMonth = YearMonth.of(year, month);
+
+            LocalDateTime start = yearMonth.atDay(1).atStartOfDay();
+            LocalDateTime end = yearMonth.plusMonths(1).atDay(1).atStartOfDay();
+
+            posts = musicPostRepository.findByGroup_IdAndCreatedAtBetween(
+                    groupId,
+                    start,
+                    end,
+                    pageable
+            );
+        }
+        // 둘 다 없으면 전체 조회
+        else {
+            posts = musicPostRepository.findByGroup_Id(groupId, pageable);
+        }
+
+        // DTO 변환
+        return posts.map(MusicPostFeedResponseDto::from);
+    }
 
     // 그룹 멤버 조회 메서드
     public List<GroupMemberResponseDto> getGroupMembers(Long groupId, Long memberId) {
@@ -228,6 +306,7 @@ public class GroupService {
     }
 
     // 그룹 삭제 메서드
+    @Transactional
     public void deleteGroup(Long groupId, Long memberId) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
@@ -237,7 +316,7 @@ public class GroupService {
             throw new GroupException(GroupErrorCode.NOT_GROUP_ADMIN);
         }
 
-        groupRepository.delete(group);
+        group.softDelete();
     }
 
     // 그룹 탈퇴 메서드
@@ -285,6 +364,38 @@ public class GroupService {
         group.updateAdmin(newAdminMember);
 
         groupMemberRepository.delete(currentMember);
+
+        // 그룹 멤버 수 감소
+        group.decrementMemberCount();
+    }
+
+    // 그룹 멤버 추방 메서드
+    @Transactional
+    public void expelMember(Long groupId, Long adminId, Long expellerId){
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
+
+        GroupMember adminMember = groupMemberRepository.findByGroupIdAndMemberId(groupId, adminId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.NOT_GROUP_MEMBER));
+
+        if (adminMember.getRole() != ADMIN) {
+            throw new GroupException(GroupErrorCode.NOT_GROUP_ADMIN);
+        }
+
+        GroupMember expelMember = groupMemberRepository.findByGroupIdAndMemberId(groupId, expellerId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.NOT_GROUP_MEMBER));
+
+        // 자기 자신 추방 방지
+        if (adminId.equals(expellerId)) {
+            throw new GroupException(GroupErrorCode.CANNOT_EXPEL_SELF);
+        }
+
+        // 이미 삭제된 멤버인지 확인
+        if (expelMember.getIsDeleted()) {
+            throw new GroupException(GroupErrorCode.ALREADY_EXPELLED_MEMBER);
+        }
+
+        expelMember.softDelete();
 
         // 그룹 멤버 수 감소
         group.decrementMemberCount();

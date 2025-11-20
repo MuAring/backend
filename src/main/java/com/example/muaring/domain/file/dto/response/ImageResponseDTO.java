@@ -1,4 +1,4 @@
-package com.example.muaring.domain.file.dto;
+package com.example.muaring.domain.file.dto.response;
 
 import com.example.muaring.domain.file.entity.Image;
 import com.example.muaring.domain.file.entity.ImageType;

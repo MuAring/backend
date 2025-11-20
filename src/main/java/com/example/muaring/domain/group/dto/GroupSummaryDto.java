@@ -1,5 +1,6 @@
 package com.example.muaring.domain.group.dto;
 
+import com.example.muaring.domain.file.entity.Image;
 import com.example.muaring.domain.group.entity.Group;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MyGroupSummaryDto {
+public class GroupSummaryDto {
     private Long groupId;
     private String name;
     private String description;
@@ -20,9 +21,10 @@ public class MyGroupSummaryDto {
     private Boolean isPublic;
     private String myRole;
     private LocalDateTime createdAt;
+    private String imageUrl;
 
-    public static MyGroupSummaryDto of(Group group, String myRole) {
-        return MyGroupSummaryDto.builder()
+    public static GroupSummaryDto of(Group group, String myRole) {
+        return GroupSummaryDto.builder()
                 .groupId(group.getId())
                 .name(group.getName())
                 .description(group.getDescription())
@@ -30,6 +32,7 @@ public class MyGroupSummaryDto {
                 .isPublic(group.getIsPublic())
                 .myRole(myRole)
                 .createdAt(group.getCreatedAt())
+                .imageUrl(group.getImage() != null ? group.getImage().getUrl() : null)
                 .build();
     }
 }

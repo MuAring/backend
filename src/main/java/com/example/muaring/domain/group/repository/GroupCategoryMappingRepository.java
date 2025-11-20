@@ -2,6 +2,8 @@ package com.example.muaring.domain.group.repository;
 
 import com.example.muaring.domain.group.entity.Group;
 import com.example.muaring.domain.group.entity.GroupCategoryMapping;
+import com.example.muaring.domain.group.repository.projection.GroupIdCategoryIdProjection;
+import com.example.muaring.domain.group.repository.projection.GroupIdCategoryNameProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,6 +20,14 @@ public interface GroupCategoryMappingRepository extends JpaRepository<GroupCateg
         where gcm.group.id in :groupIds
     """)
     List<GroupIdCategoryIdProjection> findPairsByGroupIds(@Param("groupIds") List<Long> groupIds);
+
+    @Query("""
+        select gcm.group.id as groupId,
+               gcm.groupCategory.name as categoryName
+        from GroupCategoryMapping gcm
+        where gcm.group.id in :groupIds
+    """)
+    List<GroupIdCategoryNameProjection> findPairsWithNamesByGroupIds(@Param("groupIds") List<Long> groupIds);
 
     List<GroupCategoryMapping> findByGroup(Group group);
     void deleteByGroup(Group group);
