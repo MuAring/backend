@@ -34,4 +34,8 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> 
             AND gm.member.isDeleted = false
     """)
     long countByMemberId(@Param("memberId") Long memberId);
+
+    // memberId로 해당 멤버가 가입한 그룹의 ID들만 조회
+    @Query("select gm.group.id from GroupMember gm where gm.member.id = :memberId")
+    List<Long> findGroupIdsByMemberId(@Param("memberId") Long memberId);
 }

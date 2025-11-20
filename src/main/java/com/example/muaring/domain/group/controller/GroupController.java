@@ -54,7 +54,7 @@ public class GroupController {
     /**
      * [GET] /groups?isPublic
      * 그룹 목록 동적 조회 (검색, 필터링, 페이지네이션)
-     * q, isPublic, categoryIds
+     * name, isPublic, categoryIds
      */
     @GetMapping
     public ResponseEntity<ApiResponse<GroupListResponseDto>> getPublicGroups(
