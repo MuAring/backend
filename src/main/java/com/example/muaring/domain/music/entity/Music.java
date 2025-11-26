@@ -6,6 +6,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "music")
@@ -55,6 +57,14 @@ public class Music {
 
     @Column(name = "preview_url")
     private String previewUrl;
+
+    // 연관 관계 추가
+    @OneToOne(mappedBy = "music", fetch = FetchType.LAZY)
+    private MusicFeature feature;
+
+    @OneToMany(mappedBy = "music", fetch = FetchType.LAZY)
+    private List<MusicGenre> genres = new ArrayList<>();
+
 
     @Builder
     public Music(String spotifyId, String name, String artistId, String artistName,
