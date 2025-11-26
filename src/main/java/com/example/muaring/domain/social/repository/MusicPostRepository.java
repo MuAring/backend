@@ -78,4 +78,45 @@ public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
     boolean existsTodayPostByMember(@Param("memberId") Long memberId,
                                     @Param("startOfDay") LocalDateTime startOfDay,
                                     @Param("endOfDay") LocalDateTime endOfDay);
+
+    /**
+     * 그룹 성향 계산용:
+     * - 1. 특정 그룹에 속한 포스트
+     * - 2. 최근 90일
+     * - 3. 삭제되지 않은 것
+     * - 4. music + music.feature 까지 한 번에 로딩
+     */
+    @Query("""
+        SELECT DISTINCT mp
+        FROM MusicPost mp
+        JOIN FETCH mp.music m
+        JOIN FETCH m.feature f
+        LEFT JOIN FETCH m.genres mg
+        LEFT JOIN FETCH mg.genre g
+        WHERE mp.group.id = :groupId
+          AND mp.createdAt >= :from
+          AND mp.isDeleted = false
+        """)
+    List<MusicPost> findRecentGroupPostsWithFeatureAndGenres(
+            @Param("groupId") Long groupId,
+            @Param("from") LocalDateTime from
+    );
+
+    @Query("""
+    SELECT DISTINCT mp
+    FROM MusicPost mp
+    JOIN FETCH mp.music m
+    JOIN FETCH m.feature f
+    LEFT JOIN FETCH m.genres mg
+    LEFT JOIN FETCH mg.genre g
+    WHERE mp.member.id = :memberId
+      AND mp.createdAt >= :from
+      AND mp.isDeleted = false
+    ORDER BY mp.createdAt DESC
+    """)
+    List<MusicPost> findRecentUserPostsWithFeatureAndGenres(
+            @Param("memberId") Long memberId,
+            @Param("from") LocalDateTime from
+    );
+
 }
