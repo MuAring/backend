@@ -32,4 +32,12 @@ public class InterestedMember {
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Builder
+    private InterestedMember(Member follower, Member followee, LocalDateTime createdAt) {
+        this.follower = follower;
+        this.followee = followee;
+        this.createdAt = createdAt;
+    }
+
 }

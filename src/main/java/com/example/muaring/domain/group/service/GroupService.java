@@ -1,9 +1,11 @@
 package com.example.muaring.domain.group.service;
 
+import com.example.muaring.common.security.SecurityUtil;
 import com.example.muaring.domain.group.dto.*;
 import com.example.muaring.domain.group.entity.*;
 import com.example.muaring.domain.group.exception.GroupErrorCode;
 import com.example.muaring.domain.group.repository.*;
+import com.example.muaring.domain.group.repository.projection.GroupIdCategoryNameProjection;
 import com.example.muaring.domain.group.response.GroupException;
 import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.exception.MemberException;
@@ -19,8 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.YearMonth;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.example.muaring.domain.group.entity.GroupMember.GroupRole.ADMIN;
@@ -102,6 +106,8 @@ public class GroupService {
             Sort sort               // 정렬 조건
     ) {
         Pageable pageable = PageRequest.of(page, size, sort);   // 0-based
+//        Long memberId = 1L; // 테스트용
+        Long memberId = SecurityUtil.getMemberId(); // 실사용
 
         // 빈 리스트일 경우, categoryIds를 null로 변경 (IN () 방지)
         List<Long> normalizedCategoryIds =
@@ -124,20 +130,36 @@ public class GroupService {
                 .map(Group::getId)
                 .toList();
 
+        // 1) groupId -> [카테고리 displayName] 매핑
+        Map<Long, List<String>> categoryNamesByGroup =
+                mappingRepository.findPairsWithNamesByGroupIds(groupIds)
+                        .stream()
+                        .collect(Collectors.groupingBy(
+                                GroupIdCategoryNameProjection::getGroupId,
+                                Collectors.mapping(
+                                        projection -> {
+                                            String code = projection.getCategoryCode(); // "k_pop", "indie", ...
+                                            return GroupCategoryType.fromName(code)
+                                                    .getDisplayName();                 // "케이팝", "인디 / 어쿠스틱", ...
+                                        },
+                                        Collectors.toList()
+                                )
+                        ));
 
-        // 매핑 테이블 한 번에 조회 → Map<groupId, List<categoryId>> 형태로 변환
-        Map<Long, List<Long>> categoryIdsByGroup = mappingRepository.findPairsByGroupIds(groupIds)
-                .stream()
-                .collect(Collectors.groupingBy(
-                        GroupIdCategoryIdProjection::getGroupId,
-                        Collectors.mapping(GroupIdCategoryIdProjection::getGroupCategoryId, Collectors.toList())
-                ));
+        // 2) 내가 가입한 그룹 id들
+        Set<Long> myJoinedGroupIds = Collections.emptySet();
+        if (memberId != null) {
+            myJoinedGroupIds = groupMemberRepository.findGroupIdsByMemberId(memberId)
+                    .stream()
+                    .collect(Collectors.toSet());
+        }
 
-        // DTO 조립
+        // 3) DTO 조립
         return GroupListResponseDto.of(
-                groupPage.getTotalElements(),   // 전체 개수
-                groups,                         // 현재 페이지 그룹 리스트
-                categoryIdsByGroup              // 그룹별 카테고리 매핑
+                groupPage.getTotalElements(),
+                groups,
+                categoryNamesByGroup,
+                myJoinedGroupIds
         );
     }
 
