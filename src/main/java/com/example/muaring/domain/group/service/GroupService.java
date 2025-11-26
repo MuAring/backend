@@ -1,6 +1,6 @@
 package com.example.muaring.domain.group.service;
 
-import com.example.muaring.common.security.SecurityUtil;
+import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.domain.group.dto.*;
 import com.example.muaring.domain.group.entity.*;
 import com.example.muaring.domain.group.exception.GroupErrorCode;
