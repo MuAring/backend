@@ -89,13 +89,14 @@ public class GroupController {
     }
 
 
-    // [GET] /groups/{groupId}/members
-    // 그룹 멤버 목록 조회
+    // [GET] /groups/{groupId}/members?search=닉네임
+    // 그룹 멤버 목록 조회 + 검색
     @GetMapping("/{groupId}/members")
     public ResponseEntity<ApiResponse<List<GroupMemberResponseDto>>> getGroupMembers(
-            @PathVariable Long groupId) {
+            @PathVariable Long groupId,
+            @RequestParam(required = false) String search) {
         Long memberId = SecurityUtil.getMemberId();
-        List<GroupMemberResponseDto> members = groupService.getGroupMembers(groupId, memberId);
+        List<GroupMemberResponseDto> members = groupService.getGroupMembers(groupId, memberId, search);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.ok(members, "그룹 멤버 목록을 조회했습니다."));

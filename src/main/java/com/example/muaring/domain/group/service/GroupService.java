@@ -230,7 +230,7 @@ public class GroupService {
     }
 
     // 그룹 멤버 조회 메서드
-    public List<GroupMemberResponseDto> getGroupMembers(Long groupId, Long memberId) {
+    public List<GroupMemberResponseDto> getGroupMembers(Long groupId, Long memberId, String search) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
 
@@ -242,7 +242,14 @@ public class GroupService {
             }
         }
 
-        List<GroupMember> groupMembers = groupMemberRepository.findByGroupId(groupId);
+        List<GroupMember> groupMembers;
+
+        // 검색어가 있으면 필터링
+        if (search != null && !search.trim().isEmpty()) {
+            groupMembers = groupMemberRepository.findByGroupIdAndMemberNicknameContaining(groupId, search.trim());
+        } else {
+            groupMembers = groupMemberRepository.findByGroupId(groupId);
+        }
 
         return groupMembers.stream()
                 .map(GroupMemberResponseDto::from)
