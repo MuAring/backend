@@ -1,6 +1,6 @@
 package com.example.muaring.domain.library.service;
 
-import com.example.muaring.common.security.SecurityUtil;
+import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.domain.library.dto.LibraryMusicDTO;
 import com.example.muaring.domain.library.dto.LibraryMusicListResponseDTO;
 import com.example.muaring.domain.library.entity.Library;

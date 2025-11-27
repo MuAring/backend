@@ -1,7 +1,7 @@
 package com.example.muaring.domain.social.controller;
 
 import com.example.muaring.common.response.ApiResponse;
-import com.example.muaring.common.security.SecurityUtil;
+import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.domain.social.dto.like.response.LikeResponseDTO;
 import com.example.muaring.domain.social.service.LikeService;
 import io.swagger.v3.oas.annotations.Operation;

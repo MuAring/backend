@@ -1,6 +1,6 @@
 package com.example.muaring.domain.file.service;
 
-import com.example.muaring.common.security.SecurityUtil;
+import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.config.S3Properties;
 import com.example.muaring.domain.file.dto.request.ImageUploadRequestDTO;
 import com.example.muaring.domain.file.dto.response.PresignedUrlResponseDTO;

@@ -1,7 +1,7 @@
 package com.example.muaring.domain.member.controller;
 
 import com.example.muaring.common.response.ApiResponse;
-import com.example.muaring.common.security.SecurityUtil;
+import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.domain.member.dto.request.MemberProfileCreateRequestDTO;
 import com.example.muaring.domain.member.dto.response.MemberProfileCreateResponseDTO;
 import com.example.muaring.domain.member.dto.response.MemberProfileReadResponseDTO;

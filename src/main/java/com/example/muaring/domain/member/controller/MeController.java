@@ -1,7 +1,7 @@
 package com.example.muaring.domain.member.controller;
 
 import com.example.muaring.common.response.ApiResponse;
-import com.example.muaring.common.security.SecurityUtil;
+import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.domain.auth.exception.AuthErrorCode;
 import com.example.muaring.domain.group.dto.MyGroupListResponseDto;
 import com.example.muaring.domain.group.service.GroupService;
