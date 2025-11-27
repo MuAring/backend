@@ -55,7 +55,7 @@ public class AuthService {
         String accessToken = jwtTokenProvider.generateAccessToken(member.getId(), member.getEmail());
         String refreshToken = jwtTokenProvider.generateRefreshToken(member.getId(), member.getEmail());
         boolean hasNickname = member.getNickname() != null && !member.getNickname().isEmpty();
-        return new LoginResponseDTO(accessToken, refreshToken, account.getMember().getId(), account.getMember().getEmail(), hasNickname);
+        return new LoginResponseDTO(accessToken, refreshToken, account.getMember().getId(), account.getMember().getEmail(), member.getNickname(), hasNickname);
     }
 
     @Transactional
@@ -69,7 +69,7 @@ public class AuthService {
         String refreshToken = jwtTokenProvider.generateRefreshToken(member.getId(), member.getEmail());
         boolean hasNickname = member.getNickname() != null && !member.getNickname().isEmpty();
 
-        return LoginResponseDTO.of(member, accessToken, refreshToken, hasNickname);
+        return LoginResponseDTO.of(member, accessToken, refreshToken, member.getNickname(), hasNickname);
     }
 
     private OAuthAccount createMemberAndAccount(OAuthMemberInfoResponseDTO memberInfoResponseDTO, AuthProvider authProvider) {
