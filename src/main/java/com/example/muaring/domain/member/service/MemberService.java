@@ -57,15 +57,15 @@ public class MemberService {
                 throw new MemberException(MemberErrorCode.ALREADY_HAS_PROFILE);
             }
 
-            Image image = createImageIfExists(requestDTO.imageRequestDTO());
+            Image image = createImageIfExists(requestDTO.imageRequest());
 
             member.createProfile(requestDTO.nickname(), image);
             return MemberProfileCreateResponseDTO.of(member, s3Properties.s3().bucketUrl(s3Properties.region()));
         } catch (Exception e) {
-            if (requestDTO.imageRequestDTO() != null
-                    && requestDTO.imageRequestDTO().isCompleteImage()) {
+            if (requestDTO.imageRequest() != null
+                    && requestDTO.imageRequest().isCompleteImage()) {
                 log.warn("❌ 프로필 정보 생성 도중 문제가 발생했습니다.");
-                imageService.deleteObject(requestDTO.imageRequestDTO().s3Key());
+                imageService.deleteObject(requestDTO.imageRequest().s3Key());
             }
             throw e;
         }
