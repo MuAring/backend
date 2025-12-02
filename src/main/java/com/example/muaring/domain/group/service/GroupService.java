@@ -251,8 +251,49 @@ public class GroupService {
             groupMembers = groupMemberRepository.findByGroupId(groupId);
         }
 
+        // 모든 멤버 ID 수집
+        List<Long> memberIds = groupMembers.stream()
+                .map(gm -> gm.getMember().getId())
+                .toList();
+
+        // 한 번에 최신 게시물 조회
+        List<MusicPost> latestPosts = musicPostRepository.findLatestPostsByMemberIds(memberIds);
+
+        // memberId를 키로 하는 Map 생성
+        Map<Long, MusicPost> latestPostMap = latestPosts.stream()
+                .collect(Collectors.toMap(
+                        post -> post.getMember().getId(),
+                        post -> post
+                ));
+
         return groupMembers.stream()
-                .map(GroupMemberResponseDto::from)
+                .map(groupMember -> {
+                    GroupMemberResponseDto.GroupMemberResponseDtoBuilder builder =
+                            GroupMemberResponseDto.builder()
+                                    .memberId(groupMember.getMember().getId())
+                                    .nickname(groupMember.getMember().getNickname())
+                                    .profileImageUrl(groupMember.getMember().getProfileImage() != null
+                                            ? groupMember.getMember().getProfileImage().getUrl()
+                                            : null)
+                                    .role(groupMember.getRole().name())
+                                    .joinedAt(groupMember.getCreatedAt().toString());
+
+                    // Map에서 해당 멤버의 최신 게시물 찾기
+                    MusicPost latestPost = latestPostMap.get(groupMember.getMember().getId());
+                    if (latestPost != null) {
+                        GroupMemberResponseDto.RecentMusicDto recentMusic =
+                                GroupMemberResponseDto.RecentMusicDto.builder()
+                                        .musicId(latestPost.getMusic().getId())
+                                        .postId(latestPost.getId())
+                                        .musicName(latestPost.getMusic().getName())
+                                        .artistName(latestPost.getMusic().getArtistName())
+                                        .albumImgUrl(latestPost.getMusic().getAlbumImgUrl())
+                                        .build();
+                        builder.recentMusic(recentMusic);
+                    }
+
+                    return builder.build();
+                })
                 .toList();
     }
 
