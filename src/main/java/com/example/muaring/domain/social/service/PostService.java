@@ -1,6 +1,6 @@
 package com.example.muaring.domain.social.service;
 
-import com.example.muaring.common.security.SecurityUtil;
+import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.domain.group.entity.Group;
 import com.example.muaring.domain.group.entity.GroupPlaylist;
 import com.example.muaring.domain.group.repository.GroupPlaylistRepository;
