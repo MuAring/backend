@@ -84,7 +84,7 @@ public class MusicPostDetailResponseDto {
                 .group(post.getGroup() != null ? GroupDto.builder()
                         .groupId(post.getGroup().getId())
                         .name(post.getGroup().getName())
-                        .imageUrl(post.getGroup().getImageUrl())
+                        .imageUrl(post.getGroup().getGroupImage())
                         .build() : null)
                 .build();
     }
