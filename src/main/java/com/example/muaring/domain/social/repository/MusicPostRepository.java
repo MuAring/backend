@@ -127,6 +127,7 @@ public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
             "WHERE p.id IN (" +
             "  SELECT MAX(p2.id) FROM MusicPost p2 " +
             "  WHERE p2.member.id IN :memberIds " +
+            "  AND p2.isProfile = true " +
             "  GROUP BY p2.member.id" +
             ") " +
             "ORDER BY p.createdAt DESC")
