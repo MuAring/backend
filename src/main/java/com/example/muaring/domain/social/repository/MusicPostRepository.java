@@ -132,4 +132,13 @@ public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
             "ORDER BY p.createdAt DESC")
     List<MusicPost> findLatestPostsByMemberIds(@Param("memberIds") List<Long> memberIds);
 
+    // 게시물 상세 조회 (연관 엔티티 fetch join으로 한 번에 조회)
+    @Query("SELECT p FROM MusicPost p " +
+            "JOIN FETCH p.member m " +
+            "LEFT JOIN FETCH m.profileImage " +
+            "JOIN FETCH p.music " +
+            "LEFT JOIN FETCH p.group g " +
+            "WHERE p.id = :postId")
+    Optional<MusicPost> findByIdWithDetails(@Param("postId") Long postId);
+
 }

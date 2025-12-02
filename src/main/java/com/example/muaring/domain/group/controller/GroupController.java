@@ -9,6 +9,7 @@ import com.example.muaring.domain.group.dto.GroupCreateResponseDto;
 import com.example.muaring.domain.group.dto.GroupListResponseDto;
 import com.example.muaring.domain.group.service.GroupService;
 import com.example.muaring.domain.social.dto.post.MusicPostFeedResponseDto;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -190,5 +191,19 @@ public class GroupController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.ok("그룹 멤버 추방을 완료했습니다."));
+    }
+
+     // [GET] /groups/{postId}
+     // 게시물 상세 조회
+    @GetMapping("/{postId}")
+    @Operation(summary = "게시물 상세 조회", description = "게시물의 기본 정보를 조회합니다. 댓글은 별도 API로 조회하세요.")
+    public ResponseEntity<ApiResponse<MusicPostDetailResponseDto>> getPostDetail(
+            @PathVariable Long postId) {
+        Long memberId = SecurityUtil.getMemberId();
+        MusicPostDetailResponseDto response = groupService.getPostDetail(postId, memberId);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.ok(response, "게시물을 조회했습니다."));
     }
 }

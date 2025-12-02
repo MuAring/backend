@@ -11,8 +11,12 @@ import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.exception.MemberException;
 import com.example.muaring.domain.member.repository.MemberRepository;
 import com.example.muaring.domain.member.response.MemberErrorCode;
+import com.example.muaring.domain.music.exception.MusicErrorCode;
 import com.example.muaring.domain.social.dto.post.MusicPostFeedResponseDto;
 import com.example.muaring.domain.social.entity.MusicPost;
+import com.example.muaring.domain.social.exception.post.PostErrorCode;
+import com.example.muaring.domain.social.exception.post.PostException;
+import com.example.muaring.domain.social.repository.LikeRepository;
 import com.example.muaring.domain.social.repository.MusicPostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -40,6 +44,7 @@ public class GroupService {
     private final GroupMemberRepository groupMemberRepository;
     private final GroupMusicProfileRepository groupMusicProfileRepository;
     private final MusicPostRepository musicPostRepository;
+    private final LikeRepository likeRepository;
     private final GroupPlaylistRepository groupPlaylistRepository;
 
     // 그룹 생성
@@ -447,5 +452,29 @@ public class GroupService {
 
         // 그룹 멤버 수 감소
         group.decrementMemberCount();
+    }
+
+     // 게시물 상세 조회 (댓글 제외. 댓글은 댓글 조회 api로 프론트에서 따로 불러오게 함)
+
+    public MusicPostDetailResponseDto getPostDetail(Long postId, Long memberId) {
+        // 게시물 조회
+        MusicPost post = musicPostRepository.findByIdWithDetails(postId)
+                .orElseThrow(() -> new PostException(PostErrorCode.POST_NOT_FOUND));
+
+        // 그룹 게시물인 경우 접근 권한 확인
+        if (post.getGroup() != null && !post.getGroup().getIsPublic()) {
+            boolean isMember = groupMemberRepository.existsByGroupIdAndMemberId(
+                    post.getGroup().getId(),
+                    memberId
+            );
+            if (!isMember) {
+                throw new GroupException(GroupErrorCode.NOT_GROUP_MEMBER);
+            }
+        }
+
+        // 현재 사용자가 좋아요를 눌렀는지 확인
+        boolean isLiked = likeRepository.existsByPostIdAndMemberId(postId, memberId);
+
+        return MusicPostDetailResponseDto.of(post, isLiked);
     }
 }
