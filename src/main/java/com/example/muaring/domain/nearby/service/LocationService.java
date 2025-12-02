@@ -1,6 +1,6 @@
 package com.example.muaring.domain.nearby.service;
 
-import com.example.muaring.common.security.SecurityUtil;
+import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.domain.member.entity.MemberLocation;
 import com.example.muaring.domain.member.repository.MemberLocationRepository;
 import jakarta.transaction.Transactional;
