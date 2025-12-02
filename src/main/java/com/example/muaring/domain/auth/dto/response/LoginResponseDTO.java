@@ -8,14 +8,16 @@ public record LoginResponseDTO(
         String refreshToken,
         Long memberId,
         String email,
+        String nickname,
         boolean hasNickname
 ) {
-    public static LoginResponseDTO of(Member member, String accessToken, String refreshToken, Boolean hasNickname) {
+    public static LoginResponseDTO of(Member member, String accessToken, String refreshToken, String nickname, Boolean hasNickname) {
         return new LoginResponseDTO(
                 accessToken,
                 refreshToken,
                 member.getId(),
                 member.getEmail(),
+                member.getNickname(),
                 hasNickname
         );
     }

@@ -2,9 +2,8 @@ package com.example.muaring.domain.group.controller;
 
 import com.example.muaring.common.response.ApiResponse;
 import com.example.muaring.domain.auth.exception.AuthErrorCode;
-import com.example.muaring.domain.auth.security.MemberPrincipal;
 import com.example.muaring.domain.group.dto.*;
-import com.example.muaring.common.security.SecurityUtil;
+import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.domain.group.dto.GroupCreateRequestDto;
 import com.example.muaring.domain.group.dto.GroupCreateResponseDto;
 import com.example.muaring.domain.group.dto.GroupListResponseDto;
@@ -17,7 +16,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -193,5 +191,4 @@ public class GroupController {
                 .status(HttpStatus.OK)
                 .body(ApiResponse.ok("그룹 멤버 추방을 완료했습니다."));
     }
-
 }

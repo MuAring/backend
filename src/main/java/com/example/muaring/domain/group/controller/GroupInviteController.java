@@ -1,18 +1,15 @@
 package com.example.muaring.domain.group.controller;
 
 import com.example.muaring.common.response.ApiResponse;
-import com.example.muaring.common.security.SecurityUtil;
-import com.example.muaring.domain.auth.security.MemberPrincipal;
+import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.domain.group.dto.GroupInviteResponseDto;
 import com.example.muaring.domain.group.dto.InvitePreviewResponseDto;
 import com.example.muaring.domain.group.service.GroupInviteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Security;
 import java.util.List;
 
 @RestController
