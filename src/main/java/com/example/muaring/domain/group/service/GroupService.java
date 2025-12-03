@@ -19,6 +19,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.Collections;
@@ -226,6 +227,23 @@ public class GroupService {
         }
 
         // DTO 변환
+        return posts.map(MusicPostFeedResponseDto::from);
+    }
+
+    // 그룹 내 오늘의 피드 조회
+    @Transactional
+    public Page<MusicPostFeedResponseDto> getTodayGroupFeed(
+            Long groupId,
+            Pageable pageable
+    ) {
+        LocalDate today = LocalDate.now();
+
+        LocalDateTime start = today.atStartOfDay();
+        LocalDateTime end = today.plusDays(1).atStartOfDay();
+
+        Page<MusicPost> posts = musicPostRepository
+                .findByGroup_IdAndCreatedAtBetween(groupId, start, end, pageable);
+
         return posts.map(MusicPostFeedResponseDto::from);
     }
 

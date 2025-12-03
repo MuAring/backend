@@ -29,6 +29,20 @@ public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
             Pageable pageable
     );
 
+//    @Query(value = """
+//        SELECT *
+//        FROM music_post mp
+//        WHERE mp.member_id IN (
+//            SELECT f.followee_id
+//            FROM follow f
+//            WHERE f.follower_id = :memberId
+//        )
+//        AND mp.created_at >= CURRENT_DATE
+//        AND mp.created_at < CURRENT_DATE + INTERVAL '1 day'
+//        ORDER BY mp.created_at DESC
+//        """, nativeQuery = true)
+//    List<MusicPost> findTodayPostsByFollowees(@Param("memberId") Long memberId);
+
     @Query(value = """
         SELECT *
         FROM music_post mp
@@ -40,9 +54,23 @@ public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
         AND mp.created_at >= CURRENT_DATE
         AND mp.created_at < CURRENT_DATE + INTERVAL '1 day'
         ORDER BY mp.created_at DESC
-        """, nativeQuery = true)
-
-    List<MusicPost> findTodayPostsByFollowees(@Param("memberId") Long memberId);
+        """,
+            countQuery = """
+        SELECT COUNT(*)
+        FROM music_post mp
+        WHERE mp.member_id IN (
+            SELECT f.followee_id
+            FROM follow f
+            WHERE f.follower_id = :memberId
+        )
+        AND mp.created_at >= CURRENT_DATE
+        AND mp.created_at < CURRENT_DATE + INTERVAL '1 day'
+        """,
+            nativeQuery = true)
+    Page<MusicPost> findTodayPostsByFollowees(
+            @Param("memberId") Long memberId,
+            Pageable pageable
+    );
 
     @Query(value = "SELECT * FROM music_post " +
             "WHERE member_id = :memberId " +

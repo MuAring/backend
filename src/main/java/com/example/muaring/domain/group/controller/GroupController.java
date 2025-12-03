@@ -12,6 +12,7 @@ import com.example.muaring.domain.group.service.GroupService;
 import com.example.muaring.domain.social.dto.post.MusicPostFeedResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -119,7 +120,7 @@ public class GroupController {
 
 
     // [GET] /groups/{groupId}/posts
-    // 그룹 피드 조회
+    // 그룹 피드 동적 조회
     @GetMapping("/{groupId}/posts")
     public ResponseEntity<ApiResponse<Page<MusicPostFeedResponseDto>>> getGroupFeed(
             @PathVariable Long groupId,
@@ -139,6 +140,24 @@ public class GroupController {
                 ApiResponse.ok(post, "그룹 피드 조회 성공")
         );
     }
+
+    // [GET] /groups/{groupId}/posts/today
+    // 그룹 오늘의 피드 조회
+    @GetMapping("/{groupId}/posts/today")
+    public ResponseEntity<ApiResponse<Page<MusicPostFeedResponseDto>>> getTodayGroupFeed(
+            @PathVariable Long groupId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<MusicPostFeedResponseDto> posts =
+                groupService.getTodayGroupFeed(groupId, pageable);
+
+        return ResponseEntity.ok(
+                ApiResponse.ok(posts, "그룹 오늘의 피드 조회 성공")
+        );
+    }
+
 
     // [DELETE] /groups/{groupId}
     // 그룹 삭제
