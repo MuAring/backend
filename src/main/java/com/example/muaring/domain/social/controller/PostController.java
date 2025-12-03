@@ -35,7 +35,7 @@ public class PostController {
     public ResponseEntity<ApiResponse<Page<MusicHistoryDTO>>> getMusicHistoryByMember(
         @RequestParam(required = false) Integer year,
         @RequestParam(required = false) Integer month,
-        @PageableDefault(page = 0, size = 10) Pageable pageable
+        @PageableDefault(page = 0, size = 20) Pageable pageable
     ) {
             Page<MusicHistoryDTO> history = postService.getMusicHistoryByMember(year, month, pageable);
             return ResponseEntity

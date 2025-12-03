@@ -115,6 +115,7 @@ public class PostService {
         Page<MusicPost> posts = musicPostRepository.findByMemberAndYearMonth(memberId, year, month, pageable);
 
         return posts.map(post -> MusicHistoryDTO.builder()
+                .postId(post.getId())
                 .musicId(post.getMusic().getId())
                 .title(post.getMusic().getName())
                 .artist(post.getMusic().getArtistName())

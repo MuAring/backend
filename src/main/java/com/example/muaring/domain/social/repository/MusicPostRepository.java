@@ -29,6 +29,13 @@ public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
             Pageable pageable
     );
 
+    // 그룹 히스토리용: 한 달 동안의 그룹 포스트 전체 (삭제되지 않은 것만), 시간순
+    List<MusicPost> findByGroup_IdAndIsDeletedFalseAndCreatedAtBetweenOrderByCreatedAtAsc(
+            Long groupId,
+            LocalDateTime start,
+            LocalDateTime end
+    );
+
 //    @Query(value = """
 //        SELECT *
 //        FROM music_post mp

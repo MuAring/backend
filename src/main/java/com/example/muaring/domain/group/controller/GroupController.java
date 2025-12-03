@@ -8,6 +8,7 @@ import com.example.muaring.domain.group.dto.GroupCreateRequestDto;
 import com.example.muaring.domain.group.dto.GroupCreateResponseDto;
 import com.example.muaring.domain.group.dto.GroupListResponseDto;
 import com.example.muaring.domain.group.service.GroupService;
+import com.example.muaring.domain.music.dto.MusicHistoryDTO;
 import com.example.muaring.domain.social.dto.post.MusicPostFeedResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -156,6 +157,22 @@ public class GroupController {
         return ResponseEntity.ok(
                 ApiResponse.ok(posts, "그룹 오늘의 피드 조회 성공")
         );
+    }
+
+    // [GET] /groups/{groupId}/history?year=2025&month=10 (params는 안 넣어도 OK)
+    // 그룹 히스토리 조회
+    @GetMapping("/{groupId}/history")
+    public ResponseEntity<ApiResponse<Page<MusicHistoryDTO>>> getMusicHistoryByGroup(
+            @PathVariable Long groupId,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month,
+            @PageableDefault(page = 0, size = 20) Pageable pageable
+    ) {
+        Page<MusicHistoryDTO> history = groupService.getMusicHistoryByGroup(groupId, year, month, pageable);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.ok(history, "그룹의 음악 히스토리 조회가 완료되었습니다."));
     }
 
 
