@@ -23,7 +23,11 @@ public enum FileErrorCode implements ErrorCode {
     FORBIDDEN_GROUP_IMAGE_UPLOAD(3009, HttpStatus.FORBIDDEN, "그룹 관리자만 그룹 이미지를 업로드할 수 있습니다."),
 
     // 404
-    IMAGE_NOT_FOUND(3010, HttpStatus.NOT_FOUND, "이미지가 존재하지 않습니다.");
+    IMAGE_NOT_FOUND(3010, HttpStatus.NOT_FOUND, "이미지가 존재하지 않습니다."),
+    FILE_NOT_FOUND_IN_S3(3011, HttpStatus.NOT_FOUND, "S3에 파일이 존재하지 않습니다."),
+
+    // 500
+    S3_ACCESS_ERROR(3013, HttpStatus.INTERNAL_SERVER_ERROR, "S3 접근 중 오류가 발생했습니다.");
 
     private final int code;
     private final HttpStatus status;

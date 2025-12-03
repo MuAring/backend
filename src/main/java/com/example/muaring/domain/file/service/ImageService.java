@@ -2,15 +2,19 @@ package com.example.muaring.domain.file.service;
 
 import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.config.S3Properties;
+import com.example.muaring.domain.file.dto.request.GroupImageRequestDTO;
 import com.example.muaring.domain.file.dto.request.ImageUploadRequestDTO;
 import com.example.muaring.domain.file.dto.response.PresignedUrlResponseDTO;
 import com.example.muaring.domain.file.entity.Image;
+import com.example.muaring.domain.file.entity.ImageType;
 import com.example.muaring.domain.file.exception.FileErrorCode;
 import com.example.muaring.domain.file.exception.FileException;
 import com.example.muaring.domain.file.repository.ImageRepository;
 import com.example.muaring.domain.file.validator.FileValidator;
 import com.example.muaring.domain.group.entity.Group;
+import com.example.muaring.domain.group.exception.GroupErrorCode;
 import com.example.muaring.domain.group.repository.GroupRepository;
+import com.example.muaring.domain.group.response.GroupException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -144,5 +148,60 @@ public class ImageService {
             log.error("❌ S3 객체 삭제 도중 문제가 발생했습니다.: {}", s3Key, e);
             throw new RuntimeException("❌ S3 객체 삭제 도중 문제가 발생했습니다." + s3Key, e);
         }
+    }
+
+
+    // 그룹 프로필 이미지 업로드 메서드
+    @Transactional
+    public void confirmGroupImageUpload(GroupImageRequestDTO request) {
+        Long requesterId = SecurityUtil.getMemberId();
+
+        // 그룹 조회
+        Group group = groupRepository.findById(request.getGroupId())
+                .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
+
+        // 권한 검증 (그룹 관리자만 가능하게)
+        if (!group.getAdmin().getId().equals(requesterId)) {
+            throw new FileException(FileErrorCode.FORBIDDEN_GROUP_IMAGE_UPLOAD);
+        }
+
+        // S3에 파일이 실제로 존재하는지 검증
+        try {
+            HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
+                    .bucket(s3Properties.s3().bucket())
+                    .key(request.getS3Key())
+                    .build();
+
+            s3Client.headObject(headObjectRequest);
+        } catch (NoSuchKeyException e) {
+            log.error(" S3에 파일이 존재하지 않습니다: {}", request.getS3Key());
+            throw new FileException(FileErrorCode.FILE_NOT_FOUND_IN_S3);
+        } catch (S3Exception e) {
+            log.error(" S3 파일 확인 중 오류 발생: {}", request.getS3Key(), e);
+            throw new FileException(FileErrorCode.S3_ACCESS_ERROR);
+        }
+
+        // Image 엔티티 생성 및 저장
+        Image newImage = Image.create(
+                request.getFileName(),
+                request.getFileType(),
+                ImageType.GROUP,
+                request.getS3Key(),
+                request.getFileSize()
+        );
+        imageRepository.save(newImage);
+
+        // 기존 프로필 이미지가 있다면 S3에서 삭제
+        Image oldImage = group.getImage();
+        if (oldImage != null) {
+            deleteObject(oldImage.getS3Key());
+            imageRepository.delete(oldImage);
+            log.info("기존 그룹 프로필 이미지를 삭제했습니다. S3 Key: {}", oldImage.getS3Key());
+        }
+
+        // 그룹의 프로필 이미지 업데이트
+        group.updateImage(newImage);
+        log.info("그룹 프로필 이미지가 설정되었습니다. Group ID: {}, Image ID: {}",
+                group.getId(), newImage.getId());
     }
 }

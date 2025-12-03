@@ -43,6 +43,9 @@ public class Image extends BaseEntity {
     }
 
     public String getUrl() {
-        return "https://your-bucket.s3.amazonaws.com/" + this.s3Key;
+        return String.format("https://%s.s3.%s.amazonaws.com/%s",
+                "muaring-s3-bucket", // 버킷명
+                "ap-northeast-2", // 리전
+                this.s3Key);
     }
 }
