@@ -1,6 +1,6 @@
 package com.example.muaring.domain.group.service;
 
-import com.example.muaring.common.security.SecurityUtil;
+import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.domain.group.dto.*;
 import com.example.muaring.domain.group.entity.*;
 import com.example.muaring.domain.group.exception.GroupErrorCode;
@@ -11,8 +11,12 @@ import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.exception.MemberException;
 import com.example.muaring.domain.member.repository.MemberRepository;
 import com.example.muaring.domain.member.response.MemberErrorCode;
+import com.example.muaring.domain.music.exception.MusicErrorCode;
 import com.example.muaring.domain.social.dto.post.MusicPostFeedResponseDto;
 import com.example.muaring.domain.social.entity.MusicPost;
+import com.example.muaring.domain.social.exception.post.PostErrorCode;
+import com.example.muaring.domain.social.exception.post.PostException;
+import com.example.muaring.domain.social.repository.LikeRepository;
 import com.example.muaring.domain.social.repository.MusicPostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -41,6 +45,7 @@ public class GroupService {
     private final GroupMemberRepository groupMemberRepository;
     private final GroupMusicProfileRepository groupMusicProfileRepository;
     private final MusicPostRepository musicPostRepository;
+    private final LikeRepository likeRepository;
     private final GroupPlaylistRepository groupPlaylistRepository;
 
     // 그룹 생성
@@ -248,7 +253,7 @@ public class GroupService {
     }
 
     // 그룹 멤버 조회 메서드
-    public List<GroupMemberResponseDto> getGroupMembers(Long groupId, Long memberId) {
+    public List<GroupMemberResponseDto> getGroupMembers(Long groupId, Long memberId, String search) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
 
@@ -260,10 +265,58 @@ public class GroupService {
             }
         }
 
-        List<GroupMember> groupMembers = groupMemberRepository.findByGroupId(groupId);
+        List<GroupMember> groupMembers;
+
+        // 검색어가 있으면 필터링
+        if (search != null && !search.trim().isEmpty()) {
+            groupMembers = groupMemberRepository.findByGroupIdAndMemberNicknameContaining(groupId, search.trim());
+        } else {
+            groupMembers = groupMemberRepository.findByGroupId(groupId);
+        }
+
+        // 모든 멤버 ID 수집
+        List<Long> memberIds = groupMembers.stream()
+                .map(gm -> gm.getMember().getId())
+                .toList();
+
+        // 한 번에 최신 게시물 조회
+        List<MusicPost> latestPosts = musicPostRepository.findLatestPostsByMemberIds(memberIds);
+
+        // memberId를 키로 하는 Map 생성
+        Map<Long, MusicPost> latestPostMap = latestPosts.stream()
+                .collect(Collectors.toMap(
+                        post -> post.getMember().getId(),
+                        post -> post
+                ));
 
         return groupMembers.stream()
-                .map(GroupMemberResponseDto::from)
+                .map(groupMember -> {
+                    GroupMemberResponseDto.GroupMemberResponseDtoBuilder builder =
+                            GroupMemberResponseDto.builder()
+                                    .memberId(groupMember.getMember().getId())
+                                    .nickname(groupMember.getMember().getNickname())
+                                    .profileImageUrl(groupMember.getMember().getProfileImage() != null
+                                            ? groupMember.getMember().getProfileImage().getUrl()
+                                            : null)
+                                    .role(groupMember.getRole().name())
+                                    .joinedAt(groupMember.getCreatedAt().toString());
+
+                    // Map에서 해당 멤버의 최신 게시물 찾기
+                    MusicPost latestPost = latestPostMap.get(groupMember.getMember().getId());
+                    if (latestPost != null) {
+                        GroupMemberResponseDto.RecentMusicDto recentMusic =
+                                GroupMemberResponseDto.RecentMusicDto.builder()
+                                        .musicId(latestPost.getMusic().getId())
+                                        .postId(latestPost.getId())
+                                        .musicName(latestPost.getMusic().getName())
+                                        .artistName(latestPost.getMusic().getArtistName())
+                                        .albumImgUrl(latestPost.getMusic().getAlbumImgUrl())
+                                        .build();
+                        builder.recentMusic(recentMusic);
+                    }
+
+                    return builder.build();
+                })
                 .toList();
     }
 
@@ -417,5 +470,29 @@ public class GroupService {
 
         // 그룹 멤버 수 감소
         group.decrementMemberCount();
+    }
+
+     // 게시물 상세 조회 (댓글 제외. 댓글은 댓글 조회 api로 프론트에서 따로 불러오게 함)
+
+    public MusicPostDetailResponseDto getPostDetail(Long postId, Long memberId) {
+        // 게시물 조회
+        MusicPost post = musicPostRepository.findByIdWithDetails(postId)
+                .orElseThrow(() -> new PostException(PostErrorCode.POST_NOT_FOUND));
+
+        // 그룹 게시물인 경우 접근 권한 확인
+        if (post.getGroup() != null && !post.getGroup().getIsPublic()) {
+            boolean isMember = groupMemberRepository.existsByGroupIdAndMemberId(
+                    post.getGroup().getId(),
+                    memberId
+            );
+            if (!isMember) {
+                throw new GroupException(GroupErrorCode.NOT_GROUP_MEMBER);
+            }
+        }
+
+        // 현재 사용자가 좋아요를 눌렀는지 확인
+        boolean isLiked = likeRepository.existsByPostIdAndMemberId(postId, memberId);
+
+        return MusicPostDetailResponseDto.of(post, isLiked);
     }
 }

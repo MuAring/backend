@@ -16,6 +16,20 @@ public class GroupMemberResponseDto {
         private String role;
         private String joinedAt;
 
+
+    // 최신 음악 정보 추가
+    private RecentMusicDto recentMusic;
+
+    @Getter
+    @Builder
+    public static class RecentMusicDto {
+        private Long musicId;
+        private String musicName;
+        private String artistName;
+        private String albumImgUrl;
+        private Long postId;
+    }
+
     public static GroupMemberResponseDto from(GroupMember groupMember) {
         return GroupMemberResponseDto.builder()
                 .memberId(groupMember.getMember().getId())
@@ -25,6 +39,7 @@ public class GroupMemberResponseDto {
                         : null)
                 .role(groupMember.getRole().name())
                 .joinedAt(groupMember.getCreatedAt().toString())
+                .recentMusic(null) // 서비스에서 설정할 예정
                 .build();
     }
 }

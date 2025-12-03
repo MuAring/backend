@@ -1,6 +1,6 @@
 package com.example.muaring.domain.file.service;
 
-import com.example.muaring.common.security.SecurityUtil;
+import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.config.S3Properties;
 import com.example.muaring.domain.file.dto.request.ImageUploadRequestDTO;
 import com.example.muaring.domain.file.dto.response.PresignedUrlResponseDTO;
@@ -76,12 +76,6 @@ public class ImageService {
                 .bucket(s3Properties.s3().bucket())
                 .key(s3Key)
                 .contentType(request.fileType())
-                .contentLength(request.fileSize())
-                .metadata(Map.of(
-                        "original-filename", safeFileName(request.fileName()),
-                        "image-type", request.fileType()
-                ))
-                .serverSideEncryption(ServerSideEncryption.AES256)  // S3에 저장시 데이터 자동 암호화
                 .build();
 
         Duration uploadDuration = Duration.ofMinutes(s3Properties.s3().presign().uploadExpMinutes());
@@ -129,10 +123,11 @@ public class ImageService {
 
     // ⚪ 파일명을 정제하는 메서드
     private String safeFileName(String fileName) {
-        return fileName
+        String cleaned = fileName
                 .replaceAll("[^a-zA-Z0-9._-]", "_")
-                .replaceAll("_+", "_")
-                .substring(0, Math.min(fileName.length(), 100));
+                .replaceAll("_+", "_");
+
+        return cleaned.substring(0, Math.min(cleaned.length(), 100));
     }
 
     // ⚪ 업로드된 s3 파일을 삭제하는 메서드

@@ -1,7 +1,7 @@
 package com.example.muaring.domain.social.controller;
 
 import com.example.muaring.common.response.ApiResponse;
-import com.example.muaring.common.security.SecurityUtil;
+import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.domain.social.dto.comment.request.CommentCreateRequestDTO;
 import com.example.muaring.domain.social.dto.comment.response.CommentReadResponseDTO;
 import com.example.muaring.domain.social.dto.comment.response.CommentResponseDTO;
