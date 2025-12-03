@@ -12,7 +12,6 @@ import com.example.muaring.domain.member.exception.MemberException;
 import com.example.muaring.domain.member.repository.MemberRepository;
 import com.example.muaring.domain.member.response.MemberErrorCode;
 import com.example.muaring.domain.music.dto.MusicHistoryDTO;
-import com.example.muaring.domain.music.exception.MusicErrorCode;
 import com.example.muaring.domain.social.dto.post.MusicPostFeedResponseDto;
 import com.example.muaring.domain.social.entity.MusicPost;
 import com.example.muaring.domain.social.exception.post.PostErrorCode;
@@ -187,17 +186,31 @@ public class GroupService {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
 
-        List<Long> categoryIds = groupCategoryRepository.findCategoryIdsByGroupId(groupId);
         int totalPostCount = musicPostRepository.countActiveByGroupId(groupId);
         int totalMusicCount = groupPlaylistRepository.countByGroupId(groupId);
 
+        // 1) groupId 하나를 리스트로 감싸서 조회
+        List<GroupIdCategoryNameProjection> mappings =
+                mappingRepository.findPairsWithNamesByGroupIds(List.of(groupId));
+
+        // 2) projection → category displayName 리스트로 변환
+        List<String> categoryNames = mappings.stream()
+                .map(projection -> {
+                    String code = projection.getCategoryCode(); // "k_pop", "indie" ...
+                    return GroupCategoryType.fromName(code)     // enum 매핑
+                            .getDisplayName();                  // "케이팝", "인디" ...
+                })
+                .distinct() // 같은 카테고리 중복 방지
+                .toList();
+
         return GroupProfileResponseDto.of(
                 group,
-                categoryIds,
+                categoryNames,      // 이름 리스트로 전달
                 totalMusicCount,
                 totalPostCount
         );
     }
+
 
     // 그룹 내 피드 조회 메서드
     @Transactional
