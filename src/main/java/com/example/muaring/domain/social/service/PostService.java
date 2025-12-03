@@ -12,13 +12,11 @@ import com.example.muaring.domain.music.entity.Music;
 import com.example.muaring.domain.music.exception.MusicErrorCode;
 import com.example.muaring.domain.music.exception.MusicException;
 import com.example.muaring.domain.music.service.MusicService;
-import com.example.muaring.domain.social.dto.post.MusicPostDTO;
-import com.example.muaring.domain.social.dto.post.MusicPostListResponseDTO;
-import com.example.muaring.domain.social.dto.post.MusicPostRequestDTO;
-import com.example.muaring.domain.social.dto.post.TodayPostResponseDTO;
+import com.example.muaring.domain.social.dto.post.*;
 import com.example.muaring.domain.social.exception.post.PostErrorCode;
 import com.example.muaring.domain.social.repository.MusicPostRepository;
 import com.example.muaring.domain.social.entity.MusicPost;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -117,6 +115,7 @@ public class PostService {
         Page<MusicPost> posts = musicPostRepository.findByMemberAndYearMonth(memberId, year, month, pageable);
 
         return posts.map(post -> MusicHistoryDTO.builder()
+                .postId(post.getId())
                 .musicId(post.getMusic().getId())
                 .title(post.getMusic().getName())
                 .artist(post.getMusic().getArtistName())
@@ -126,31 +125,17 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<MusicPostListResponseDTO> getTodayFolloweePosts() {
+    public Page<MusicPostFeedResponseDto> getTodayFolloweePosts(Pageable pageable) {
 
         Long memberId = SecurityUtil.getMemberId();
 
-        if (!memberRepository.existsById(memberId)) {
-            throw new MusicException(MusicErrorCode.MEMBER_NOT_FOUND);
-        }
-
-        List<MusicPost> posts = musicPostRepository.findTodayPostsByFollowees(memberId);
-
-        return posts.stream()
-                .map(post -> MusicPostListResponseDTO.builder()
-                        .postId(post.getId())
-                        .memberId(post.getMember().getId())
-                        .memberName(post.getMember().getNickname())
-                        .profileImage(post.getMember().getProfileImage())
-                        .content(post.getContent())
-                        .albumImgUrl(post.getMusic().getAlbumImgUrl())
-                        .musicName(post.getMusic().getName())
-                        .artistName(post.getMusic().getArtistName())
-                        .previewUrl(post.getMusic().getPreviewUrl())
-                        .likeCount(post.getLikeCount().longValue())
-                        .commentCount(post.getCommentCount().longValue())
-                        .build())
-                .toList();
+        // Pagination + sort 된 채로 바로 가져오기
+        Pageable pageableNoSort = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize()
+        );
+        Page<MusicPost> posts = musicPostRepository.findTodayPostsByFollowees(memberId, pageableNoSort);
+        return posts.map(MusicPostFeedResponseDto::from);
     }
 
     @Transactional(readOnly = true)

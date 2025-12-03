@@ -8,10 +8,12 @@ import com.example.muaring.domain.group.dto.GroupCreateRequestDto;
 import com.example.muaring.domain.group.dto.GroupCreateResponseDto;
 import com.example.muaring.domain.group.dto.GroupListResponseDto;
 import com.example.muaring.domain.group.service.GroupService;
+import com.example.muaring.domain.music.dto.MusicHistoryDTO;
 import com.example.muaring.domain.social.dto.post.MusicPostFeedResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -119,7 +121,7 @@ public class GroupController {
 
 
     // [GET] /groups/{groupId}/posts
-    // 그룹 피드 조회
+    // 그룹 피드 동적 조회
     @GetMapping("/{groupId}/posts")
     public ResponseEntity<ApiResponse<Page<MusicPostFeedResponseDto>>> getGroupFeed(
             @PathVariable Long groupId,
@@ -139,6 +141,40 @@ public class GroupController {
                 ApiResponse.ok(post, "그룹 피드 조회 성공")
         );
     }
+
+    // [GET] /groups/{groupId}/posts/today
+    // 그룹 오늘의 피드 조회
+    @GetMapping("/{groupId}/posts/today")
+    public ResponseEntity<ApiResponse<Page<MusicPostFeedResponseDto>>> getTodayGroupFeed(
+            @PathVariable Long groupId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<MusicPostFeedResponseDto> posts =
+                groupService.getTodayGroupFeed(groupId, pageable);
+
+        return ResponseEntity.ok(
+                ApiResponse.ok(posts, "그룹 오늘의 피드 조회 성공")
+        );
+    }
+
+    // [GET] /groups/{groupId}/history?year=2025&month=10 (params는 안 넣어도 OK)
+    // 그룹 히스토리 조회
+    @GetMapping("/{groupId}/history")
+    public ResponseEntity<ApiResponse<Page<MusicHistoryDTO>>> getMusicHistoryByGroup(
+            @PathVariable Long groupId,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month,
+            @PageableDefault(page = 0, size = 20) Pageable pageable
+    ) {
+        Page<MusicHistoryDTO> history = groupService.getMusicHistoryByGroup(groupId, year, month, pageable);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.ok(history, "그룹의 음악 히스토리 조회가 완료되었습니다."));
+    }
+
 
     // [DELETE] /groups/{groupId}
     // 그룹 삭제
@@ -193,9 +229,9 @@ public class GroupController {
                 .body(ApiResponse.ok("그룹 멤버 추방을 완료했습니다."));
     }
 
-     // [GET] /groups/{postId}
+     // [GET] /groups/posts/{postId}
      // 게시물 상세 조회
-    @GetMapping("/{postId}")
+    @GetMapping("/posts/{postId}")
     @Operation(summary = "게시물 상세 조회", description = "게시물의 기본 정보를 조회합니다. 댓글은 별도 API로 조회하세요.")
     public ResponseEntity<ApiResponse<MusicPostDetailResponseDto>> getPostDetail(
             @PathVariable Long postId) {

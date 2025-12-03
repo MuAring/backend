@@ -69,6 +69,8 @@ public class AuthService {
         String refreshToken = jwtTokenProvider.generateRefreshToken(member.getId(), member.getEmail());
         boolean hasNickname = member.getNickname() != null && !member.getNickname().isEmpty();
 
+        log.info("accessToken: " + accessToken);
+
         return LoginResponseDTO.of(member, accessToken, refreshToken, member.getNickname(), hasNickname);
     }
 

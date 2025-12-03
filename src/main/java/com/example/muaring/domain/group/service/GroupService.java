@@ -11,7 +11,7 @@ import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.exception.MemberException;
 import com.example.muaring.domain.member.repository.MemberRepository;
 import com.example.muaring.domain.member.response.MemberErrorCode;
-import com.example.muaring.domain.music.exception.MusicErrorCode;
+import com.example.muaring.domain.music.dto.MusicHistoryDTO;
 import com.example.muaring.domain.social.dto.post.MusicPostFeedResponseDto;
 import com.example.muaring.domain.social.entity.MusicPost;
 import com.example.muaring.domain.social.exception.post.PostErrorCode;
@@ -23,12 +23,10 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.muaring.domain.group.entity.GroupMember.GroupRole.ADMIN;
@@ -188,17 +186,31 @@ public class GroupService {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
 
-        List<Long> categoryIds = groupCategoryRepository.findCategoryIdsByGroupId(groupId);
         int totalPostCount = musicPostRepository.countActiveByGroupId(groupId);
         int totalMusicCount = groupPlaylistRepository.countByGroupId(groupId);
 
+        // 1) groupId 하나를 리스트로 감싸서 조회
+        List<GroupIdCategoryNameProjection> mappings =
+                mappingRepository.findPairsWithNamesByGroupIds(List.of(groupId));
+
+        // 2) projection → category displayName 리스트로 변환
+        List<String> categoryNames = mappings.stream()
+                .map(projection -> {
+                    String code = projection.getCategoryCode(); // "k_pop", "indie" ...
+                    return GroupCategoryType.fromName(code)     // enum 매핑
+                            .getDisplayName();                  // "케이팝", "인디" ...
+                })
+                .distinct() // 같은 카테고리 중복 방지
+                .toList();
+
         return GroupProfileResponseDto.of(
                 group,
-                categoryIds,
+                categoryNames,      // 이름 리스트로 전달
                 totalMusicCount,
                 totalPostCount
         );
     }
+
 
     // 그룹 내 피드 조회 메서드
     @Transactional
@@ -234,7 +246,97 @@ public class GroupService {
         return posts.map(MusicPostFeedResponseDto::from);
     }
 
+    // 그룹 내 오늘의 피드 조회
+    @Transactional
+    public Page<MusicPostFeedResponseDto> getTodayGroupFeed(
+            Long groupId,
+            Pageable pageable
+    ) {
+        LocalDate today = LocalDate.now();
+
+        LocalDateTime start = today.atStartOfDay();
+        LocalDateTime end = today.plusDays(1).atStartOfDay();
+
+        Page<MusicPost> posts = musicPostRepository
+                .findByGroup_IdAndCreatedAtBetween(groupId, start, end, pageable);
+
+        return posts.map(MusicPostFeedResponseDto::from);
+    }
+
+    // 그룹 히스토리 조회 메서드
+    @Transactional(readOnly = true)
+    public Page<MusicHistoryDTO> getMusicHistoryByGroup(
+            Long groupId,
+            Integer year,
+            Integer month,
+            Pageable pageable
+    ) {
+        // 1. 그룹 존재 여부 체크 (선택사항이지만 있으면 좋음)
+        if (!groupRepository.existsById(groupId)) {
+            throw new GroupException(GroupErrorCode.GROUP_NOT_FOUND);
+        }
+
+        // 2. year, month 없으면 -> 현재 달 기준
+        YearMonth targetMonth;
+        if (year != null && month != null) {
+            targetMonth = YearMonth.of(year, month);
+        } else {
+            targetMonth = YearMonth.now();
+        }
+
+        LocalDateTime start = targetMonth.atDay(1).atStartOfDay();
+        LocalDateTime end = targetMonth.plusMonths(1).atDay(1).atStartOfDay();
+
+        // 3. 해당 월의 전체 포스트 가져오기 (삭제되지 않은 것만, 시간 오름차순)
+        List<MusicPost> posts = musicPostRepository
+                .findByGroup_IdAndIsDeletedFalseAndCreatedAtBetweenOrderByCreatedAtAsc(
+                        groupId,
+                        start,
+                        end
+                );
+
+        // 4. 하루당 "가장 빠른" 포스트만 선택
+        //    createdAt ASC로 정렬되어 있으니, 날짜별로 첫 번째 것만 선택하면 됨
+        Map<LocalDate, MusicPost> earliestPostPerDay = new LinkedHashMap<>();
+
+        for (MusicPost post : posts) {
+            LocalDate day = post.getCreatedAt().toLocalDate();
+            // 처음 본 날짜일 때만 put (이미 있으면 더 늦게 올라온 거라 무시)
+            earliestPostPerDay.putIfAbsent(day, post);
+        }
+
+        // 5. MusicHistoryDTO 리스트로 변환 (날짜 순 유지)
+        List<MusicHistoryDTO> dailyHistories = earliestPostPerDay.values().stream()
+                .map(post -> MusicHistoryDTO.builder()
+                        .postId(post.getId())
+                        .musicId(post.getMusic().getId())
+                        .title(post.getMusic().getName())
+                        .artist(post.getMusic().getArtistName())
+                        .albumImage(post.getMusic().getAlbumImgUrl())
+                        .createdAt(post.getCreatedAt())
+                        .build()
+                )
+                .toList();
+
+        // 6. Page 처리 (in-memory pagination)
+        int total = dailyHistories.size();
+        int pageSize = pageable.getPageSize();
+        int currentPage = pageable.getPageNumber();
+        int fromIndex = currentPage * pageSize;
+        int toIndex = Math.min(fromIndex + pageSize, total);
+
+        List<MusicHistoryDTO> pageContent;
+        if (fromIndex >= total) {
+            pageContent = List.of();
+        } else {
+            pageContent = dailyHistories.subList(fromIndex, toIndex);
+        }
+
+        return new PageImpl<>(pageContent, pageable, total);
+    }
+
     // 그룹 멤버 조회 메서드
+    @Transactional
     public List<GroupMemberResponseDto> getGroupMembers(Long groupId, Long memberId, String search) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
