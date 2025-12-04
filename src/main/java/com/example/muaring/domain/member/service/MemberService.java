@@ -11,10 +11,7 @@ import com.example.muaring.domain.file.service.ImageService;
 import com.example.muaring.domain.group.repository.GroupMemberRepository;
 import com.example.muaring.domain.member.dto.request.MemberProfileCreateRequestDTO;
 import com.example.muaring.domain.member.dto.request.MemberProfileUpdateRequestDTO;
-import com.example.muaring.domain.member.dto.response.MemberProfileCreateResponseDTO;
-import com.example.muaring.domain.member.dto.response.MemberProfileReadResponseDTO;
-import com.example.muaring.domain.member.dto.response.MemberProfileUpdateResponseDTO;
-import com.example.muaring.domain.member.dto.response.NicknameCheckResponseDTO;
+import com.example.muaring.domain.member.dto.response.*;
 import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.file.entity.Image;
 import com.example.muaring.domain.member.exception.MemberException;
@@ -57,15 +54,15 @@ public class MemberService {
                 throw new MemberException(MemberErrorCode.ALREADY_HAS_PROFILE);
             }
 
-            Image image = createImageIfExists(requestDTO.imageRequestDTO());
+            Image image = createImageIfExists(requestDTO.imageRequest());
 
             member.createProfile(requestDTO.nickname(), image);
             return MemberProfileCreateResponseDTO.of(member, s3Properties.s3().bucketUrl(s3Properties.region()));
         } catch (Exception e) {
-            if (requestDTO.imageRequestDTO() != null
-                    && requestDTO.imageRequestDTO().isCompleteImage()) {
+            if (requestDTO.imageRequest() != null
+                    && requestDTO.imageRequest().isCompleteImage()) {
                 log.warn("❌ 프로필 정보 생성 도중 문제가 발생했습니다.");
-                imageService.deleteObject(requestDTO.imageRequestDTO().s3Key());
+                imageService.deleteObject(requestDTO.imageRequest().s3Key());
             }
             throw e;
         }
@@ -178,5 +175,12 @@ public class MemberService {
         return imageService
                 .generateDownloadPresignedUrl(defaultImage.getId())
                 .presignedUrl();
+    }
+
+    public MemberSettingsReadResponse getMemberSettings(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+        String imageUrl = resolveProfileImageUrl(member);
+        return MemberSettingsReadResponse.of(imageUrl, member);
     }
 }

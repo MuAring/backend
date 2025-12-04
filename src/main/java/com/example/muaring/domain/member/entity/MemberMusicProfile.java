@@ -11,7 +11,16 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
-// 사용자 음악 취향 수치화한 테이블
+/**
+ * 사용자 음악 성향 프로필 (MemberMusicProfile)
+ * -----------------------------------------------
+ * - Member : 1 : 1 매핑 (PK 공유)
+ * - status:
+ *      NOT_AVAILABLE → 데이터 부족
+ *      PROCESSING    → 계산 중 (확장성 대비)
+ *      READY         → 정상 계산 완료
+ * - GroupMusicProfile과 동일한 구조/패턴 유지
+ */
 @Entity
 @Table(name = "member_music_profile")
 @EntityListeners(AuditingEntityListener.class)
@@ -27,6 +36,10 @@ public class MemberMusicProfile {
     @MapsId
     @JoinColumn(name = "member_id")
     private Member member;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 20)
+    private ProfileStatus status;
 
     @Column(name = "avg_danceability")
     private Double avgDanceability;
@@ -72,11 +85,9 @@ public class MemberMusicProfile {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
-    private ProfileStatus status;
-
-    // 새 멤버 생성 시 기본 profile (비어 있음)
+    /**
+     * 최초 생성 시 기본값 (NOT_AVAILABLE)
+     */
     public static MemberMusicProfile createEmpty(Member member) {
         MemberMusicProfile profile = new MemberMusicProfile();
         profile.member = member;
@@ -84,7 +95,9 @@ public class MemberMusicProfile {
         return profile;
     }
 
-    // 배치 계산 완료 후 READY 상태로 만드는 팩토리
+    /**
+     * 계산 완료 후 READY 상태로 만드는 팩토리
+     */
     public static MemberMusicProfile of(
             Member member,
             Double avgDanceability, Double avgEnergy, Double avgValence,
@@ -110,14 +123,58 @@ public class MemberMusicProfile {
         return profile;
     }
 
-    // 생성/수정 공통 안전장치: status 기본값
+    /**
+     * 기존 프로필 업데이트용 (GroupMusicProfile과 동일)
+     */
+    public void updateMetrics(
+            Double avgDanceability, Double avgEnergy, Double avgValence,
+            Double avgAcousticness, Double avgInstrumentalness, Double avgSpeechiness,
+            Double avgTempo, Double avgLoudness, Double avgPopularity, Double avgRarity,
+            Double hiddenGemRatio,
+            Integer calculatedDays
+    ) {
+        this.status = ProfileStatus.READY;
+        this.avgDanceability = avgDanceability;
+        this.avgEnergy = avgEnergy;
+        this.avgValence = avgValence;
+        this.avgAcousticness = avgAcousticness;
+        this.avgInstrumentalness = avgInstrumentalness;
+        this.avgSpeechiness = avgSpeechiness;
+        this.avgTempo = avgTempo;
+        this.avgLoudness = avgLoudness;
+        this.avgPopularity = avgPopularity;
+        this.avgRarity = avgRarity;
+        this.hiddenGemRatio = hiddenGemRatio;
+        this.calculatedDays = calculatedDays;
+    }
+
+    /**
+     * NOT_AVAILABLE로 초기화 (데이터 부족 시)
+     */
+    public void resetToNotAvailable() {
+        this.status = ProfileStatus.NOT_AVAILABLE;
+        this.avgDanceability = null;
+        this.avgEnergy = null;
+        this.avgValence = null;
+        this.avgAcousticness = null;
+        this.avgInstrumentalness = null;
+        this.avgSpeechiness = null;
+        this.avgTempo = null;
+        this.avgLoudness = null;
+        this.avgPopularity = null;
+        this.avgRarity = null;
+        this.hiddenGemRatio = null;
+        this.calculatedDays = null;
+    }
+
+    /**
+     * 상태/필드 무결성 보장 — GroupMusicProfile 패턴과 통일
+     */
     @PrePersist
     void ensureDefaults() {
         if (status == null) status = ProfileStatus.NOT_AVAILABLE;
     }
 
-    /* 무결성: READY일 때는 주요 메트릭이 null이면 안 되고,
-       NOT_AVAILABLE/PROCESSING일 땐 메트릭이 있으면 안 됨 */
     @PreUpdate
     private void validateConsistency() {
         boolean hasMetrics =
@@ -128,10 +185,11 @@ public class MemberMusicProfile {
 
         switch (status) {
             case NOT_AVAILABLE, PROCESSING -> {
-                if (hasMetrics) throw new MemberException(MemberErrorCode.METRICS_CONFLICT);
+                if (hasMetrics) {
+                    throw new MemberException(MemberErrorCode.METRICS_CONFLICT);
+                }
             }
             case READY -> {
-                // 필요 시 핵심 필드 몇 개는 반드시 채워지도록 최소 요건 체크
                 if (avgDanceability == null || avgEnergy == null || avgValence == null) {
                     throw new MemberException(MemberErrorCode.METRICS_NOT_FOUND);
                 }

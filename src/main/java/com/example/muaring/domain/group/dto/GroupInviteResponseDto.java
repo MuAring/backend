@@ -17,9 +17,10 @@ public class GroupInviteResponseDto {
     private String inviterName;
 
     public static GroupInviteResponseDto from(GroupInviteToken token, String baseUrl) {
+        System.out.println("DTO 생성 - baseUrl: " + baseUrl);
         return GroupInviteResponseDto.builder()
                 .inviteId(token.getId())
-                .inviteUrl(baseUrl + "/invite/" + token.getInviteToken())
+                .inviteUrl(baseUrl + "/" + token.getInviteToken())
                 .inviteToken(token.getInviteToken())
                 .createdAt(token.getCreatedAt())
                 .expiresAt(token.getExpiresAt())

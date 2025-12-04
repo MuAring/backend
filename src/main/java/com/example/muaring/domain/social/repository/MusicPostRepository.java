@@ -7,7 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
 
@@ -27,20 +29,152 @@ public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
             Pageable pageable
     );
 
+    // 그룹 히스토리용: 한 달 동안의 그룹 포스트 전체 (삭제되지 않은 것만), 시간순
+    List<MusicPost> findByGroup_IdAndIsDeletedFalseAndCreatedAtBetweenOrderByCreatedAtAsc(
+            Long groupId,
+            LocalDateTime start,
+            LocalDateTime end
+    );
+
+//    @Query(value = """
+//        SELECT *
+//        FROM music_post mp
+//        WHERE mp.member_id IN (
+//            SELECT f.followee_id
+//            FROM follow f
+//            WHERE f.follower_id = :memberId
+//        )
+//        AND mp.created_at >= CURRENT_DATE
+//        AND mp.created_at < CURRENT_DATE + INTERVAL '1 day'
+//        ORDER BY mp.created_at DESC
+//        """, nativeQuery = true)
+//    List<MusicPost> findTodayPostsByFollowees(@Param("memberId") Long memberId);
+
     @Query(value = """
-    SELECT *
-    FROM music_post mp
-    WHERE mp.member_id IN (
-        SELECT f.followee_id
-        FROM follow f
-        WHERE f.follower_id = :memberId
-    )
-    AND mp.created_at >= CURRENT_DATE
-    AND mp.created_at < CURRENT_DATE + INTERVAL '1 day'
-    ORDER BY mp.created_at DESC
-    """, nativeQuery = true)
-    List<MusicPost> findTodayPostsByFollowees(@Param("memberId") Long memberId);
+        SELECT *
+        FROM music_post mp
+        WHERE mp.member_id IN (
+            SELECT f.followee_id
+            FROM follow f
+            WHERE f.follower_id = :memberId
+        )
+        AND mp.created_at >= CURRENT_DATE
+        AND mp.created_at < CURRENT_DATE + INTERVAL '1 day'
+        ORDER BY mp.created_at DESC
+        """,
+            countQuery = """
+        SELECT COUNT(*)
+        FROM music_post mp
+        WHERE mp.member_id IN (
+            SELECT f.followee_id
+            FROM follow f
+            WHERE f.follower_id = :memberId
+        )
+        AND mp.created_at >= CURRENT_DATE
+        AND mp.created_at < CURRENT_DATE + INTERVAL '1 day'
+        """,
+            nativeQuery = true)
+    Page<MusicPost> findTodayPostsByFollowees(
+            @Param("memberId") Long memberId,
+            Pageable pageable
+    );
+
+    @Query(value = "SELECT * FROM music_post " +
+            "WHERE member_id = :memberId " +
+            "AND created_at >= CURRENT_DATE " +
+            "AND created_at < CURRENT_DATE + INTERVAL '1 day'",
+            nativeQuery = true)
+    Optional<MusicPost> findTodayPostByMember(@Param("memberId") Long memberId);
 
 
     long countByMemberIdAndIsDeletedIsFalse( Long memberId);
+
+    @Query("select count(mp) from MusicPost mp where mp.group.id = :groupId and mp.isDeleted = false")
+    int countActiveByGroupId(@Param("groupId") Long groupId);
+
+    // 전체 조회 (그룹 기준)
+    Page<MusicPost> findByGroup_Id(Long groupId, Pageable pageable);
+
+    // 특정 월 범위 조회
+    Page<MusicPost> findByGroup_IdAndCreatedAtBetween(
+            Long groupId,
+            LocalDateTime start,
+            LocalDateTime end,
+            Pageable pageable
+    );
+
+    @Query("""
+        SELECT COUNT(p) > 0
+        FROM MusicPost p
+        WHERE p.member.id = :memberId
+          AND p.createdAt >= :startOfDay
+          AND p.createdAt < :endOfDay
+    """)
+    boolean existsTodayPostByMember(@Param("memberId") Long memberId,
+                                    @Param("startOfDay") LocalDateTime startOfDay,
+                                    @Param("endOfDay") LocalDateTime endOfDay);
+
+    /**
+     * 그룹 성향 계산용:
+     * - 1. 특정 그룹에 속한 포스트
+     * - 2. 최근 90일
+     * - 3. 삭제되지 않은 것
+     * - 4. music + music.feature 까지 한 번에 로딩
+     */
+    @Query("""
+        SELECT DISTINCT mp
+        FROM MusicPost mp
+        JOIN FETCH mp.music m
+        JOIN FETCH m.feature f
+        LEFT JOIN FETCH m.genres mg
+        LEFT JOIN FETCH mg.genre g
+        WHERE mp.group.id = :groupId
+          AND mp.createdAt >= :from
+          AND mp.isDeleted = false
+        """)
+    List<MusicPost> findRecentGroupPostsWithFeatureAndGenres(
+            @Param("groupId") Long groupId,
+            @Param("from") LocalDateTime from
+    );
+
+    @Query("""
+    SELECT DISTINCT mp
+    FROM MusicPost mp
+    JOIN FETCH mp.music m
+    JOIN FETCH m.feature f
+    LEFT JOIN FETCH m.genres mg
+    LEFT JOIN FETCH mg.genre g
+    WHERE mp.member.id = :memberId
+      AND mp.createdAt >= :from
+      AND mp.isDeleted = false
+    ORDER BY mp.createdAt DESC
+    """)
+    List<MusicPost> findRecentUserPostsWithFeatureAndGenres(
+            @Param("memberId") Long memberId,
+            @Param("from") LocalDateTime from
+    );
+
+    // 특정 멤버의 가장 최신 게시물 조회
+    Optional<MusicPost> findFirstByMemberIdOrderByCreatedAtDesc(Long memberId);
+
+    // 여러 멤버의 최신 게시물을 한 번에 조회 (성능 최적화)
+    @Query("SELECT p FROM MusicPost p " +
+            "WHERE p.id IN (" +
+            "  SELECT MAX(p2.id) FROM MusicPost p2 " +
+            "  WHERE p2.member.id IN :memberIds " +
+            "  AND p2.isProfile = true " +
+            "  GROUP BY p2.member.id" +
+            ") " +
+            "ORDER BY p.createdAt DESC")
+    List<MusicPost> findLatestPostsByMemberIds(@Param("memberIds") List<Long> memberIds);
+
+    // 게시물 상세 조회 (연관 엔티티 fetch join으로 한 번에 조회)
+    @Query("SELECT p FROM MusicPost p " +
+            "JOIN FETCH p.member m " +
+            "LEFT JOIN FETCH m.profileImage " +
+            "JOIN FETCH p.music " +
+            "LEFT JOIN FETCH p.group g " +
+            "WHERE p.id = :postId")
+    Optional<MusicPost> findByIdWithDetails(@Param("postId") Long postId);
+
 }

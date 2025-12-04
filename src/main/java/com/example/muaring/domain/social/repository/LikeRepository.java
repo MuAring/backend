@@ -11,4 +11,7 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
 
     Optional<Like> findByPostIdAndMemberId(Long postId, Long memberId);
     void deleteByPostIdAndMemberId(Long postId, Long memberId);
+
+    // 특정 게시물에 특정 회원이 좋아요를 눌렀는지 확인
+    boolean existsByPostIdAndMemberId(Long postId, Long memberId);
 }

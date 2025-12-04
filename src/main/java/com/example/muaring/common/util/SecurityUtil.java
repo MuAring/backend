@@ -1,4 +1,4 @@
-package com.example.muaring.common.security;
+package com.example.muaring.common.util;
 
 import com.example.muaring.domain.auth.exception.AuthException;
 import com.example.muaring.domain.auth.exception.AuthErrorCode;
@@ -32,7 +32,7 @@ public final class SecurityUtil {
 
         // principal이 MemberPrincipal인지 검증
         if (principal instanceof MemberPrincipal memberPrincipal) {
-            return memberPrincipal.getMemberId();
+            return memberPrincipal.memberId();
         }
 
         throw new AuthException(AuthErrorCode.UNAUTHORIZED_ACCESS);
@@ -44,7 +44,7 @@ public final class SecurityUtil {
 
         Object principal = auth.getPrincipal();
         if (principal instanceof MemberPrincipal memberPrincipal) {
-            return memberPrincipal.getEmail();
+            return memberPrincipal.email();
         }
 
         throw new AuthException(AuthErrorCode.UNAUTHORIZED_ACCESS);
