@@ -13,15 +13,15 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/groups/{groupId}/invites")
+@RequestMapping("/invites")
 @RequiredArgsConstructor
 public class GroupInviteController {
 
     private final GroupInviteService groupInviteService;
 
-    // [POST] /groups/{groupId}/invites
+    // [POST] /invites/groups/{groupId}
     // 초대 링크 생성 (모든 그룹 멤버 가능)
-    @PostMapping
+    @PostMapping("/groups/{groupId}")
     public ResponseEntity<ApiResponse<GroupInviteResponseDto>> createInviteToken(
             @PathVariable Long groupId) {
 
@@ -35,9 +35,9 @@ public class GroupInviteController {
                 .body(ApiResponse.ok(response, "초대 링크가 생성되었습니다."));
     }
 
-    // [GET] /groups/{groupId}/invites
+    // [GET] /invites/groups/{groupId}
     // 활성화된 초대 링크 목록 조회
-    @GetMapping
+    @GetMapping("/groups/{groupId}")
     public ResponseEntity<ApiResponse<List<GroupInviteResponseDto>>> getActiveInviteTokens(
             @PathVariable Long groupId) {
 
@@ -51,9 +51,9 @@ public class GroupInviteController {
                 .body(ApiResponse.ok(response));
     }
 
-    // [DELETE] /groups/{groupId}/invites/{inviteId}
+    // [DELETE] /invites/groups/{groupId}/{inviteId}
     // 초대 링크 삭제
-    @DeleteMapping("/{inviteId}")
+    @DeleteMapping("/groups/{groupId}/{inviteId}")
     public ResponseEntity<ApiResponse<Void>> deleteInviteToken(
             @PathVariable Long groupId,
             @PathVariable Long inviteId) {
@@ -66,9 +66,9 @@ public class GroupInviteController {
     }
 
 
-    // [GET] /groups/{groupId}/invites/{inviteToken}
+    // [GET] /invites/{inviteToken}
     // 초대 링크 미리보기
-    @GetMapping("/{inviteToken}")
+    @GetMapping("/preview/{inviteToken}")
     public ResponseEntity<ApiResponse<InvitePreviewResponseDto>> getInvitePreview(
             @PathVariable String inviteToken) {
 
@@ -79,7 +79,7 @@ public class GroupInviteController {
                 .body(ApiResponse.ok(response));
     }
 
-    // [POST] /groups/{groupId}/invites/{inviteToken}/join
+    // [POST] /invites/{inviteToken}/join
     // 초대 링크로 그룹 가입
     @PostMapping("/{inviteToken}/join")
     public ResponseEntity<ApiResponse<Void>> joinByInviteToken(
