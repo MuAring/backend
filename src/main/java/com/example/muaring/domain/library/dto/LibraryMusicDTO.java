@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class LibraryMusicDTO {
+    private Long libraryId;
     private Long musicId;
     private String title;
     private String artist;

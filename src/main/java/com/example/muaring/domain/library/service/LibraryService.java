@@ -38,6 +38,7 @@ public class LibraryService {
 
         List<LibraryMusicDTO> musicList = libraries.stream()
                 .map(library -> LibraryMusicDTO.builder()
+                        .libraryId(library.getId())
                         .musicId(library.getMusic().getId())
                         .title(library.getMusic().getName())
                         .artist(library.getMusic().getArtistName())
@@ -80,6 +81,7 @@ public class LibraryService {
         Library savedLibrary = libraryRepository.save(library);
 
         return LibraryMusicDTO.builder()
+                .libraryId(library.getId())
                 .musicId(savedLibrary.getMusic().getId())
                 .title(savedLibrary.getMusic().getName())
                 .artist(savedLibrary.getMusic().getArtistName())
@@ -97,6 +99,7 @@ public class LibraryService {
 
 
         Long memberId = SecurityUtil.getMemberId();
+
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MusicException(MusicErrorCode.MEMBER_NOT_FOUND));
 
