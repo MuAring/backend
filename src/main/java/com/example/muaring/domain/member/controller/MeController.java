@@ -2,8 +2,7 @@ package com.example.muaring.domain.member.controller;
 
 import com.example.muaring.common.response.ApiResponse;
 import com.example.muaring.common.util.SecurityUtil;
-import com.example.muaring.domain.auth.exception.AuthErrorCode;
-import com.example.muaring.domain.group.dto.MyGroupListResponseDto;
+import com.example.muaring.domain.group.dto.GroupListResponseDto;
 import com.example.muaring.domain.group.service.GroupService;
 import com.example.muaring.domain.member.dto.request.MemberProfileUpdateRequestDTO;
 import com.example.muaring.domain.member.dto.response.MemberProfileUpdateResponseDTO;
@@ -25,18 +24,18 @@ public class MeController {
     private final MemberService memberService;
     private final GroupService groupService;
 
+    // [GET] /me/groups 내 그룹 전체 조회
+    // [GET] /me/groups?name=그룹명 내 그룹 중 name 값을 갖고 있는 애들 조회
     @Operation(summary = "내 그룹 조회", description = "내가 참여한 그룹 조회 로직입니다.")
     @GetMapping("/groups")
-    public ResponseEntity<ApiResponse<MyGroupListResponseDto>> getMyGroups() {
-        Long memberId = SecurityUtil.getMemberId();
-        if (memberId == null) {
-            return ResponseEntity.status(401)
-                    .body(ApiResponse.fail(AuthErrorCode.UNAUTHORIZED_MEMBER,null));
-        }
-
-        ApiResponse<MyGroupListResponseDto> body = ApiResponse.ok(groupService.getMyGroups(memberId));
+    public ResponseEntity<ApiResponse<GroupListResponseDto>> getMyGroups(
+            @RequestParam(required = false) String name
+    ) {
+        ApiResponse<GroupListResponseDto> body =
+                ApiResponse.ok(groupService.getMyGroups(name));
         return ResponseEntity.ok(body);
     }
+
 
     @Operation(summary = "내 프로필 설정 정보 조회", description = "프로필 수정 화면에서 조회되는 프로필 설정 정보 조회 로직입니다.")
     @GetMapping("/settings")

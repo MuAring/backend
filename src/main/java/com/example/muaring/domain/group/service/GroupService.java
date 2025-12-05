@@ -1,6 +1,8 @@
 package com.example.muaring.domain.group.service;
 
+import com.example.muaring.common.response.ApiResponse;
 import com.example.muaring.common.util.SecurityUtil;
+import com.example.muaring.domain.auth.exception.AuthErrorCode;
 import com.example.muaring.domain.group.dto.*;
 import com.example.muaring.domain.group.entity.*;
 import com.example.muaring.domain.group.exception.GroupErrorCode;
@@ -20,6 +22,7 @@ import com.example.muaring.domain.social.repository.LikeRepository;
 import com.example.muaring.domain.social.repository.MusicPostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -166,19 +169,51 @@ public class GroupService {
         );
     }
 
-    // 내 소속 그룹 조회 메서드
+    // 내 소속 그룹 조회 메서드 (검색도 추가)
     @Transactional
-    public MyGroupListResponseDto getMyGroups(Long memberId) {
-        List<GroupSummaryDto> groups = groupMemberRepository.findByMember_IdOrderByGroup_NameAsc(memberId)
-                .stream()
-                .map(tuple -> GroupSummaryDto.of(
-                        tuple.getGroup(),
-                        tuple.getRole().name()
-                ))
+    public GroupListResponseDto getMyGroups(String name) {
+
+        Long memberId = SecurityUtil.getMemberId();
+        if (memberId == null) {
+            throw new GroupException(GroupErrorCode.UNAUTHORIZED_MEMBER);
+        }
+
+        // 1) 내가 속한 그룹 리스트 조회 (검색도 적용)
+        List<Group> groups = (name == null || name.isBlank())
+                ? groupRepository.findMyGroups(memberId)
+                : groupRepository.findMyGroupsByName(memberId, name);
+
+        List<Long> groupIds = groups.stream()
+                .map(Group::getId)
                 .toList();
 
-        return MyGroupListResponseDto.of(groups);
+        // 2) groupId -> 카테고리 displayName 리스트 매핑
+        Map<Long, List<String>> categoryNamesByGroup = groupIds.isEmpty()
+                ? Map.of()
+                : mappingRepository.findPairsWithNamesByGroupIds(groupIds)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        GroupIdCategoryNameProjection::getGroupId,
+                        Collectors.mapping(
+                                projection -> {
+                                    String code = projection.getCategoryCode();
+                                    return GroupCategoryType.fromName(code).getDisplayName();
+                                },
+                                Collectors.toList()
+                        )
+                ));
+
+        // 3) 내가 가입한 그룹 → true
+        Set<Long> myJoinedGroupIds = new HashSet<>(groupIds);
+
+        return GroupListResponseDto.of(
+                (long) groups.size(),
+                groups,
+                categoryNamesByGroup,
+                myJoinedGroupIds
+        );
     }
+
 
     // 그룹 상세 조회 메서드
     @Transactional
