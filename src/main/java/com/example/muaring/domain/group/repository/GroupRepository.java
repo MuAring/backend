@@ -61,4 +61,26 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
     // id로 검색할 때, 삭제되지 않은 그룹만 반환
     @Query("SELECT g FROM Group g WHERE g.id = :id AND g.isDeleted = false")
     Optional<Group> findById(@Param("id") Long id);
+
+    // 내가 속한 모든 그룹 (이름 오름차순)
+    @Query("""
+        select gm.group
+        from GroupMember gm
+        where gm.member.id = :memberId
+          and gm.isDeleted = false
+        order by gm.group.name asc
+    """)
+    List<Group> findMyGroups(@Param("memberId") Long memberId);
+
+    // 내가 속한 그룹 중, 이름에 검색어 포함된 그룹만 (부분 일치, 대소문자 무시)
+    @Query("""
+        select gm.group
+        from GroupMember gm
+        where gm.member.id = :memberId
+          and gm.isDeleted = false
+          and lower(gm.group.name) like lower(concat('%', :name, '%'))
+        order by gm.group.name asc
+    """)
+    List<Group> findMyGroupsByName(@Param("memberId") Long memberId,
+                                   @Param("name") String name);
 }

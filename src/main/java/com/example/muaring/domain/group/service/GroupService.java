@@ -166,19 +166,61 @@ public class GroupService {
         );
     }
 
-    // 내 소속 그룹 조회 메서드
-    @Transactional
-    public MyGroupListResponseDto getMyGroups(Long memberId) {
-        List<GroupSummaryDto> groups = groupMemberRepository.findByMember_IdOrderByGroup_NameAsc(memberId)
-                .stream()
-                .map(tuple -> GroupSummaryDto.of(
-                        tuple.getGroup(),
-                        tuple.getRole().name()
-                ))
+    // 내 소속 그룹 조회 메서드 (검색도 추가)
+    @Transactional(readOnly = true)
+    public MyGroupListResponseDto getMyGroups(String name) {
+
+        Long memberId = SecurityUtil.getMemberId();
+        if (memberId == null) {
+            throw new GroupException(GroupErrorCode.UNAUTHORIZED_MEMBER);
+        }
+
+        // 1) 내가 속한 그룹 + role 조회 (GroupMember 기준)
+        List<GroupMember> memberships = (name == null || name.isBlank())
+                ? groupMemberRepository.findByMember_IdOrderByGroup_NameAsc(memberId)
+                : groupMemberRepository.findByMember_IdAndGroup_NameContainingIgnoreCaseOrderByGroup_NameAsc(memberId, name);
+
+        // Group 리스트로 변환
+        List<Group> groups = memberships.stream()
+                .map(GroupMember::getGroup)
                 .toList();
 
-        return MyGroupListResponseDto.of(groups);
+        List<Long> groupIds = groups.stream()
+                .map(Group::getId)
+                .toList();
+
+        // 2) groupId -> 카테고리 displayName 리스트 매핑
+        Map<Long, List<String>> categoryNamesByGroup = groupIds.isEmpty()
+                ? Map.of()
+                : mappingRepository.findPairsWithNamesByGroupIds(groupIds)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        GroupIdCategoryNameProjection::getGroupId,
+                        Collectors.mapping(
+                                projection -> {
+                                    String code = projection.getCategoryCode(); // "k_pop", "indie", ...
+                                    return GroupCategoryType.fromName(code)
+                                            .getDisplayName();                 // "케이팝", "인디 / 어쿠스틱", ...
+                                },
+                                Collectors.toList()
+                        )
+                ));
+
+        // 3) groupId -> 내 role 매핑 (projection 안 쓰고 바로 GroupMember에서 꺼냄)
+        Map<Long, String> myRolesByGroupId = memberships.stream()
+                .collect(Collectors.toMap(
+                        gm -> gm.getGroup().getId(),
+                        gm -> gm.getRole().name()   // "ADMIN" / "MEMBER"
+                ));
+
+        // 4) DTO 변환
+        return MyGroupListResponseDto.of(
+                groups,               // List<Group>
+                categoryNamesByGroup, // Map<Long, List<String>>
+                myRolesByGroupId      // Map<Long, String>
+        );
     }
+
 
     // 그룹 상세 조회 메서드
     @Transactional

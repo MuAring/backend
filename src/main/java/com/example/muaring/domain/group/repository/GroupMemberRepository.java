@@ -49,4 +49,16 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> 
     List<GroupMember> findByGroupIdAndMemberNicknameContaining(
             @Param("groupId") Long groupId,
             @Param("search") String search);
+
+    // 내가 소속된 그룹 중 이름으로 검색
+    @EntityGraph(attributePaths = { "group" })
+    @Query("SELECT gm FROM GroupMember gm " +
+            "WHERE gm.member.id = :memberId " +
+            "  AND gm.isDeleted = false " +
+            "  AND LOWER(gm.group.name) LIKE LOWER(CONCAT('%', :name, '%')) " +
+            "ORDER BY gm.group.name ASC")
+    List<GroupMember> findByMember_IdAndGroup_NameContainingIgnoreCaseOrderByGroup_NameAsc(
+            Long memberId,
+            String name
+    );
 }

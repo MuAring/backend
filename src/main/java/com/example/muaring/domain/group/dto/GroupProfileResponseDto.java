@@ -1,6 +1,5 @@
 package com.example.muaring.domain.group.dto;
 
-import com.example.muaring.domain.file.entity.Image;
 import com.example.muaring.domain.group.entity.Group;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -44,7 +43,7 @@ public class GroupProfileResponseDto {
                 .totalMusicCount(totalMusicCount)
                 .totalPostCount(totalPostCount)
                 .memberCount(group.getMemberCount())
-                .imageUrl(group.getImage() != null ? group.getImage().getUrl() : null)
+                .imageUrl(group.getGroupImage())
                 .createdAt(group.getCreatedAt())
                 .build();
     }

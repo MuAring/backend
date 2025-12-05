@@ -35,7 +35,8 @@ public class GroupListResponseDto {
                         g.getMemberCount(),
                         g.getMaxMembers(),
                         g.getIsPublic(),
-                        myJoinedGroupIds != null && myJoinedGroupIds.contains(g.getId())
+                        myJoinedGroupIds != null && myJoinedGroupIds.contains(g.getId()),
+                        g.getGroupImage()
                 ))
                 .toList();
 
@@ -56,6 +57,7 @@ public class GroupListResponseDto {
         private final int maxMembers;
         private final Boolean isPublic;
         private final Boolean isJoined;            // 내가 가입 중인지 여부
+        private String imageUrl;
 
         public static GroupSummaryDto of(Long groupId,
                                          String name,
@@ -64,7 +66,8 @@ public class GroupListResponseDto {
                                          int memberCount,
                                          int maxMembers,
                                          Boolean isPublic,
-                                         Boolean isJoined) {
+                                         Boolean isJoined,
+                                         String imageUrl) {
             return GroupSummaryDto.builder()
                     .groupId(groupId)
                     .name(name)
@@ -74,6 +77,7 @@ public class GroupListResponseDto {
                     .maxMembers(maxMembers)
                     .isPublic(isPublic)
                     .isJoined(isJoined)
+                    .imageUrl(imageUrl)
                     .build();
         }
     }
