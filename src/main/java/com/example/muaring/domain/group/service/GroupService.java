@@ -1,8 +1,6 @@
 package com.example.muaring.domain.group.service;
 
-import com.example.muaring.common.response.ApiResponse;
 import com.example.muaring.common.util.SecurityUtil;
-import com.example.muaring.domain.auth.exception.AuthErrorCode;
 import com.example.muaring.domain.group.dto.*;
 import com.example.muaring.domain.group.entity.*;
 import com.example.muaring.domain.group.exception.GroupErrorCode;
@@ -22,7 +20,6 @@ import com.example.muaring.domain.social.repository.LikeRepository;
 import com.example.muaring.domain.social.repository.MusicPostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -170,18 +167,23 @@ public class GroupService {
     }
 
     // 내 소속 그룹 조회 메서드 (검색도 추가)
-    @Transactional
-    public GroupListResponseDto getMyGroups(String name) {
+    @Transactional(readOnly = true)
+    public MyGroupListResponseDto getMyGroups(String name) {
 
         Long memberId = SecurityUtil.getMemberId();
         if (memberId == null) {
             throw new GroupException(GroupErrorCode.UNAUTHORIZED_MEMBER);
         }
 
-        // 1) 내가 속한 그룹 리스트 조회 (검색도 적용)
-        List<Group> groups = (name == null || name.isBlank())
-                ? groupRepository.findMyGroups(memberId)
-                : groupRepository.findMyGroupsByName(memberId, name);
+        // 1) 내가 속한 그룹 + role 조회 (GroupMember 기준)
+        List<GroupMember> memberships = (name == null || name.isBlank())
+                ? groupMemberRepository.findByMember_IdOrderByGroup_NameAsc(memberId)
+                : groupMemberRepository.findByMember_IdAndGroup_NameContainingIgnoreCaseOrderByGroup_NameAsc(memberId, name);
+
+        // Group 리스트로 변환
+        List<Group> groups = memberships.stream()
+                .map(GroupMember::getGroup)
+                .toList();
 
         List<Long> groupIds = groups.stream()
                 .map(Group::getId)
@@ -196,21 +198,26 @@ public class GroupService {
                         GroupIdCategoryNameProjection::getGroupId,
                         Collectors.mapping(
                                 projection -> {
-                                    String code = projection.getCategoryCode();
-                                    return GroupCategoryType.fromName(code).getDisplayName();
+                                    String code = projection.getCategoryCode(); // "k_pop", "indie", ...
+                                    return GroupCategoryType.fromName(code)
+                                            .getDisplayName();                 // "케이팝", "인디 / 어쿠스틱", ...
                                 },
                                 Collectors.toList()
                         )
                 ));
 
-        // 3) 내가 가입한 그룹 → true
-        Set<Long> myJoinedGroupIds = new HashSet<>(groupIds);
+        // 3) groupId -> 내 role 매핑 (projection 안 쓰고 바로 GroupMember에서 꺼냄)
+        Map<Long, String> myRolesByGroupId = memberships.stream()
+                .collect(Collectors.toMap(
+                        gm -> gm.getGroup().getId(),
+                        gm -> gm.getRole().name()   // "ADMIN" / "MEMBER"
+                ));
 
-        return GroupListResponseDto.of(
-                (long) groups.size(),
-                groups,
-                categoryNamesByGroup,
-                myJoinedGroupIds
+        // 4) DTO 변환
+        return MyGroupListResponseDto.of(
+                groups,               // List<Group>
+                categoryNamesByGroup, // Map<Long, List<String>>
+                myRolesByGroupId      // Map<Long, String>
         );
     }
 
