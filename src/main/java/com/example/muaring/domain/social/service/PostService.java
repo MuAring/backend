@@ -42,7 +42,8 @@ public class PostService {
     @Transactional
     public MusicPostDTO createMusicPost(MusicPostRequestDTO request) {
 
-        Long memberId = SecurityUtil.getMemberId();
+//        Long memberId = SecurityUtil.getMemberId();
+        Long memberId = 14l;
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MusicException(MusicErrorCode.MEMBER_NOT_FOUND));
@@ -80,6 +81,18 @@ public class PostService {
 
         if (group != null) {
             addMusicToGroupPlaylist(group, music);
+
+            MusicPost personalPost = MusicPost.builder()
+                    .member(member)
+                    .music(music)
+                    .group(null)
+                    .isProfile(true)
+                    .content(request.getContent())
+                    .likeCount(0)
+                    .commentCount(0)
+                    .build();
+
+            musicPostRepository.save(personalPost);
         }
 
         return MusicPostDTO.builder()
