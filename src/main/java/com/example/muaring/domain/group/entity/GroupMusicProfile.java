@@ -87,6 +87,55 @@ public class GroupMusicProfile {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    // 프로필 값 채우는 업데이트 메서드
+    public void updateMetrics(
+            Double avgDanceability, Double avgEnergy, Double avgValence,
+            Double avgAcousticness, Double avgInstrumentalness, Double avgSpeechiness,
+            Double avgTempo, Double avgLoudness, Double avgPopularity, Double avgRarity,
+            Double hiddenGemRatio,
+            Integer totalSongs, Integer uniqueTracks, Integer genreDiversity,
+            Double activeMemberRatio, Integer calculatedPeriodDays
+    ) {
+        this.status = ProfileStatus.READY;
+        this.avgDanceability = avgDanceability;
+        this.avgEnergy = avgEnergy;
+        this.avgValence = avgValence;
+        this.avgAcousticness = avgAcousticness;
+        this.avgInstrumentalness = avgInstrumentalness;
+        this.avgSpeechiness = avgSpeechiness;
+        this.avgTempo = avgTempo;
+        this.avgLoudness = avgLoudness;
+        this.avgPopularity = avgPopularity;
+        this.avgRarity = avgRarity;
+        this.hiddenGemRatio = hiddenGemRatio;
+        this.totalSongs = totalSongs;
+        this.uniqueTracks = uniqueTracks;
+        this.genreDiversity = genreDiversity;
+        this.activeMemberRatio = activeMemberRatio;
+        this.calculatedPeriodDays = calculatedPeriodDays;
+    }
+
+    // 데이터 전혀 없을 때 NOT_AVAILABLE로 초기화
+    public void resetToNotAvailable() {
+        this.status = ProfileStatus.NOT_AVAILABLE;
+        this.avgDanceability = null;
+        this.avgEnergy = null;
+        this.avgValence = null;
+        this.avgAcousticness = null;
+        this.avgInstrumentalness = null;
+        this.avgSpeechiness = null;
+        this.avgTempo = null;
+        this.avgLoudness = null;
+        this.avgPopularity = null;
+        this.avgRarity = null;
+        this.hiddenGemRatio = null;
+        this.totalSongs = null;
+        this.uniqueTracks = null;
+        this.genreDiversity = null;
+        this.activeMemberRatio = null;
+        this.calculatedPeriodDays = null;
+    }
+
     // 그룹 생성 시 기본 비어있는 profile 생성 *
     public static GroupMusicProfile createEmpty(Group group) {
         GroupMusicProfile profile = new GroupMusicProfile();

@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 public class MusicHistoryDTO {
 
+    private Long postId;
     private Long musicId;
     private String title;
     private String artist;

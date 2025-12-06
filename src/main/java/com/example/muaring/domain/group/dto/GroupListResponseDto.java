@@ -6,6 +6,7 @@ import lombok.Getter;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Getter
 public class GroupListResponseDto {
@@ -22,21 +23,20 @@ public class GroupListResponseDto {
     // dto를 생성하는 메서드
     public static GroupListResponseDto of(Long totalCount,
                                           List<Group> groupEntities,
-                                          Map<Long, List<Long>> categoryIdsByGroup) {
+                                          Map<Long, List<String>> categoryNamesByGroup,
+                                          Set<Long> myJoinedGroupIds) {
         List<GroupSummaryDto> summaries = groupEntities.stream()
                 .map(g -> GroupSummaryDto.of(
                         g.getId(),
                         g.getName(),
                         g.getDescription(),
-                        /**
-                         * 카테고리 리스트를 만듦
-                         * 현재 그룹의 id에 해당하는 카테고리 리스트가 있으면 반환
-                         * 없으면 빈 리스트 반환
-                        */
-                        categoryIdsByGroup.getOrDefault(g.getId(), List.of()),
+                        // groupId에 해당하는 카테고리 이름 리스트 (없으면 빈 리스트)
+                        categoryNamesByGroup.getOrDefault(g.getId(), List.of()),
                         g.getMemberCount(),
                         g.getMaxMembers(),
-                        g.getIsPublic()
+                        g.getIsPublic(),
+                        myJoinedGroupIds != null && myJoinedGroupIds.contains(g.getId()),
+                        g.getGroupImage()
                 ))
                 .toList();
 
@@ -52,26 +52,32 @@ public class GroupListResponseDto {
         private final Long groupId;
         private final String name;
         private final String description;
-        private final List<Long> groupCategoryIds;
+        private final List<String> categoryNames;  // 이름으로 변경 (displayName)
         private final int memberCount;
         private final int maxMembers;
         private final Boolean isPublic;
+        private final Boolean isJoined;            // 내가 가입 중인지 여부
+        private String imageUrl;
 
         public static GroupSummaryDto of(Long groupId,
                                          String name,
                                          String description,
-                                         List<Long> groupCategoryIds,
+                                         List<String> categoryNames,
                                          int memberCount,
                                          int maxMembers,
-                                         Boolean isPublic) {
+                                         Boolean isPublic,
+                                         Boolean isJoined,
+                                         String imageUrl) {
             return GroupSummaryDto.builder()
                     .groupId(groupId)
                     .name(name)
                     .description(description)
-                    .groupCategoryIds(groupCategoryIds)
+                    .categoryNames(categoryNames)
                     .memberCount(memberCount)
                     .maxMembers(maxMembers)
                     .isPublic(isPublic)
+                    .isJoined(isJoined)
+                    .imageUrl(imageUrl)
                     .build();
         }
     }

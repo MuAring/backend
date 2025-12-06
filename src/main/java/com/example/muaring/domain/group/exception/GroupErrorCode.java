@@ -19,6 +19,9 @@ public enum GroupErrorCode implements ErrorCode {
     INVITE_EXPIRED_OR_INVALID(5016, HttpStatus.BAD_REQUEST, "만료되었거나 유효하지 않은 초대 링크입니다."),
     INVALID_INVITE(5017, HttpStatus.BAD_REQUEST, "유효하지 않은 초대 링크입니다."),
 
+    // 401 에러
+    UNAUTHORIZED_MEMBER(5021, HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
+
     // 403 에러
     NOT_GROUP_ADMIN(5009, HttpStatus.FORBIDDEN, "그룹 관리자만 수정할 수 있습니다."),
     NOT_GROUP_MEMBER(5010, HttpStatus.FORBIDDEN, "그룹 멤버만 조회할 수 있습니다."),
