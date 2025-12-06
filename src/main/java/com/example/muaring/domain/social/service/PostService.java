@@ -40,8 +40,7 @@ public class PostService {
     @Transactional
     public MusicPostDTO createMusicPost(MusicPostRequestDTO request) {
 
-//        Long memberId = SecurityUtil.getMemberId();
-        Long memberId = 14l;
+        Long memberId = SecurityUtil.getMemberId();
 
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MusicException(MusicErrorCode.MEMBER_NOT_FOUND));
