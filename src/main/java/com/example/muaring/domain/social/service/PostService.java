@@ -3,6 +3,8 @@ package com.example.muaring.domain.social.service;
 import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.domain.group.entity.Group;
 import com.example.muaring.domain.group.entity.GroupPlaylist;
+import com.example.muaring.domain.group.level.GroupActivityType;
+import com.example.muaring.domain.group.level.GroupLevelService;
 import com.example.muaring.domain.group.repository.GroupPlaylistRepository;
 import com.example.muaring.domain.group.repository.GroupRepository;
 import com.example.muaring.domain.member.entity.Member;
@@ -36,6 +38,7 @@ public class PostService {
     private final MemberRepository memberRepository;
     private final MusicPostRepository musicPostRepository;
     private final MusicService musicService;
+    private final GroupLevelService groupLevelService;
 
     @Transactional
     public MusicPostDTO createMusicPost(MusicPostRequestDTO request) {
@@ -90,6 +93,13 @@ public class PostService {
                     .build();
 
             musicPostRepository.save(personalPost);
+
+            // 그룹 레벨 EXP 반영 (오늘의 음악)
+            groupLevelService.addActivity(
+                    group.getId(),
+                    memberId,
+                    GroupActivityType.TODAY_MUSIC_POST
+            );
         }
 
         return MusicPostDTO.builder()
