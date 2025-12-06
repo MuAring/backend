@@ -35,6 +35,12 @@ public class Group extends BaseEntity {
     @Column(length = 255)
     private String description;
 
+    @Column(nullable = false, columnDefinition = "INT DEFAULT 1")
+    private Integer level = 1;
+
+    @Column(name = "exp", nullable = false)
+    private Long exp = 0L;  // 그룹 누적 경험치, 레벨 시스템의 기준
+
     @Column(name = "member_count", nullable = false)
     private Integer memberCount;
 
@@ -58,11 +64,13 @@ public class Group extends BaseEntity {
     }
 
     @Builder
-    public Group(Member admin, String name, String description, Integer maxMembers, Boolean isPublic) {
+    public Group(Member admin, String name, String description,
+                 Integer level, Integer maxMembers, Boolean isPublic) {
         this.admin = admin;
         this.name = name;
         this.description = description;
-        this.memberCount = 1; // 그룹 생성 시 멤버 수는 1명
+        this.level = 1;         // 기본 레벨 1
+        this.memberCount = 1;   // 그룹 생성 시 멤버 수는 1명
         this.maxMembers = maxMembers;
         this.isPublic = isPublic;
     }
@@ -106,5 +114,16 @@ public class Group extends BaseEntity {
 
     public void updateImage(Image image) {
         this.image = image;
+    }
+
+    public void addExp(long amount) {
+        if (amount <= 0) return;
+        this.exp += amount;
+    }
+
+    public void updateLevel(int newLevel) {
+        if (newLevel < 1) newLevel = 1;
+        if (newLevel > 5) newLevel = 5; // 현재는 5레벨까지만 존재
+        this.level = newLevel;
     }
 }
