@@ -4,6 +4,8 @@ import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.domain.group.dto.*;
 import com.example.muaring.domain.group.entity.*;
 import com.example.muaring.domain.group.exception.GroupErrorCode;
+import com.example.muaring.domain.group.level.GroupActivityType;
+import com.example.muaring.domain.group.level.GroupLevelService;
 import com.example.muaring.domain.group.repository.*;
 import com.example.muaring.domain.group.repository.projection.GroupIdCategoryNameProjection;
 import com.example.muaring.domain.group.response.GroupException;
@@ -44,6 +46,7 @@ public class GroupService {
     private final MusicPostRepository musicPostRepository;
     private final LikeRepository likeRepository;
     private final GroupPlaylistRepository groupPlaylistRepository;
+    private final GroupLevelService groupLevelService;
 
     // 🍀 그룹 생성
     @Transactional
@@ -417,6 +420,13 @@ public class GroupService {
                 .build();
 
         groupMemberRepository.save(groupMember);
+
+        // 새로 가입하면 경험치 쌓임
+        groupLevelService.addActivity(
+                group.getId(),
+                memberId,
+                GroupActivityType.MEMBER_JOINED
+        );
 
         group.incrementMemberCount();
     }
