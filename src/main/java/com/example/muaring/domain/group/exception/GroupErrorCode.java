@@ -18,6 +18,7 @@ public enum GroupErrorCode implements ErrorCode {
     CANNOT_EXPEL_SELF(5013, HttpStatus.BAD_REQUEST, "자기 자신을 추방할 수 없습니다."),
     INVITE_EXPIRED_OR_INVALID(5016, HttpStatus.BAD_REQUEST, "만료되었거나 유효하지 않은 초대 링크입니다."),
     INVALID_INVITE(5017, HttpStatus.BAD_REQUEST, "유효하지 않은 초대 링크입니다."),
+    NOT_PUBLIC_GROUP(5022, HttpStatus.BAD_REQUEST, "공개 그룹이 아닙니다."),
 
     // 401 에러
     UNAUTHORIZED_MEMBER(5021, HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
@@ -38,7 +39,8 @@ public enum GroupErrorCode implements ErrorCode {
     METRICS_CONFLICT(5006, HttpStatus.CONFLICT, "핵심 필드가 존재할 수 없습니다."),
     ALREADY_EXPELLED_MEMBER(5014, HttpStatus.CONFLICT, "이미 추방된 멤버입니다."),
     ALREADY_GROUP_MEMBER(5019, HttpStatus.CONFLICT, "이미 그룹 멤버입니다."),
-    GROUP_FULL(5020, HttpStatus.CONFLICT, "그룹 인원이 꽉 찼습니다.");
+    GROUP_FULL(5020, HttpStatus.CONFLICT, "그룹 인원이 꽉 찼습니다."),
+    ;
 
     private final int code;
     private final HttpStatus status;

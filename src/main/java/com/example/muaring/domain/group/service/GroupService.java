@@ -45,7 +45,7 @@ public class GroupService {
     private final LikeRepository likeRepository;
     private final GroupPlaylistRepository groupPlaylistRepository;
 
-    // 그룹 생성
+    // 🍀 그룹 생성
     @Transactional
     public GroupCreateResponseDto createGroup(GroupCreateRequestDto requestDto, Long adminId) {
         Member admin = memberRepository.findById(adminId)
@@ -98,7 +98,8 @@ public class GroupService {
         return GroupCreateResponseDto.from(newGroup, groupCategoryIds);
     }
 
-    // 각 조건에 따라 그룹을 조회할 수 있는 메서드
+
+    // 🍀 각 조건에 따라 그룹을 조회
     @Transactional
     public GroupListResponseDto getGroups(
             String name,            // 검색어
@@ -109,8 +110,7 @@ public class GroupService {
             Sort sort               // 정렬 조건
     ) {
         Pageable pageable = PageRequest.of(page, size, sort);   // 0-based
-//        Long memberId = 1L; // 테스트용
-        Long memberId = SecurityUtil.getMemberId(); // 실사용
+        Long memberId = SecurityUtil.getMemberId();
 
         // 빈 리스트일 경우, categoryIds를 null로 변경 (IN () 방지)
         List<Long> normalizedCategoryIds =
@@ -166,7 +166,8 @@ public class GroupService {
         );
     }
 
-    // 내 소속 그룹 조회 메서드 (검색도 추가)
+
+    // 🍀 내 소속 그룹 조회 메서드 (검색도 추가)
     @Transactional(readOnly = true)
     public MyGroupListResponseDto getMyGroups(String name) {
 
@@ -222,7 +223,7 @@ public class GroupService {
     }
 
 
-    // 그룹 상세 조회 메서드
+    // 🍀 그룹 상세 조회 메서드
     @Transactional
     public GroupProfileResponseDto getGroupProfile(Long groupId) {
         Group group = groupRepository.findById(groupId)
@@ -254,7 +255,7 @@ public class GroupService {
     }
 
 
-    // 그룹 내 피드 조회 메서드
+    // 🍀 그룹 내 피드 조회 메서드
     @Transactional
     public Page<MusicPostFeedResponseDto> getGroupFeed(
             Long groupId,
@@ -288,7 +289,8 @@ public class GroupService {
         return posts.map(MusicPostFeedResponseDto::from);
     }
 
-    // 그룹 내 오늘의 피드 조회
+
+    // 🍀 그룹 내 오늘의 피드 조회
     @Transactional
     public Page<MusicPostFeedResponseDto> getTodayGroupFeed(
             Long groupId,
@@ -305,7 +307,8 @@ public class GroupService {
         return posts.map(MusicPostFeedResponseDto::from);
     }
 
-    // 그룹 히스토리 조회 메서드
+
+    // 🍀 그룹 히스토리 조회 메서드
     @Transactional(readOnly = true)
     public Page<MusicHistoryDTO> getMusicHistoryByGroup(
             Long groupId,
@@ -377,6 +380,48 @@ public class GroupService {
         return new PageImpl<>(pageContent, pageable, total);
     }
 
+
+    // 🍀 공개 그룹 가입 (별도 요청 X)
+    @Transactional
+    public void joinPublicGroup(Long groupId) {
+
+        Long memberId = SecurityUtil.getMemberId();
+
+        // 존재 여부 체크
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
+
+        // 공개 여부 체크 (공개 그룹일 경우만 이 메서드로 가입 가능)
+        if (!group.isPublic()) {
+            throw new GroupException(GroupErrorCode.NOT_PUBLIC_GROUP);
+        }
+
+        // 이미 그룹 멤버인지 확인
+        if (groupMemberRepository.existsByGroupIdAndMemberId(group.getId(), memberId)) {
+            throw new GroupException(GroupErrorCode.ALREADY_GROUP_MEMBER);
+        }
+
+        // 그룹이 꽉 찼는지 확인
+        if (group.isFull()) {
+            throw new GroupException(GroupErrorCode.GROUP_FULL);
+        }
+
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new GroupException(GroupErrorCode.MEMBER_NOT_FOUND));
+
+        // 그룹 멤버 추가
+        GroupMember groupMember = GroupMember.builder()
+                .group(group)
+                .member(member)
+                .role(GroupMember.GroupRole.MEMBER)
+                .build();
+
+        groupMemberRepository.save(groupMember);
+
+        group.incrementMemberCount();
+    }
+
+
     // 그룹 멤버 조회 메서드
     @Transactional
     public List<GroupMemberResponseDto> getGroupMembers(Long groupId, Long memberId, String search) {
@@ -446,6 +491,7 @@ public class GroupService {
                 .toList();
     }
 
+
     // 그룹 정보 수정 메서드
     @Transactional
     public GroupUpdateResponseDto updateGroup(Long groupId, Long memberId, GroupUpdateRequestDto request) {
@@ -502,6 +548,7 @@ public class GroupService {
         return GroupUpdateResponseDto.from(group, mappings);
     }
 
+
     // 그룹 삭제 메서드
     @Transactional
     public void deleteGroup(Long groupId, Long memberId) {
@@ -515,6 +562,7 @@ public class GroupService {
 
         group.softDelete();
     }
+
 
     // 그룹 탈퇴 메서드
     @Transactional
@@ -531,6 +579,7 @@ public class GroupService {
         // 그룹 멤버 수 감소
         group.decrementMemberCount();
     }
+
 
     // 관리자 탈퇴 시 관리자 지정 메서드
     public void adminLeaveGroup(Long groupId, Long memberId, AdminLeaveRequestDto request) {
@@ -566,6 +615,7 @@ public class GroupService {
         group.decrementMemberCount();
     }
 
+
     // 그룹 멤버 추방 메서드
     @Transactional
     public void expelMember(Long groupId, Long adminId, Long expellerId){
@@ -598,8 +648,8 @@ public class GroupService {
         group.decrementMemberCount();
     }
 
-     // 게시물 상세 조회 (댓글 제외. 댓글은 댓글 조회 api로 프론트에서 따로 불러오게 함)
 
+     // 게시물 상세 조회 (댓글 제외. 댓글은 댓글 조회 api로 프론트에서 따로 불러오게 함)
     public MusicPostDetailResponseDto getPostDetail(Long postId, Long memberId) {
         // 게시물 조회
         MusicPost post = musicPostRepository.findByIdWithDetails(postId)
