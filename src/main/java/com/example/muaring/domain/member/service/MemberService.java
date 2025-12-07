@@ -1,5 +1,6 @@
 package com.example.muaring.domain.member.service;
 
+import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.config.ImageProperties;
 import com.example.muaring.config.S3Properties;
 import com.example.muaring.domain.file.dto.request.ImageCreateRequestDTO;
@@ -18,11 +19,21 @@ import com.example.muaring.domain.member.exception.MemberException;
 import com.example.muaring.domain.member.repository.FollowRepository;
 import com.example.muaring.domain.member.repository.MemberRepository;
 import com.example.muaring.domain.member.response.MemberErrorCode;
+import com.example.muaring.domain.music.entity.Music;
+import com.example.muaring.domain.social.entity.MusicPost;
 import com.example.muaring.domain.social.repository.MusicPostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -183,4 +194,98 @@ public class MemberService {
         String imageUrl = resolveProfileImageUrl(member);
         return MemberSettingsReadResponse.of(imageUrl, member);
     }
+
+    @Transactional(readOnly = true)
+    public Page<MemberSearchItemDto> searchMembers(String name, Pageable pageable) {
+
+        Long memberId = SecurityUtil.getMemberId();
+
+        Page<Member> memberPage;
+
+        if (memberId == null) {
+            // 비로그인 검색 허용할 경우
+            memberPage = memberRepository.findByNicknameContainingIgnoreCaseAndIsDeletedFalse(name, pageable);
+        } else {
+            // 로그인 상태면 나(id로 체크) 제외
+            memberPage = memberRepository
+                    .findByNicknameContainingIgnoreCaseAndIsDeletedFalseAndIdNot(name, memberId, pageable);
+        }
+
+        List<Member> members = memberPage.getContent();
+
+        if (members.isEmpty()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, memberPage.getTotalElements());
+        }
+
+        // 내가 팔로우한 멤버 id들 한 방에 조회
+        Set<Long> followedIdSet;
+        if (memberId != null) {
+            List<Long> followedIds = followRepository.findFolloweeIdsByFollowerId(memberId);
+            followedIdSet = new HashSet<>(followedIds);
+        } else {
+            followedIdSet = Collections.emptySet();
+        }
+
+        // 오늘 날짜 범위 계산
+        LocalDate today = LocalDate.now();
+        LocalDateTime startOfDay = today.atStartOfDay();
+        LocalDateTime endOfDay = today.plusDays(1).atStartOfDay();
+
+        // memberIds 추출
+        List<Long> memberIds = members.stream()
+                .map(Member::getId)
+                .toList();
+
+        // 오늘 MusicPost 한 번에 조회
+        List<MusicPost> todayPosts = musicPostRepository.findTodayPostsByMemberIds(
+                memberIds, startOfDay, endOfDay);
+
+        // memberId -> Music 매핑
+        Map<Long, MusicPost> firstPostByMember = todayPosts.stream()
+                .collect(Collectors.toMap(
+                        mp -> mp.getMember().getId(),
+                        mp -> mp,
+                        (mp1, mp2) -> {
+                            // createdAt 이 더 과거인(가장 먼저 올라온) 걸 유지
+                            if (mp1.getCreatedAt().isBefore(mp2.getCreatedAt())) {
+                                return mp1;
+                            } else {
+                                return mp2;
+                            }
+                        }
+                ));
+
+
+
+        // DTO 리스트로 매핑
+        List<MemberSearchItemDto> dtoList = members.stream()
+                .map(member -> {
+                    MusicPost firstPost = firstPostByMember.get(member.getId());
+                    Music music = firstPost != null ? firstPost.getMusic() : null;
+
+                    String profileImageUrl = resolveProfileImageUrl(member);
+
+                    boolean isFollowing = memberId != null
+                            && followedIdSet.contains(member.getId());
+
+                    return MemberSearchItemDto.builder()
+                            .memberId(member.getId())
+                            .nickname(member.getNickname())
+                            .profileImageUrl(profileImageUrl)
+                            .isPublic(member.getIsPublic())
+                            .isFollowing(isFollowing)
+                            .todayMusicName(music != null ? music.getName() : null)
+                            .todayMusicArtistName(music != null ? music.getArtistName() : null)
+                            .build();
+                })
+                .toList();
+
+        // Page로 감싸서 반환
+        return new PageImpl<>(
+                dtoList,
+                pageable,
+                memberPage.getTotalElements()
+        );
+    }
+
 }

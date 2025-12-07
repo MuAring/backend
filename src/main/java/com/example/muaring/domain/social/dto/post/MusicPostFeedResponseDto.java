@@ -48,9 +48,15 @@ public class MusicPostFeedResponseDto {
             profileImageUrl = member.getProfileImage().getUrl();
         }
 
+        // 프로필 post의 경우
+        Long groupId = null;
+        if (post.getGroup() != null) {
+            groupId = post.getGroup().getId();
+        }
+
         return MusicPostFeedResponseDto.builder()
                 .postId(post.getId())
-                .groupId(post.getGroup().getId())
+                .groupId(groupId)
 
                 // 작성자
                 .memberId(member.getId())
