@@ -88,6 +88,7 @@ public class Group extends BaseEntity {
         return memberCount >= maxMembers;
     }
 
+    public boolean isPublic() { return isPublic; }
 
     public void updateDescription(String description) {
         this.description = description;
