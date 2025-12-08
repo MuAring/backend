@@ -50,34 +50,74 @@ public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
 //        """, nativeQuery = true)
 //    List<MusicPost> findTodayPostsByFollowees(@Param("memberId") Long memberId);
 
+//    @Query(value = """
+//        SELECT *
+//        FROM music_post mp
+//        WHERE mp.member_id IN (
+//            SELECT f.followee_id
+//            FROM follow f
+//            WHERE f.follower_id = :memberId
+//        )
+//        AND mp.created_at >= CURRENT_DATE
+//        AND mp.created_at < CURRENT_DATE + INTERVAL '1 day'
+//        AND mp.group_id IS NULL
+//        ORDER BY mp.created_at DESC
+//        """,
+//            countQuery = """
+//        SELECT COUNT(*)
+//        FROM music_post mp
+//        WHERE mp.member_id IN (
+//            SELECT f.followee_id
+//            FROM follow f
+//            WHERE f.follower_id = :memberId
+//        )
+//        AND mp.created_at >= CURRENT_DATE
+//        AND mp.created_at < CURRENT_DATE + INTERVAL '1 day'
+//        AND mp.group_id IS NULL
+//        """,
+//            nativeQuery = true)
+//    Page<MusicPost> findTodayPostsByFollowees(
+//            @Param("memberId") Long memberId,
+//            Pageable pageable
+//    );
+
     @Query(value = """
         SELECT *
         FROM music_post mp
-        WHERE mp.member_id IN (
-            SELECT f.followee_id
-            FROM follow f
-            WHERE f.follower_id = :memberId
+        WHERE (
+            mp.member_id IN (
+                SELECT f.followee_id
+                FROM follow f
+                WHERE f.follower_id = :memberId
+            )
+            OR mp.member_id = :memberId
         )
         AND mp.created_at >= CURRENT_DATE
         AND mp.created_at < CURRENT_DATE + INTERVAL '1 day'
+        AND mp.group_id IS NULL
         ORDER BY mp.created_at DESC
         """,
             countQuery = """
         SELECT COUNT(*)
         FROM music_post mp
-        WHERE mp.member_id IN (
-            SELECT f.followee_id
-            FROM follow f
-            WHERE f.follower_id = :memberId
+        WHERE (
+            mp.member_id IN (
+                SELECT f.followee_id
+                FROM follow f
+                WHERE f.follower_id = :memberId
+            )
+            OR mp.member_id = :memberId
         )
         AND mp.created_at >= CURRENT_DATE
         AND mp.created_at < CURRENT_DATE + INTERVAL '1 day'
+        AND mp.group_id IS NULL
         """,
             nativeQuery = true)
     Page<MusicPost> findTodayPostsByFollowees(
             @Param("memberId") Long memberId,
             Pageable pageable
     );
+
 
     @Query(value = "SELECT * FROM music_post " +
             "WHERE member_id = :memberId " +
@@ -176,5 +216,20 @@ public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
             "LEFT JOIN FETCH p.group g " +
             "WHERE p.id = :postId")
     Optional<MusicPost> findByIdWithDetails(@Param("postId") Long postId);
+
+    @Query("""
+        select mp
+        from MusicPost mp
+        join fetch mp.music m
+        where mp.member.id in :memberIds
+          and mp.createdAt >= :startOfDay
+          and mp.createdAt < :endOfDay
+    """)
+    List<MusicPost> findTodayPostsByMemberIds(
+            @Param("memberIds") List<Long> memberIds,
+            @Param("startOfDay") LocalDateTime startOfDay,
+            @Param("endOfDay") LocalDateTime endOfDay
+    );
+
 
 }

@@ -5,12 +5,15 @@ import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.domain.member.dto.request.MemberProfileCreateRequestDTO;
 import com.example.muaring.domain.member.dto.response.MemberProfileCreateResponseDTO;
 import com.example.muaring.domain.member.dto.response.MemberProfileReadResponseDTO;
+import com.example.muaring.domain.member.dto.response.MemberSearchItemDto;
 import com.example.muaring.domain.member.dto.response.NicknameCheckResponseDTO;
 import com.example.muaring.domain.member.service.MemberService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -52,6 +55,17 @@ public class MemberController {
         MemberProfileReadResponseDTO responseDTO = memberService.getProfile(memberId, loginMemberId);
         return ResponseEntity.ok(
                 ApiResponse.ok(responseDTO, "프로필이 조회되었습니다."));
+    }
+
+    // [GET] /members/search?name=닉네임일부
+    @Operation(summary = "닉네임 검색", description = "닉네임으로 멤버를 조회합니다.")
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<Page<MemberSearchItemDto>>> searchMembers(
+            @RequestParam String name,
+            Pageable pageable
+    ) {
+        Page<MemberSearchItemDto> result = memberService.searchMembers(name, pageable);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
 }

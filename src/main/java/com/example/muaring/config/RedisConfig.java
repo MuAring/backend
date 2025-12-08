@@ -10,7 +10,7 @@ import org.springframework.data.redis.serializer.GenericToStringSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-@EnableRedisRepositories
+//@EnableRedisRepositories
 public class RedisConfig {
 
     @Bean

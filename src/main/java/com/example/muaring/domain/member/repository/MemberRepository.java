@@ -1,6 +1,8 @@
 package com.example.muaring.domain.member.repository;
 
 import com.example.muaring.domain.member.entity.Member;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,4 +13,10 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     Optional<Member> findByEmail(String email);
     boolean existsByNicknameAndIsDeletedFalse(String nickname);
+    Page<Member> findByNicknameContainingIgnoreCaseAndIsDeletedFalse(String name, Pageable pageable);
+    Page<Member> findByNicknameContainingIgnoreCaseAndIsDeletedFalseAndIdNot(
+            String name,
+            Long id,
+            Pageable pageable
+    );
 }
