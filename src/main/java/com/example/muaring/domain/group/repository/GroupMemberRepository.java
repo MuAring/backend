@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> {
@@ -37,7 +38,7 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> 
 
     // memberId로 해당 멤버가 가입한 그룹의 ID들만 조회
     @Query("select gm.group.id from GroupMember gm where gm.member.id = :memberId")
-    List<Long> findGroupIdsByMemberId(@Param("memberId") Long memberId);
+    Set<Long> findGroupIdsByMemberId(@Param("memberId") Long memberId);
 
     // 닉네임으로 검색
     @Query("SELECT gm FROM GroupMember gm " +

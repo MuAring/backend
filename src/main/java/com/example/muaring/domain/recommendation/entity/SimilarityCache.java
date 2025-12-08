@@ -48,4 +48,39 @@ public class SimilarityCache {
 
     @Column(name = "calculated_at", nullable = false)
     private LocalDateTime calculatedAt;
+
+    public static SimilarityCache create(Member memberA,
+                                         Member memberB,
+                                         Double totalScore,
+                                         Double genreScore,
+                                         Double audioScore,
+                                         Double artistScore,
+                                         Double rarityScore,
+                                         LocalDateTime calculatedAt) {
+        SimilarityCache cache = new SimilarityCache();
+        cache.memberA = memberA;
+        cache.memberB = memberB;
+        cache.totalScore = totalScore;
+        cache.genreScore = genreScore;
+        cache.audioScore = audioScore;
+        cache.artistScore = artistScore;
+        cache.rarityScore = rarityScore;
+        cache.calculatedAt = calculatedAt;
+        return cache;
+    }
+
+    public void updateScores(Double totalScore,
+                             Double genreScore,
+                             Double audioScore,
+                             Double artistScore,
+                             Double rarityScore,
+                             LocalDateTime calculatedAt) {
+        this.totalScore = totalScore;
+        this.genreScore = genreScore;
+        this.audioScore = audioScore;
+        this.artistScore = artistScore;
+        this.rarityScore = rarityScore;
+        this.calculatedAt = calculatedAt;
+    }
+
 }

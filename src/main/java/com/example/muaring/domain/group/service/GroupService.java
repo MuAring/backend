@@ -155,9 +155,7 @@ public class GroupService {
         // 2) 내가 가입한 그룹 id들
         Set<Long> myJoinedGroupIds = Collections.emptySet();
         if (memberId != null) {
-            myJoinedGroupIds = groupMemberRepository.findGroupIdsByMemberId(memberId)
-                    .stream()
-                    .collect(Collectors.toSet());
+            myJoinedGroupIds = groupMemberRepository.findGroupIdsByMemberId(memberId);
         }
 
         // 3) DTO 조립

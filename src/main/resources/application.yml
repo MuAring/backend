@@ -78,3 +78,7 @@ file:
 logging:
   level:
     org.springframework.security: DEBUG
+
+scheduler:
+  recommendation:
+    cron: "0 0 4 * * ?"   # 운영 기본: 새벽 4시

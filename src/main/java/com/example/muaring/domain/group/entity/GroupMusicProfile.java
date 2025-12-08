@@ -217,4 +217,22 @@ public class GroupMusicProfile {
         }
     }
 
+    private double[] buildAudioVector(GroupMusicProfile profile) {
+        return new double[] {
+                nullSafe(profile.getAvgDanceability()),
+                nullSafe(profile.getAvgEnergy()),
+                nullSafe(profile.getAvgValence()),
+                nullSafe(profile.getAvgAcousticness()),
+                nullSafe(profile.getAvgInstrumentalness()),
+                nullSafe(profile.getAvgSpeechiness()),
+                nullSafe(profile.getAvgTempo()),
+                nullSafe(profile.getAvgLoudness()),
+                nullSafe(profile.getAvgPopularity())
+        };
+    }
+
+    private double nullSafe(Double value) {
+        return value == null ? 0.0 : value;
+    }
+
 }
