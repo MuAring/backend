@@ -161,9 +161,10 @@ public class GroupRecommendationService {
                 nullSafe(p.getAvgAcousticness()),
                 nullSafe(p.getAvgInstrumentalness()),
                 nullSafe(p.getAvgSpeechiness()),
-                nullSafe(p.getAvgTempo()),
-                nullSafe(p.getAvgLoudness()),
-                nullSafe(p.getAvgPopularity())
+
+                normalizeTempo(nullSafe(p.getAvgTempo())),      // 0-1 정규화
+                normalizeLoudness(nullSafe(p.getAvgLoudness())), // 0-1 정규화
+                normalizePopularity(nullSafe(p.getAvgPopularity())) // 0-1 정규화
         };
     }
 
