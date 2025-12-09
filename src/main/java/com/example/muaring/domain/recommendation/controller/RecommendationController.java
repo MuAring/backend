@@ -1,5 +1,6 @@
 package com.example.muaring.domain.recommendation.controller;
 
+import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.domain.recommendation.dto.GroupRecommendListResponseDto;
 import com.example.muaring.domain.recommendation.dto.MemberRecommendItemDto;
 import com.example.muaring.domain.recommendation.service.GroupRecommendationService;
@@ -28,9 +29,9 @@ public class RecommendationController {
 
     @GetMapping("/groups-members/{memberId}")
     public ResponseEntity<GroupRecommendListResponseDto> getRecommendedGroups(
-            @PathVariable Long memberId,
             @RequestParam(defaultValue = "20") int limit
     ) {
+        Long memberId = SecurityUtil.getMemberId();
         // Rate Limit 체크
         rateLimiterService.checkMemberGroupRecommendationLimit(memberId);
 
@@ -55,9 +56,9 @@ public class RecommendationController {
     // 추천 카드 클릭 이벤트 로그
     @PostMapping("/groups-members/{memberId}/{groupId}/click")
     public ResponseEntity<Void> markGroupRecommendationClicked(
-            @PathVariable Long memberId,
             @PathVariable Long groupId
     ) {
+        Long memberId = SecurityUtil.getMemberId();
         groupRecommendationService.markRecommendationClicked(memberId, groupId);
         return ResponseEntity.ok().build();
     }
@@ -65,9 +66,9 @@ public class RecommendationController {
     // 추천에서 그룹 가입 성공 이벤트 로그
     @PostMapping("/groups-members/{memberId}/{groupId}/join")
     public ResponseEntity<Void> markGroupRecommendationJoined(
-            @PathVariable Long memberId,
             @PathVariable Long groupId
     ) {
+        Long memberId = SecurityUtil.getMemberId();
         groupRecommendationService.markRecommendationJoined(memberId, groupId);
         return ResponseEntity.ok().build();
     }
@@ -76,9 +77,9 @@ public class RecommendationController {
 
     @GetMapping("/members/{memberId}")
     public ResponseEntity<List<MemberRecommendItemDto>> getRecommendedMembers(
-            @PathVariable Long memberId,
             @RequestParam(defaultValue = "20") int limit
     ) {
+        Long memberId = SecurityUtil.getMemberId();
         // 멤버 추천도 같은 RateLimit 버킷 사용
         rateLimiterService.checkMemberGroupRecommendationLimit(memberId);
 
@@ -102,9 +103,9 @@ public class RecommendationController {
     // 추천 멤버 카드 클릭 이벤트 로그
     @PostMapping("/members/{memberId}/{targetMemberId}/click")
     public ResponseEntity<Void> markMemberRecommendationClicked(
-            @PathVariable Long memberId,
             @PathVariable Long targetMemberId
     ) {
+        Long memberId = SecurityUtil.getMemberId();
         memberRecommendationService.markRecommendationClicked(memberId, targetMemberId);
         return ResponseEntity.ok().build();
     }
@@ -112,9 +113,9 @@ public class RecommendationController {
     // 추천에서 멤버 팔로우 성공 이벤트 로그
     @PostMapping("/members/{memberId}/{targetMemberId}/follow")
     public ResponseEntity<Void> markMemberRecommendationFollowed(
-            @PathVariable Long memberId,
             @PathVariable Long targetMemberId
     ) {
+        Long memberId = SecurityUtil.getMemberId();
         memberRecommendationService.markRecommendationFollowed(memberId, targetMemberId);
         return ResponseEntity.ok().build();
     }

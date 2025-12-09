@@ -19,6 +19,8 @@ import com.example.muaring.domain.recommendation.model.SimilarityScoreDetail;
 import com.example.muaring.domain.recommendation.repository.GroupRecommendationRepository;
 import com.example.muaring.domain.recommendation.repository.MemberGroupSimilarityCacheRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +36,8 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class GroupRecommendationService {
 
+    private static final int MAX_INTERNAL_LIMIT = 50;
+
     private final MemberMusicProfileRepository memberMusicProfileRepository;
     private final GroupMusicProfileRepository groupMusicProfileRepository;
     private final MemberGroupSimilarityCacheRepository cacheRepository;
@@ -45,6 +49,9 @@ public class GroupRecommendationService {
     private final MemberRepository memberRepository;
     private final GroupRecommendationRepository groupRecommendationRepository;
 
+    // =====================================================================
+    // 1. 사용자-그룹 유사도 계산 (캐시 테이블)
+    // =====================================================================
 
     // 사용자-그룹 추천용 계산
     @Transactional
@@ -168,9 +175,10 @@ public class GroupRecommendationService {
                 nullSafe(p.getAvgAcousticness()),
                 nullSafe(p.getAvgInstrumentalness()),
                 nullSafe(p.getAvgSpeechiness()),
-                nullSafe(p.getAvgTempo()),
-                nullSafe(p.getAvgLoudness()),
-                nullSafe(p.getAvgPopularity())
+
+                normalizeTempo(nullSafe(p.getAvgTempo())),      // 0-1 정규화
+                normalizeLoudness(nullSafe(p.getAvgLoudness())), // 0-1 정규화
+                normalizePopularity(nullSafe(p.getAvgPopularity())) // 0-1 정규화
         };
     }
 
@@ -200,6 +208,21 @@ public class GroupRecommendationService {
         return Math.max(min, Math.min(max, v));
     }
 
+    // 정규화용 메서드
+    private double normalizeTempo(double tempo) {
+        // BPM → 0~1로 변환 (50~200 기준)
+        return clamp((tempo - 50) / 150.0, 0.0, 1.0);
+    }
+
+    private double normalizeLoudness(double loudness) {
+        // dB → 0~1로 변환 (-60~0 기준)
+        return clamp((loudness + 60) / 60.0, 0.0, 1.0);
+    }
+
+    private double normalizePopularity(double popularity) {
+        return clamp(popularity / 100.0, 0.0, 1.0);
+    }
+
     // ====================== 2. 추천 결과 조회 (DTO 반환) ====================== //
 
     /**
@@ -208,22 +231,21 @@ public class GroupRecommendationService {
      *  - Group, 카테고리, isJoined 붙여서 DTO로 반환
      *  - 프론트에서는 isJoined == false 만 필터링해서 쓰기
      */
+    @Transactional  // self-invocation 문제 피하려고 여기서 쓰기 트랜잭션 시작
     public GroupRecommendListResponseDto getRecommendedGroupsForMember(Long memberId, int limit) {
 
-        // 1) 유사도 캐시에서 상위 N개 가져오기
+        int effectiveLimit = normalizeLimit(limit);
+
+        // 1) 유사도 캐시에서 상위 N개 가져오기 (Pageable 기반, 하드코딩 제거)
+        Pageable pageable = PageRequest.of(0, effectiveLimit);
         List<MemberGroupSimilarityCache> caches =
-                cacheRepository.findTop50ByMemberIdOrderByTotalScoreDesc(memberId);
+                cacheRepository.findByMemberIdOrderByTotalScoreDesc(memberId, pageable);
 
         if (caches.isEmpty()) {
             return GroupRecommendListResponseDto.of(memberId, List.of());
         }
 
-        // limit 적용 (안전하게)
-        if (limit > 0 && caches.size() > limit) {
-            caches = caches.subList(0, limit);
-        }
-
-        // 2) groupId 목록 추출
+        // 2) groupId 목록 추출 (순서 유지)
         List<Long> groupIdsInOrder = caches.stream()
                 .map(MemberGroupSimilarityCache::getGroupId)
                 .toList();
@@ -254,7 +276,7 @@ public class GroupRecommendationService {
             Long gid = cache.getGroupId();
             Group group = groupMap.get(gid);
             if (group == null) continue;
-            if (Boolean.FALSE.equals(group.getIsPublic())) continue; // 안전하게 한 번 더 필터
+            if (!Boolean.TRUE.equals(group.getIsPublic())) continue; // 안전하게 한 번 더 필터
 
             List<String> categoryNames =
                     categoryNamesByGroup.getOrDefault(gid, List.of());
@@ -277,7 +299,13 @@ public class GroupRecommendationService {
         return GroupRecommendListResponseDto.of(memberId, items);
     }
 
-    @Transactional
+    private int normalizeLimit(int limit) {
+        if (limit <= 0) {
+            return MAX_INTERNAL_LIMIT;
+        }
+        return Math.min(limit, MAX_INTERNAL_LIMIT);
+    }
+
     protected void logGroupRecommendations(
             Long memberId,
             List<MemberGroupSimilarityCache> caches,
@@ -285,7 +313,7 @@ public class GroupRecommendationService {
     ) {
         var memberOpt = memberRepository.findById(memberId);
         if (memberOpt.isEmpty()) {
-            return; // 이건 거의 안 나겠지만, 방어용
+            return; // 방어용
         }
         var member = memberOpt.get();
         LocalDateTime now = LocalDateTime.now();
@@ -297,7 +325,7 @@ public class GroupRecommendationService {
             if (group == null) continue;
 
             // 비공개 그룹은 기록도 안 함
-            if (Boolean.FALSE.equals(group.getIsPublic())) continue;
+            if (!Boolean.TRUE.equals(group.getIsPublic())) continue;
 
             GroupRecommendation recommendation =
                     groupRecommendationRepository.findByMember_IdAndRecommendedGroup_Id(memberId, groupId)
@@ -331,11 +359,15 @@ public class GroupRecommendationService {
                 .collect(Collectors.groupingBy(
                         GroupIdCategoryNameProjection::getGroupId,
                         Collectors.mapping(
-                                GroupIdCategoryNameProjection::getCategoryCode, // projection 필드명에 맞게
+                                GroupIdCategoryNameProjection::getCategoryDisplayName,
                                 Collectors.toList()
                         )
                 ));
     }
+
+    // =====================================================================
+    // 3. 이벤트 로그 (클릭/가입)
+    // =====================================================================
 
     @Transactional
     public void markRecommendationClicked(Long memberId, Long groupId) {

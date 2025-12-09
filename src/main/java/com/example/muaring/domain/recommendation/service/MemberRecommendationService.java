@@ -16,6 +16,7 @@ import com.example.muaring.domain.recommendation.repository.SimilarityCacheRepos
 import com.example.muaring.domain.social.entity.MusicPost;
 import com.example.muaring.domain.social.repository.MusicPostRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -83,7 +85,8 @@ public class MemberRecommendationService {
                 upsertSimilarity(targetMember, otherMember, scoreDetail, now);
             } catch (Exception e) {
                 // 한 명 계산 실패했다고 전체 중단하지 않도록
-                // log.warn("Failed to calc member similarity. target={}, other={}", memberId, otherId, e);
+                // 예외 처리 시 로깅 활성화 필요
+                 log.warn("Failed to calc member similarity. target={}, other={}", memberId, otherId, e);
             }
         }
     }
@@ -167,11 +170,13 @@ public class MemberRecommendationService {
                 nullSafe(p.getAvgAcousticness()),
                 nullSafe(p.getAvgInstrumentalness()),
                 nullSafe(p.getAvgSpeechiness()),
-                nullSafe(p.getAvgTempo()),
-                nullSafe(p.getAvgLoudness()),
-                nullSafe(p.getAvgPopularity())
+
+                normalizeTempo(nullSafe(p.getAvgTempo())),      // 0-1 정규화
+                normalizeLoudness(nullSafe(p.getAvgLoudness())), // 0-1 정규화
+                normalizePopularity(nullSafe(p.getAvgPopularity())) // 0-1 정규화
         };
     }
+
 
     private double calculateRarityScore(
             Double rarity1, Double rarity2,
@@ -198,6 +203,31 @@ public class MemberRecommendationService {
     private double clamp(double v, double min, double max) {
         return Math.max(min, Math.min(max, v));
     }
+
+    // 정규화용 메서드
+    private double normalizeTempo(double tempo) {
+        // BPM → 0~1로 변환 (50~200 기준)
+        return clamp((tempo - 50) / 150.0, 0.0, 1.0);
+    }
+
+    private double normalizeLoudness(double loudness) {
+        // dB → 0~1로 변환 (-60~0 기준)
+        return clamp((loudness + 60) / 60.0, 0.0, 1.0);
+    }
+
+    private double normalizePopularity(double popularity) {
+        return clamp(popularity / 100.0, 0.0, 1.0);
+    }
+
+    // 로버스트 정규화도 테스트 해보고 추후에 고려
+//    private double normalizeTempo(double tempo) {
+//        return clamp((tempo - 40) / 190.0, 0.0, 1.0);
+//    }
+//
+//    private double normalizeLoudness(double loudness) {
+//        return clamp((loudness + 35) / 30.0, 0.0, 1.0);
+//    }
+
 
     // =========================================================================
     // 2. 추천 멤버 리스트 조회 + 로그

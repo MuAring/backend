@@ -27,7 +27,15 @@ public class RecommendationBatchService {
      * - 멤버↔멤버 유사도
      * - 멤버↔그룹 유사도
      */
-    @Transactional
+    /**
+     * [coderabbit]
+     * 장시간 실행되는 배치 메서드에 @Transactional 사용은 위험합니다.
+     * 전체 배치 작업을 하나의 트랜잭션으로 감싸면:
+     *
+     * DB 커넥션이 장시간 점유되어 커넥션 풀 고갈 가능
+     * 누적된 엔티티로 인한 메모리 소비 증가
+     * 마지막 멤버 처리 중 실패 시 전체 롤백
+     */
     public void recalcAllRecommendations() {
 
         int page = 0;
