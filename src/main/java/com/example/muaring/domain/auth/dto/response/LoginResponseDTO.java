@@ -9,16 +9,24 @@ public record LoginResponseDTO(
         Long memberId,
         String email,
         String nickname,
-        boolean hasNickname
+        boolean hasNickname,
+        String spotifyAccessToken
 ) {
-    public static LoginResponseDTO of(Member member, String accessToken, String refreshToken, String nickname, Boolean hasNickname) {
+    public static LoginResponseDTO of(
+            Member member,
+            String accessToken,
+            String refreshToken,
+            Boolean hasNickname,
+            String spotifyAccessToken
+    ) {
         return new LoginResponseDTO(
                 accessToken,
                 refreshToken,
                 member.getId(),
                 member.getEmail(),
                 member.getNickname(),
-                hasNickname
+                hasNickname,
+                spotifyAccessToken
         );
     }
 }

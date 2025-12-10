@@ -20,7 +20,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SpotifyOAuthClient implements OAuthProviderClient{
+public class SpotifyOAuthClient implements OAuthProviderClient {
 
     private final WebClient webClient;
     private final PkceManager pkceManager;
@@ -115,6 +115,39 @@ public class SpotifyOAuthClient implements OAuthProviderClient{
                 AuthProvider.SPOTIFY,
                 String.valueOf(res.spotifyProviderId()),
                 res.email()
+        );
+    }
+
+    // ⚪ 리프레쉬토큰으로 엑세스토큰을 재발급하는 메서드
+    public OAuthTokenResponseDTO refreshAccessToken(String refreshToken) {
+
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("grant_type", "refresh_token");
+        formData.add("refresh_token", refreshToken);
+        formData.add("client_id", clientId);
+        formData.add("client_secret", clientSecret);
+
+        SpotifyTokenResponseDTO res = webClient.post()
+                .uri(tokenUri)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .body(BodyInserters.fromFormData(formData))
+                .retrieve()
+                .onStatus(
+                        HttpStatusCode::isError,
+                        response -> Mono.error(new AuthException(AuthErrorCode.SOCIAL_TOKEN_EXCHANGE_FAILED)))
+                .bodyToMono(SpotifyTokenResponseDTO.class)
+                .block();
+
+        if (res == null || res.accessToken() == null) {
+            throw new AuthException(AuthErrorCode.SOCIAL_TOKEN_EXCHANGE_FAILED);
+        }
+
+        return new OAuthTokenResponseDTO(
+                res.accessToken(),
+                res.tokenType(),
+                res.expiresIn(),
+                res.refreshToken(),
+                null
         );
     }
 }

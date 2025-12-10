@@ -18,15 +18,19 @@ public enum AuthErrorCode implements ErrorCode {
     UNSUPPORTED_TOKEN(1004, HttpStatus.UNAUTHORIZED, "지원되지 않는 토큰 형식입니다."),
     MALFORMED_TOKEN(1005, HttpStatus.UNAUTHORIZED, "손상된 토큰입니다."),
     UNAUTHORIZED_ACCESS(1006, HttpStatus.UNAUTHORIZED, "로그인이 필요한 요청입니다."),
-    UNAUTHORIZED_MEMBER(1011, HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
+    UNAUTHORIZED_MEMBER(1007, HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
+
+    // 404
+    OAUTH_ACCOUNT_NOT_FOUND(1008, HttpStatus.NOT_FOUND, "소셜 계정을 찾을 수 없습니다."),
+    SPOTIFY_REFRESH_TOKEN_NOT_FOUND(1009, HttpStatus.NOT_FOUND, "스포티파이 리프레쉬 토큰이 존재하지 않습니다."),
 
     // 500
-    SOCIAL_MEMBER_FETCH_FAILED(1007, HttpStatus.INTERNAL_SERVER_ERROR, "소셜 사용자 정보 조회에 실패했습니다."),
-    INVALID_JWT_SECRET(1008, HttpStatus.INTERNAL_SERVER_ERROR, "JWT 시크릿 키가 유효하지 않거나 Base64로 인코딩되지 않았습니다."),
-    INVALID_JWT_TTL(1009, HttpStatus.INTERNAL_SERVER_ERROR, "JWT TTL 설정값이 올바르지 않습니다."),
+    SOCIAL_MEMBER_FETCH_FAILED(1010, HttpStatus.INTERNAL_SERVER_ERROR, "소셜 사용자 정보 조회에 실패했습니다."),
+    INVALID_JWT_SECRET(1011, HttpStatus.INTERNAL_SERVER_ERROR, "JWT 시크릿 키가 유효하지 않거나 Base64로 인코딩되지 않았습니다."),
+    INVALID_JWT_TTL(1012, HttpStatus.INTERNAL_SERVER_ERROR, "JWT TTL 설정값이 올바르지 않습니다."),
 
     // 502
-    SOCIAL_TOKEN_EXCHANGE_FAILED(1010, HttpStatus.BAD_GATEWAY, "소셜 엑세스 토큰 발급에 실패했습니다."),
+    SOCIAL_TOKEN_EXCHANGE_FAILED(1013, HttpStatus.BAD_GATEWAY, "소셜 엑세스 토큰 발급에 실패했습니다."),
     ;
 
     private final int code;

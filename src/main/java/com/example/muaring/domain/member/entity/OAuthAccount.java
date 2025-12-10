@@ -26,6 +26,9 @@ public class OAuthAccount {
     @Column(name = "auth_provider_id")
     private String authProviderId;
 
+    @Column(name = "spotify_refresh_token")
+    private String spotifyRefreshToken;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
@@ -44,5 +47,9 @@ public class OAuthAccount {
         oauthAccount.authProviderId = providerId;
         oauthAccount.member = member;
         return oauthAccount;
+    }
+
+    public void updateSpotifyRefreshToken(String spotifyRefreshToken) {
+        this.spotifyRefreshToken = spotifyRefreshToken;
     }
 }
