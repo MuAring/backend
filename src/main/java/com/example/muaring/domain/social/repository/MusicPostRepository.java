@@ -1,6 +1,7 @@
 package com.example.muaring.domain.social.repository;
 
 import com.example.muaring.domain.social.entity.MusicPost;
+import com.example.muaring.domain.social.repository.projection.MemberTodayMusicProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -231,5 +232,22 @@ public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
             @Param("endOfDay") LocalDateTime endOfDay
     );
 
+    // 오늘의 음악을 조회하는 쿼리 (groupId==null)
+    @Query("""
+        select mp.member.id as memberId,
+               m.name as musicName,
+               m.artistName as artistName
+        from MusicPost mp
+        join mp.music m
+        where mp.member.id in :memberIds
+          and mp.group is null
+          and mp.createdAt >= :startOfDay
+          and mp.createdAt < :endOfDay
+    """)
+    List<MemberTodayMusicProjection> findTodayPersonalMusicByMemberIds(
+            @Param("memberIds") List<Long> memberIds,
+            @Param("startOfDay") LocalDateTime startOfDay,
+            @Param("endOfDay") LocalDateTime endOfDay
+    );
 
 }

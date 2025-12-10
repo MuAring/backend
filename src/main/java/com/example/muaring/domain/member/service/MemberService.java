@@ -169,7 +169,7 @@ public class MemberService {
         );
     }
 
-    private String resolveProfileImageUrl(Member member) {
+    public String resolveProfileImageUrl(Member member) {
         Image image = member.getProfileImage();
 
         if (image != null) {

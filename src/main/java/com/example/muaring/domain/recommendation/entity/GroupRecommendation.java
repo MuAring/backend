@@ -3,19 +3,22 @@ package com.example.muaring.domain.recommendation.entity;
 import com.example.muaring.domain.group.entity.Group;
 import com.example.muaring.domain.member.entity.Member;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(
-        name = "member_recommendation",
+        name = "group_recommendation",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"member_id", "recommended_member_id"})
+                @UniqueConstraint(columnNames = {"member_id", "recommended_group_id"})
         }
 )
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MemberRecommendation {
+public class GroupRecommendation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,10 +30,10 @@ public class MemberRecommendation {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    // 추천된 사용자
+    // 추천된 그룹
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "recommended_member_id", nullable = false)
-    private Member recommendedMember;
+    @JoinColumn(name = "recommended_group_id", nullable = false)
+    private Group recommendedGroup;
 
     @Column(name = "similarity_score", nullable = false)
     private Double similarityScore;
@@ -44,30 +47,29 @@ public class MemberRecommendation {
     @Column(name = "clicked", nullable = false)
     private Boolean clicked = false;
 
-    @Column(name = "followed", nullable = false)
-    private Boolean followed = false;
+    @Column(name = "joined", nullable = false)
+    private Boolean joined = false;
 
     @Column(name = "clicked_at")
     private LocalDateTime clickedAt;
 
-    @Column(name = "followed_at")
-    private LocalDateTime followedAt;
-
+    @Column(name = "joined_at")
+    private LocalDateTime joinedAt;
 
     // === 생성 편의 메서드 ===
-    public static MemberRecommendation create(Member member,
-                                              Member recommendedMember,
+    public static GroupRecommendation create(Member member,
+                                             Group group,
                                              Double similarityScore,
                                              Integer recommendationRank,
                                              LocalDateTime shownAt) {
-        MemberRecommendation rec = new MemberRecommendation();
+        GroupRecommendation rec = new GroupRecommendation();
         rec.member = member;
-        rec.recommendedMember = recommendedMember;
+        rec.recommendedGroup = group;
         rec.similarityScore = similarityScore;
         rec.recommendationRank = recommendationRank;
         rec.shownAt = shownAt;
         rec.clicked = false;
-        rec.followed = false;
+        rec.joined = false;
         return rec;
     }
 
@@ -85,8 +87,8 @@ public class MemberRecommendation {
         this.clickedAt = clickedAt;
     }
 
-    public void markFollowed(LocalDateTime followedAt) {
-        this.followed = true;
-        this.followedAt = followedAt;
+    public void markJoined(LocalDateTime joinedAt) {
+        this.joined = true;
+        this.joinedAt = joinedAt;
     }
 }
