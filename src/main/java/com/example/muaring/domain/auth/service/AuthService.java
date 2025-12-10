@@ -10,11 +10,13 @@ import com.example.muaring.domain.auth.dto.response.*;
 import com.example.muaring.domain.auth.entity.AuthProvider;
 import com.example.muaring.domain.auth.exception.AuthErrorCode;
 import com.example.muaring.domain.auth.exception.AuthException;
+import com.example.muaring.domain.member.exception.MemberException;
 import com.example.muaring.domain.member.repository.OAuthAccountRepository;
 import com.example.muaring.common.security.JwtTokenProvider;
 import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.entity.OAuthAccount;
 import com.example.muaring.domain.member.repository.MemberRepository;
+import com.example.muaring.domain.member.response.MemberErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,13 +54,23 @@ public class AuthService {
 
         OAuthAccount account = findOrCreateAccount(memberInfoResponseDTO, "SPOTIFY");
         Member member = account.getMember();
+
+        if (tokenResponseDTO.refreshToken() != null) {
+            account.updateSpotifyRefreshToken(tokenResponseDTO.refreshToken());
+        }
+
         String accessToken = jwtTokenProvider.generateAccessToken(member.getId(), member.getEmail());
         String refreshToken = jwtTokenProvider.generateRefreshToken(member.getId(), member.getEmail());
         boolean hasNickname = member.getNickname() != null && !member.getNickname().isEmpty();
 
         log.info("accessToken: " + accessToken);
 
-        return new LoginResponseDTO(accessToken, refreshToken, account.getMember().getId(), account.getMember().getEmail(), member.getNickname(), hasNickname);
+        return LoginResponseDTO.of(
+                member,
+                accessToken,
+                refreshToken,
+                hasNickname,
+                tokenResponseDTO.accessToken());
     }
 
     @Transactional
@@ -74,7 +86,7 @@ public class AuthService {
 
         log.info("accessToken: " + accessToken);
 
-        return LoginResponseDTO.of(member, accessToken, refreshToken, member.getNickname(), hasNickname);
+        return LoginResponseDTO.of(member, accessToken, refreshToken, hasNickname, null);
     }
 
     private OAuthAccount createMemberAndAccount(OAuthMemberInfoResponseDTO memberInfoResponseDTO, AuthProvider authProvider) {
@@ -123,5 +135,31 @@ public class AuthService {
         pkceManager.saveCodeVerifier(pkce.codeVerifier());
 
         return AuthorizeUrlResponse.create(url);
+    }
+
+    @Transactional
+    public SpotifyTokenRefreshResponseDTO refreshSpotifyAccessToken(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
+
+        OAuthAccount account = oauthAccountRepository
+                .findByMemberIdAndAuthProvider(memberId, AuthProvider.valueOf("SPOTIFY"))
+                .orElseThrow(() -> new AuthException(AuthErrorCode.OAUTH_ACCOUNT_NOT_FOUND));
+
+        String refreshToken = account.getSpotifyRefreshToken();
+        if (refreshToken == null) {
+            throw new AuthException(AuthErrorCode.SPOTIFY_REFRESH_TOKEN_NOT_FOUND);
+        }
+
+        OAuthTokenResponseDTO tokenResponseDTO = spotifyOAuthClient.refreshAccessToken(refreshToken);
+
+        if (tokenResponseDTO.refreshToken() != null) {
+            account.updateSpotifyRefreshToken(tokenResponseDTO.refreshToken());
+        }
+
+        return new SpotifyTokenRefreshResponseDTO(
+                tokenResponseDTO.accessToken(),
+                tokenResponseDTO.expiresIn()
+        );
     }
 }

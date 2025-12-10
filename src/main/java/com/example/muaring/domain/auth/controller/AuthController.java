@@ -1,10 +1,12 @@
 package com.example.muaring.domain.auth.controller;
 
 import com.example.muaring.common.response.ApiResponse;
+import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.domain.auth.dto.request.KakaoLoginRequest;
 import com.example.muaring.domain.auth.dto.request.SpotifyLoginRequest;
 import com.example.muaring.domain.auth.dto.response.AuthorizeUrlResponse;
 import com.example.muaring.domain.auth.dto.response.LoginResponseDTO;
+import com.example.muaring.domain.auth.dto.response.SpotifyTokenRefreshResponseDTO;
 import com.example.muaring.domain.auth.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,8 +30,8 @@ public class AuthController {
             @RequestBody KakaoLoginRequest request
     ) {
         LoginResponseDTO response = authService.kakaoLogin(request);
-        return ResponseEntity
-                .ok(ApiResponse.ok(response, "카카오 로그인에 성공했습니다."));
+        return ResponseEntity.ok(
+                ApiResponse.ok(response, "카카오 로그인에 성공했습니다."));
     }
 
     @GetMapping("/spotify/authorization")
@@ -46,7 +48,17 @@ public class AuthController {
             @RequestBody SpotifyLoginRequest request
     ) {
         LoginResponseDTO response = authService.spotifyLogin(request);
-        return ResponseEntity
-                .ok(ApiResponse.ok(response, "스포티파이 로그인에 성공했습니다."));
+        return ResponseEntity.ok(
+                ApiResponse.ok(response, "스포티파이 로그인에 성공했습니다."));
+    }
+
+    @PostMapping("/spotify/refresh")
+    @Operation(summary = "스포티파이 엑세스 토큰 재발급", description = "스포티파이 엑세스 토큰 재발급 로직입니다.")
+    public ResponseEntity<ApiResponse<SpotifyTokenRefreshResponseDTO>> refreshToken() {
+        Long memberId = SecurityUtil.getMemberId();
+
+        SpotifyTokenRefreshResponseDTO response = authService.refreshSpotifyAccessToken(memberId);
+        return ResponseEntity.ok(
+                ApiResponse.ok(response, "스포티파이 엑세스 토큰 재발급에 성공했습니다."));
     }
 }
