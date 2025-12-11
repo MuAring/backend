@@ -125,7 +125,7 @@ public class AuthService {
                 .queryParam("redirect_uri", spotifyRedirectUri)
                 .queryParam("code_challenge", pkce.codeChallenge())
                 .queryParam("code_challenge_method", "S256")
-                .queryParam("scope", "user-read-email user-read-private")
+                .queryParam("scope", "user-read-email user-read-private playlist-modify-public playlist-modify-private")
                 .build()
                 .toUriString();
 
