@@ -51,11 +51,11 @@ public class LibraryController {
         return ResponseEntity.ok(ApiResponse.ok(null, "선택한 음악이 삭제되었습니다."));
     }
 
-    @PostMapping("/export")
-    public ResponseEntity<?> exportTracksToPlaylist(@RequestBody SpotifyExportRequest request) {
-
-        System.out.println("musicIds = " + request.getMusicIds());
-
-        return ResponseEntity.ok("OK");
+    @PostMapping("export")
+    public ResponseEntity<ApiResponse<Void>> exportToSpotify(
+            @RequestBody SpotifyExportRequest request
+    ) {
+        libraryService.exportToSpotify(request);
+        return ResponseEntity.ok(ApiResponse.ok(null, "스포티파이로 내보내기 완료"));
     }
 }
