@@ -81,7 +81,7 @@ public class LibraryService {
         Library savedLibrary = libraryRepository.save(library);
 
         return LibraryMusicDTO.builder()
-                .libraryId(library.getId())
+                .libraryId(savedLibrary.getId())
                 .musicId(savedLibrary.getMusic().getId())
                 .title(savedLibrary.getMusic().getName())
                 .artist(savedLibrary.getMusic().getArtistName())

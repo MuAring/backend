@@ -120,11 +120,16 @@ public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
     );
 
 
-    @Query(value = "SELECT * FROM music_post " +
-            "WHERE member_id = :memberId " +
-            "AND created_at >= CURRENT_DATE " +
-            "AND created_at < CURRENT_DATE + INTERVAL '1 day'",
-            nativeQuery = true)
+    @Query(value = """
+        SELECT *
+        FROM music_post
+        WHERE member_id = :memberId
+          AND group_id IS NULL
+          AND created_at >= CURRENT_DATE
+          AND created_at < CURRENT_DATE + INTERVAL '1 day'
+        ORDER BY created_at DESC
+        LIMIT 1
+        """, nativeQuery = true)
     Optional<MusicPost> findTodayPostByMember(@Param("memberId") Long memberId);
 
 

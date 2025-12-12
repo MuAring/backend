@@ -62,4 +62,7 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> 
             Long memberId,
             String name
     );
+
+    // 그룹 멤버인지 여부 반환
+    boolean existsByGroup_IdAndMember_Id(Long groupId, Long memberId);
 }

@@ -36,10 +36,15 @@ public class MusicPostFeedResponseDto {
     private boolean isProfile;
     private String content;
     private Integer likeCount;
+    private boolean isLiked;          // 내가 좋아요 눌렀는지
     private Integer commentCount;
+    private boolean isInLibrary;    // 내 보관함에 있는지 여부
     private LocalDateTime createdAt;
 
-    public static MusicPostFeedResponseDto from(MusicPost post) {
+    // 기존 from() : 프로필 URL을 엔티티에서 직접 가져오는 버전
+    public static MusicPostFeedResponseDto from(MusicPost post,
+                                                boolean isInLibrary,
+                                                boolean isLiked) {
         Member member = post.getMember();
         Music music = post.getMusic();
 
@@ -77,8 +82,51 @@ public class MusicPostFeedResponseDto {
                 .isProfile(post.isProfile())
                 .content(post.getContent())
                 .likeCount(post.getLikeCount())
+                .isLiked(isLiked)               // 내가 좋아요 눌렀는지 여부
                 .commentCount(post.getCommentCount())
+                .isInLibrary(isInLibrary)   // 내 보관함에 있는지 여부
+                .createdAt(post.getCreatedAt())
+                .build();
+    }
 
+    // 새로 추가된 from(): 외부에서 profileImageUrl을 강제로 넣어주는 버전
+    public static MusicPostFeedResponseDto from(
+            MusicPost post,
+            boolean isInLibrary,
+            boolean isLiked,
+            String memberProfileImageUrl
+    ) {
+        Member member = post.getMember();
+        Music music = post.getMusic();
+
+        Long groupId = post.getGroup() != null ? post.getGroup().getId() : null;
+
+        return MusicPostFeedResponseDto.builder()
+                .postId(post.getId())
+                .groupId(groupId)
+
+                // 작성자
+                .memberId(member.getId())
+                .memberNickname(member.getNickname())
+                .memberProfileImageUrl(memberProfileImageUrl)
+
+                // 음악
+                .musicId(music.getId())
+                .spotifyId(music.getSpotifyId())
+                .musicName(music.getName())
+                .artistId(music.getArtistId())
+                .artistName(music.getArtistName())
+                .albumName(music.getAlbumName())
+                .albumImgUrl(music.getAlbumImgUrl())
+                .durationMs(music.getDurationMs())
+
+                // 포스트 정보
+                .isProfile(post.isProfile())
+                .content(post.getContent())
+                .likeCount(post.getLikeCount())
+                .isLiked(isLiked)
+                .commentCount(post.getCommentCount())
+                .isInLibrary(isInLibrary)
                 .createdAt(post.getCreatedAt())
                 .build();
     }
