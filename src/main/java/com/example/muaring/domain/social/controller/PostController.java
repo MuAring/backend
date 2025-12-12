@@ -29,11 +29,12 @@ public class PostController {
 
     @GetMapping("/history")
     public ResponseEntity<ApiResponse<Page<MusicHistoryDTO>>> getMusicHistoryByMember(
+        @PathVariable Long memberId,
         @RequestParam(required = false) Integer year,
         @RequestParam(required = false) Integer month,
         @PageableDefault(page = 0, size = 20) Pageable pageable
     ) {
-            Page<MusicHistoryDTO> history = postService.getMusicHistoryByMember(year, month, pageable);
+            Page<MusicHistoryDTO> history = postService.getMusicHistoryByMember(memberId, year, month, pageable);
             return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.ok(history, "회원의 음악 히스토리 조회가 완료되었습니다."));

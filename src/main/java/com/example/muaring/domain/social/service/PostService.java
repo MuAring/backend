@@ -124,10 +124,7 @@ public class PostService {
     }
 
     @Transactional
-    public Page<MusicHistoryDTO> getMusicHistoryByMember(Integer year, Integer month, Pageable pageable) {
-
-        Long memberId = SecurityUtil.getMemberId();
-
+    public Page<MusicHistoryDTO> getMusicHistoryByMember(Long memberId, Integer year, Integer month, Pageable pageable) {
         if (!memberRepository.existsById(memberId)) {
             throw new MusicException(MusicErrorCode.MEMBER_NOT_FOUND);
         }
