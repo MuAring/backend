@@ -21,5 +21,16 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: muaring-redis
+    ports:
+      - "6379:6379"
+    command: [ "redis-server", "--appendonly", "yes" ]  # AOF 설정
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+
 volumes:
   postgres-data:
+  redis-data:

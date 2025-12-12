@@ -1,5 +1,6 @@
 package com.example.muaring.domain.recommendation.entity;
 
+import com.example.muaring.domain.group.entity.Group;
 import com.example.muaring.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
@@ -51,4 +52,41 @@ public class MemberRecommendation {
 
     @Column(name = "followed_at")
     private LocalDateTime followedAt;
+
+
+    // === 생성 편의 메서드 ===
+    public static MemberRecommendation create(Member member,
+                                              Member recommendedMember,
+                                             Double similarityScore,
+                                             Integer recommendationRank,
+                                             LocalDateTime shownAt) {
+        MemberRecommendation rec = new MemberRecommendation();
+        rec.member = member;
+        rec.recommendedMember = recommendedMember;
+        rec.similarityScore = similarityScore;
+        rec.recommendationRank = recommendationRank;
+        rec.shownAt = shownAt;
+        rec.clicked = false;
+        rec.followed = false;
+        return rec;
+    }
+
+    // === 상태 업데이트 ===
+    public void updateOnShown(Double similarityScore,
+                              Integer recommendationRank,
+                              LocalDateTime shownAt) {
+        this.similarityScore = similarityScore;
+        this.recommendationRank = recommendationRank;
+        this.shownAt = shownAt;
+    }
+
+    public void markClicked(LocalDateTime clickedAt) {
+        this.clicked = true;
+        this.clickedAt = clickedAt;
+    }
+
+    public void markFollowed(LocalDateTime followedAt) {
+        this.followed = true;
+        this.followedAt = followedAt;
+    }
 }

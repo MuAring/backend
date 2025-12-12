@@ -1,8 +1,9 @@
 package com.example.muaring.domain.library.service;
 
-import com.example.muaring.common.security.SecurityUtil;
+import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.domain.library.dto.LibraryMusicDTO;
 import com.example.muaring.domain.library.dto.LibraryMusicListResponseDTO;
+import com.example.muaring.domain.library.dto.SpotifyExportRequest;
 import com.example.muaring.domain.library.entity.Library;
 import com.example.muaring.domain.library.repository.LibraryRepository;
 import com.example.muaring.domain.member.entity.Member;
@@ -25,6 +26,7 @@ public class LibraryService {
     private final LibraryRepository libraryRepository;
     private final MemberRepository memberRepository;
     private final MusicRepository musicRepository;
+    private final SpotifyExportService spotifyExportService;
 
     public LibraryMusicListResponseDTO getUserLibrary() {
 
@@ -38,6 +40,7 @@ public class LibraryService {
 
         List<LibraryMusicDTO> musicList = libraries.stream()
                 .map(library -> LibraryMusicDTO.builder()
+                        .libraryId(library.getId())
                         .musicId(library.getMusic().getId())
                         .title(library.getMusic().getName())
                         .artist(library.getMusic().getArtistName())
@@ -80,6 +83,7 @@ public class LibraryService {
         Library savedLibrary = libraryRepository.save(library);
 
         return LibraryMusicDTO.builder()
+                .libraryId(savedLibrary.getId())
                 .musicId(savedLibrary.getMusic().getId())
                 .title(savedLibrary.getMusic().getName())
                 .artist(savedLibrary.getMusic().getArtistName())
@@ -97,6 +101,7 @@ public class LibraryService {
 
 
         Long memberId = SecurityUtil.getMemberId();
+
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MusicException(MusicErrorCode.MEMBER_NOT_FOUND));
 
@@ -108,4 +113,21 @@ public class LibraryService {
 
     }
 
+    @Transactional
+    public void exportToSpotify(SpotifyExportRequest request) {
+
+        String token = request.getSpotifyAccessToken();
+        List<Long> musicIds = request.getMusicIds();
+        List<Music> musicList = musicRepository.findAllById(musicIds);
+
+        if (musicList.isEmpty()) {
+            throw new MusicException(MusicErrorCode.MUSIC_NOT_FOUND);
+        }
+
+        List<String> trackIds = musicList.stream()
+                .map(Music::getSpotifyId)
+                .toList();
+
+        spotifyExportService.exportTracks(token, trackIds);
+    }
 }

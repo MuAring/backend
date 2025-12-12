@@ -22,7 +22,7 @@ spring:
         format_sql: true
 
 app:
-  base-url: ${BASE_URL:http://localhost:8080}
+  base-url: ${BASE_URL:muaring://invite}
 
   jwt:
     secret: ${JWT_SECRET}
@@ -52,7 +52,7 @@ spotify:
   redirect-uri: ${SPOTIFY_REDIRECT_URI}
   token-uri: https://accounts.spotify.com/api/token
   user-info-uri: https://api.spotify.com/v1/me
-  scope: user-read-email
+  scope: user-read-email user-read-private
 
 cloud:
   aws:
@@ -78,3 +78,7 @@ file:
 logging:
   level:
     org.springframework.security: DEBUG
+
+scheduler:
+  recommendation:
+    cron: "0 0 4 * * ?"   # 운영 기본: 새벽 4시

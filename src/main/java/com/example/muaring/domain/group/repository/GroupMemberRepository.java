@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> {
@@ -37,5 +38,31 @@ public interface GroupMemberRepository extends JpaRepository<GroupMember, Long> 
 
     // memberId로 해당 멤버가 가입한 그룹의 ID들만 조회
     @Query("select gm.group.id from GroupMember gm where gm.member.id = :memberId")
-    List<Long> findGroupIdsByMemberId(@Param("memberId") Long memberId);
+    Set<Long> findGroupIdsByMemberId(@Param("memberId") Long memberId);
+
+    // 닉네임으로 검색
+    @Query("SELECT gm FROM GroupMember gm " +
+            "JOIN FETCH gm.member m " +
+            "WHERE gm.group.id = :groupId " +
+            "AND m.nickname LIKE %:search% " +
+            "AND gm.isDeleted = false " +
+            "ORDER BY m.nickname ASC")
+    List<GroupMember> findByGroupIdAndMemberNicknameContaining(
+            @Param("groupId") Long groupId,
+            @Param("search") String search);
+
+    // 내가 소속된 그룹 중 이름으로 검색
+    @EntityGraph(attributePaths = { "group" })
+    @Query("SELECT gm FROM GroupMember gm " +
+            "WHERE gm.member.id = :memberId " +
+            "  AND gm.isDeleted = false " +
+            "  AND LOWER(gm.group.name) LIKE LOWER(CONCAT('%', :name, '%')) " +
+            "ORDER BY gm.group.name ASC")
+    List<GroupMember> findByMember_IdAndGroup_NameContainingIgnoreCaseOrderByGroup_NameAsc(
+            Long memberId,
+            String name
+    );
+
+    // 그룹 멤버인지 여부 반환
+    boolean existsByGroup_IdAndMember_Id(Long groupId, Long memberId);
 }

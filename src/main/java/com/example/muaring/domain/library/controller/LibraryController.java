@@ -3,6 +3,7 @@ package com.example.muaring.domain.library.controller;
 import com.example.muaring.common.response.ApiResponse;
 import com.example.muaring.domain.library.dto.LibraryMusicDTO;
 import com.example.muaring.domain.library.dto.LibraryMusicListResponseDTO;
+import com.example.muaring.domain.library.dto.SpotifyExportRequest;
 import com.example.muaring.domain.library.service.LibraryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -50,4 +51,11 @@ public class LibraryController {
         return ResponseEntity.ok(ApiResponse.ok(null, "선택한 음악이 삭제되었습니다."));
     }
 
+    @PostMapping("export")
+    public ResponseEntity<ApiResponse<Void>> exportToSpotify(
+            @RequestBody SpotifyExportRequest request
+    ) {
+        libraryService.exportToSpotify(request);
+        return ResponseEntity.ok(ApiResponse.ok(null, "스포티파이로 내보내기 완료"));
+    }
 }

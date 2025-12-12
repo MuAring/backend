@@ -1,6 +1,8 @@
 package com.example.muaring.domain.social.service;
 
-import com.example.muaring.common.security.SecurityUtil;
+import com.example.muaring.domain.group.entity.Group;
+import com.example.muaring.domain.group.level.GroupActivityType;
+import com.example.muaring.domain.group.level.GroupLevelService;
 import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.exception.MemberException;
 import com.example.muaring.domain.member.repository.MemberRepository;
@@ -26,6 +28,7 @@ public class LikeService {
     private final MemberRepository memberRepository;
     private final LikeRepository likeRepository;
     private final MusicPostRepository postRepository;
+    private final GroupLevelService groupLevelService;
 
     @Transactional
     public LikeResponseDTO handleLike(Long memberId, Long postId) {
@@ -44,6 +47,17 @@ public class LikeService {
             Like like = Like.create(post, member);
             likeRepository.save(like);
             post.increaseLikeCount();
+
+            // 그룹 게시글이면 그룹 EXP 반영
+            Group group = post.getGroup();
+            if (group != null) {
+                groupLevelService.addActivity(
+                        group.getId(),
+                        memberId,
+                        GroupActivityType.LIKE
+                );
+            }
+
             return LikeResponseDTO.of(postId, post.getLikeCount(), true);
         }
     }

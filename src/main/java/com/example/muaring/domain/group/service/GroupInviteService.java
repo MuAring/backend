@@ -12,6 +12,7 @@ import com.example.muaring.domain.group.repository.GroupRepository;
 import com.example.muaring.domain.group.response.GroupException;
 import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.repository.MemberRepository;
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +32,14 @@ public class GroupInviteService {
 
     @Value("${app.base-url}")
     private String baseUrl;
+
+
+    @PostConstruct  // ✅ 서버 시작 시 baseUrl 출력
+    public void init() {
+        System.out.println("========================================");
+        System.out.println("BASE_URL 설정값: " + baseUrl);
+        System.out.println("========================================");
+    }
 
     // 초대 링크 생성
     @Transactional

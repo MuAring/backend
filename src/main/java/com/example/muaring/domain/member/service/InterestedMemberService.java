@@ -1,6 +1,6 @@
 package com.example.muaring.domain.member.service;
 
-import com.example.muaring.common.security.SecurityUtil;
+import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.domain.member.entity.InterestedMember;
 import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.exception.MemberException;

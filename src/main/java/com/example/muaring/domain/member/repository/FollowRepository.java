@@ -38,4 +38,7 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
             AND f.followee.isDeleted = false
     """)
     long countByFollowerId(@Param("followerId") Long followerId);
+
+    @Query("select f.followee.id from Follow f where f.follower.id = :followerId")
+    List<Long> findFolloweeIdsByFollowerId(@Param("followerId") Long followerId);
 }

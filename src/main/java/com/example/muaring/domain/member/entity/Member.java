@@ -32,7 +32,7 @@ public class Member extends BaseEntity {
     @Column(name="email", nullable = false, unique = true)
     private String email;
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "member", orphanRemoval = true)
     private List<OAuthAccount> oauthAccounts = new ArrayList<>();
 
     @Column(name = "is_public", nullable = false)
