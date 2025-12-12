@@ -27,19 +27,6 @@ public class PostController {
         return ResponseEntity.ok(ApiResponse.ok(postDTO, "음악 게시글이 작성되었습니다."));
     }
 
-    @GetMapping("/history")
-    public ResponseEntity<ApiResponse<Page<MusicHistoryDTO>>> getMusicHistoryByMember(
-        @PathVariable Long memberId,
-        @RequestParam(required = false) Integer year,
-        @RequestParam(required = false) Integer month,
-        @PageableDefault(page = 0, size = 20) Pageable pageable
-    ) {
-            Page<MusicHistoryDTO> history = postService.getMusicHistoryByMember(memberId, year, month, pageable);
-            return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(ApiResponse.ok(history, "회원의 음악 히스토리 조회가 완료되었습니다."));
-    }
-
     // [GET] /post/followee/today
     // 팔로우한 사용자 + 내 게시물 조회
     @GetMapping("/followee/today")

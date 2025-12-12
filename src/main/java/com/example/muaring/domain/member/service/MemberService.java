@@ -19,7 +19,10 @@ import com.example.muaring.domain.member.exception.MemberException;
 import com.example.muaring.domain.member.repository.FollowRepository;
 import com.example.muaring.domain.member.repository.MemberRepository;
 import com.example.muaring.domain.member.response.MemberErrorCode;
+import com.example.muaring.domain.music.dto.MusicHistoryDTO;
 import com.example.muaring.domain.music.entity.Music;
+import com.example.muaring.domain.music.exception.MusicErrorCode;
+import com.example.muaring.domain.music.exception.MusicException;
 import com.example.muaring.domain.social.entity.MusicPost;
 import com.example.muaring.domain.social.repository.MusicPostRepository;
 import lombok.RequiredArgsConstructor;
@@ -288,4 +291,21 @@ public class MemberService {
         );
     }
 
+    @Transactional
+    public Page<MusicHistoryDTO> getMusicHistoryByMember(Long memberId, Integer year, Integer month, Pageable pageable) {
+        if (!memberRepository.existsById(memberId)) {
+            throw new MusicException(MusicErrorCode.MEMBER_NOT_FOUND);
+        }
+
+        Page<MusicPost> posts = musicPostRepository.findByMemberAndYearMonth(memberId, year, month, pageable);
+
+        return posts.map(post -> MusicHistoryDTO.builder()
+                .postId(post.getId())
+                .musicId(post.getMusic().getId())
+                .title(post.getMusic().getName())
+                .artist(post.getMusic().getArtistName())
+                .albumImage(post.getMusic().getAlbumImgUrl())
+                .createdAt(post.getCreatedAt())
+                .build());
+    }
 }
