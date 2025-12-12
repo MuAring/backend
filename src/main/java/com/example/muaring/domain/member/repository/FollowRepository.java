@@ -19,6 +19,8 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     boolean existsByFollowerIdAndFolloweeId(Long loginMemberId, Long targetId);
 
+    boolean existsByFollowerAndFollowee(Member follower, Member followee);
+
     // followeeId 회원을 팔로우하는 사람 수 (탈퇴한 회원은 count에서 제외)
     @Query("""
         SELECT COUNT(f)
