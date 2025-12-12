@@ -3,6 +3,7 @@ package com.example.muaring.domain.library.service;
 import com.example.muaring.common.util.SecurityUtil;
 import com.example.muaring.domain.library.dto.LibraryMusicDTO;
 import com.example.muaring.domain.library.dto.LibraryMusicListResponseDTO;
+import com.example.muaring.domain.library.dto.SpotifyExportRequest;
 import com.example.muaring.domain.library.entity.Library;
 import com.example.muaring.domain.library.repository.LibraryRepository;
 import com.example.muaring.domain.member.entity.Member;
@@ -25,6 +26,7 @@ public class LibraryService {
     private final LibraryRepository libraryRepository;
     private final MemberRepository memberRepository;
     private final MusicRepository musicRepository;
+    private final SpotifyExportService spotifyExportService;
 
     public LibraryMusicListResponseDTO getUserLibrary() {
 
@@ -111,4 +113,21 @@ public class LibraryService {
 
     }
 
+    @Transactional
+    public void exportToSpotify(SpotifyExportRequest request) {
+
+        String token = request.getSpotifyAccessToken();
+        List<Long> musicIds = request.getMusicIds();
+        List<Music> musicList = musicRepository.findAllById(musicIds);
+
+        if (musicList.isEmpty()) {
+            throw new MusicException(MusicErrorCode.MUSIC_NOT_FOUND);
+        }
+
+        List<String> trackIds = musicList.stream()
+                .map(Music::getSpotifyId)
+                .toList();
+
+        spotifyExportService.exportTracks(token, trackIds);
+    }
 }

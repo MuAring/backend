@@ -8,5 +8,6 @@ import java.util.List;
 @Getter
 @Setter
 public class SpotifyExportRequest {
+    String spotifyAccessToken;
     private List<Long> musicIds;
 }

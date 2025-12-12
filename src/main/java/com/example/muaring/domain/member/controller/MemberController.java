@@ -8,12 +8,15 @@ import com.example.muaring.domain.member.dto.response.MemberProfileReadResponseD
 import com.example.muaring.domain.member.dto.response.MemberSearchItemDto;
 import com.example.muaring.domain.member.dto.response.NicknameCheckResponseDTO;
 import com.example.muaring.domain.member.service.MemberService;
+import com.example.muaring.domain.music.dto.MusicHistoryDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -66,6 +69,19 @@ public class MemberController {
     ) {
         Page<MemberSearchItemDto> result = memberService.searchMembers(name, pageable);
         return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
+    @GetMapping("/{memberId}/history")
+    public ResponseEntity<ApiResponse<Page<MusicHistoryDTO>>> getMusicHistoryByMember(
+            @PathVariable Long memberId,
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month,
+            @PageableDefault(page = 0, size = 20) Pageable pageable
+    ) {
+        Page<MusicHistoryDTO> history = memberService.getMusicHistoryByMember(memberId, year, month, pageable);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.ok(history, "회원의 음악 히스토리 조회가 완료되었습니다."));
     }
 
 }

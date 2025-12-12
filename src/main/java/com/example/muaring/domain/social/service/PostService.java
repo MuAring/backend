@@ -28,7 +28,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -130,27 +129,6 @@ public class PostService {
                 .build();
 
         groupPlaylistRepository.save(groupPlaylist);
-    }
-
-    @Transactional
-    public Page<MusicHistoryDTO> getMusicHistoryByMember(Integer year, Integer month, Pageable pageable) {
-
-        Long memberId = SecurityUtil.getMemberId();
-
-        if (!memberRepository.existsById(memberId)) {
-            throw new MusicException(MusicErrorCode.MEMBER_NOT_FOUND);
-        }
-
-        Page<MusicPost> posts = musicPostRepository.findByMemberAndYearMonth(memberId, year, month, pageable);
-
-        return posts.map(post -> MusicHistoryDTO.builder()
-                .postId(post.getId())
-                .musicId(post.getMusic().getId())
-                .title(post.getMusic().getName())
-                .artist(post.getMusic().getArtistName())
-                .albumImage(post.getMusic().getAlbumImgUrl())
-                .createdAt(post.getCreatedAt())
-                .build());
     }
 
     @Transactional(readOnly = true)
