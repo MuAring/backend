@@ -154,7 +154,7 @@ public class MemberService {
         boolean isPublic = member.getIsPublic();  // 비공개 계정 여부
         boolean isFollowing = followRepository.existsByFollowerIdAndFolloweeId(loginMemberId, targetId);  // 팔로우 여부
 
-        long sharedMusicCount = musicPostRepository.countByMemberIdAndIsDeletedIsFalse(targetId);
+        long sharedMusicCount = musicPostRepository.countByMemberIdAndGroupIsNullAndIsDeletedFalse(targetId);
         long followerCount = followRepository.countByFolloweeId(targetId); // targetId 회원을 팔로우하는 사람 수
         long followeeCount = followRepository.countByFollowerId(targetId);  // targetId 회원이 팔로우하는 사람 수
         long joinedGroupCount = groupMemberRepository.countByMemberId(targetId);

@@ -15,14 +15,14 @@ import java.util.Optional;
 public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
 
     @Query("""
-    SELECT mp
-    FROM MusicPost mp
-    WHERE mp.member.id = :memberId
-      AND YEAR(mp.createdAt) = :year
-      AND MONTH(mp.createdAt) = :month
-    ORDER BY mp.createdAt DESC
+        SELECT mp
+        FROM MusicPost mp
+        WHERE mp.member.id = :memberId
+          AND mp.group IS NULL
+          AND YEAR(mp.createdAt) = :year
+          AND MONTH(mp.createdAt) = :month
+        ORDER BY mp.createdAt ASC
     """)
-
     Page<MusicPost> findByMemberAndYearMonth(
             @Param("memberId") Long memberId,
             @Param("year") Integer year,
@@ -133,7 +133,7 @@ public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
     Optional<MusicPost> findTodayPostByMember(@Param("memberId") Long memberId);
 
 
-    long countByMemberIdAndIsDeletedIsFalse( Long memberId);
+    long countByMemberIdAndGroupIsNullAndIsDeletedFalse(Long memberId);
 
     @Query("select count(mp) from MusicPost mp where mp.group.id = :groupId and mp.isDeleted = false")
     int countActiveByGroupId(@Param("groupId") Long groupId);
