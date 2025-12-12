@@ -6,15 +6,11 @@ import com.example.muaring.domain.social.dto.post.*;
 import com.example.muaring.domain.social.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/post")
@@ -33,11 +29,12 @@ public class PostController {
 
     @GetMapping("/history")
     public ResponseEntity<ApiResponse<Page<MusicHistoryDTO>>> getMusicHistoryByMember(
+        @PathVariable Long memberId,
         @RequestParam(required = false) Integer year,
         @RequestParam(required = false) Integer month,
         @PageableDefault(page = 0, size = 20) Pageable pageable
     ) {
-            Page<MusicHistoryDTO> history = postService.getMusicHistoryByMember(year, month, pageable);
+            Page<MusicHistoryDTO> history = postService.getMusicHistoryByMember(memberId, year, month, pageable);
             return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.ok(history, "회원의 음악 히스토리 조회가 완료되었습니다."));
@@ -62,5 +59,4 @@ public class PostController {
         TodayPostResponseDTO response = postService.getTodayPostByMember();
         return ResponseEntity.ok(ApiResponse.ok(response, "오늘의 게시물 조회 완료"));
     }
-
 }

@@ -24,10 +24,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -126,10 +124,7 @@ public class PostService {
     }
 
     @Transactional
-    public Page<MusicHistoryDTO> getMusicHistoryByMember(Integer year, Integer month, Pageable pageable) {
-
-        Long memberId = SecurityUtil.getMemberId();
-
+    public Page<MusicHistoryDTO> getMusicHistoryByMember(Long memberId, Integer year, Integer month, Pageable pageable) {
         if (!memberRepository.existsById(memberId)) {
             throw new MusicException(MusicErrorCode.MEMBER_NOT_FOUND);
         }
