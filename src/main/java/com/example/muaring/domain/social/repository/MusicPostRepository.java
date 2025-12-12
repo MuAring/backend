@@ -15,14 +15,14 @@ import java.util.Optional;
 public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
 
     @Query("""
-    SELECT mp
-    FROM MusicPost mp
-    WHERE mp.member.id = :memberId
-      AND YEAR(mp.createdAt) = :year
-      AND MONTH(mp.createdAt) = :month
-    ORDER BY mp.createdAt DESC
+        SELECT mp
+        FROM MusicPost mp
+        WHERE mp.member.id = :memberId
+          AND mp.group IS NULL
+          AND YEAR(mp.createdAt) = :year
+          AND MONTH(mp.createdAt) = :month
+        ORDER BY mp.createdAt ASC
     """)
-
     Page<MusicPost> findByMemberAndYearMonth(
             @Param("memberId") Long memberId,
             @Param("year") Integer year,
@@ -120,15 +120,20 @@ public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
     );
 
 
-    @Query(value = "SELECT * FROM music_post " +
-            "WHERE member_id = :memberId " +
-            "AND created_at >= CURRENT_DATE " +
-            "AND created_at < CURRENT_DATE + INTERVAL '1 day'",
-            nativeQuery = true)
+    @Query(value = """
+        SELECT *
+        FROM music_post
+        WHERE member_id = :memberId
+          AND group_id IS NULL
+          AND created_at >= CURRENT_DATE
+          AND created_at < CURRENT_DATE + INTERVAL '1 day'
+        ORDER BY created_at DESC
+        LIMIT 1
+        """, nativeQuery = true)
     Optional<MusicPost> findTodayPostByMember(@Param("memberId") Long memberId);
 
 
-    long countByMemberIdAndIsDeletedIsFalse( Long memberId);
+    long countByMemberIdAndGroupIsNullAndIsDeletedFalse(Long memberId);
 
     @Query("select count(mp) from MusicPost mp where mp.group.id = :groupId and mp.isDeleted = false")
     int countActiveByGroupId(@Param("groupId") Long groupId);

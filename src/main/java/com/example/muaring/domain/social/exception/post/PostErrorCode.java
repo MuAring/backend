@@ -9,6 +9,9 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum PostErrorCode implements ErrorCode {
 
+    // 403
+    UNAUTHROIZED(6003, HttpStatus.UNAUTHORIZED, "권한이 존재하지 않습니다."),
+
     // 404
     POST_NOT_FOUND(6001, HttpStatus.NOT_FOUND, "게시물이 존재하지 않습니다."),
 

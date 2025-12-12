@@ -9,10 +9,12 @@ import com.example.muaring.domain.group.level.GroupLevelService;
 import com.example.muaring.domain.group.repository.*;
 import com.example.muaring.domain.group.repository.projection.GroupIdCategoryNameProjection;
 import com.example.muaring.domain.group.response.GroupException;
+import com.example.muaring.domain.library.repository.LibraryRepository;
 import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.exception.MemberException;
 import com.example.muaring.domain.member.repository.MemberRepository;
 import com.example.muaring.domain.member.response.MemberErrorCode;
+import com.example.muaring.domain.member.service.MemberService;
 import com.example.muaring.domain.music.dto.MusicHistoryDTO;
 import com.example.muaring.domain.social.dto.post.MusicPostFeedResponseDto;
 import com.example.muaring.domain.social.entity.MusicPost;
@@ -47,6 +49,8 @@ public class GroupService {
     private final LikeRepository likeRepository;
     private final GroupPlaylistRepository groupPlaylistRepository;
     private final GroupLevelService groupLevelService;
+    private final LibraryRepository libraryRepository;
+    private final MemberService memberService;
 
     // 🍀 그룹 생성
     @Transactional
@@ -103,7 +107,7 @@ public class GroupService {
 
 
     // 🍀 각 조건에 따라 그룹을 조회
-    @Transactional
+    @Transactional(readOnly = true)
     public GroupListResponseDto getGroups(
             String name,            // 검색어
             Boolean isPublic,       // 공개 여부
@@ -225,7 +229,7 @@ public class GroupService {
 
 
     // 🍀 그룹 상세 조회 메서드
-    @Transactional
+    @Transactional(readOnly = true)
     public GroupProfileResponseDto getGroupProfile(Long groupId) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
@@ -257,13 +261,20 @@ public class GroupService {
 
 
     // 🍀 그룹 내 피드 조회 메서드
-    @Transactional
+    @Transactional(readOnly = true)
     public Page<MusicPostFeedResponseDto> getGroupFeed(
             Long groupId,
             Integer year,
             Integer month,
             Pageable pageable
     ) {
+
+        Long viewerId = SecurityUtil.getMemberId();
+
+        // 그룹 멤버 권한 확인
+        if (viewerId == null || !groupMemberRepository.existsByGroup_IdAndMember_Id(groupId, viewerId)) {
+            throw new GroupException(GroupErrorCode.NOT_GROUP_MEMBER);
+        }
 
         Page<MusicPost> posts;
 
@@ -286,17 +297,23 @@ public class GroupService {
             posts = musicPostRepository.findByGroup_Id(groupId, pageable);
         }
 
-        // DTO 변환
-        return posts.map(MusicPostFeedResponseDto::from);
+        return mapToFeedDtosWithLibraryFlag(posts, viewerId);
     }
 
 
     // 🍀 그룹 내 오늘의 피드 조회
-    @Transactional
+    @Transactional(readOnly = true)
     public Page<MusicPostFeedResponseDto> getTodayGroupFeed(
             Long groupId,
             Pageable pageable
     ) {
+        Long viewerId = SecurityUtil.getMemberId();
+
+        // 그룹 멤버 권한 확인
+        if (viewerId == null || !groupMemberRepository.existsByGroup_IdAndMember_Id(groupId, viewerId)) {
+            throw new GroupException(GroupErrorCode.NOT_GROUP_MEMBER);
+        }
+
         LocalDate today = LocalDate.now();
 
         LocalDateTime start = today.atStartOfDay();
@@ -305,7 +322,56 @@ public class GroupService {
         Page<MusicPost> posts = musicPostRepository
                 .findByGroup_IdAndCreatedAtBetween(groupId, start, end, pageable);
 
-        return posts.map(MusicPostFeedResponseDto::from);
+        return mapToFeedDtosWithLibraryFlag(posts, viewerId);
+    }
+
+
+    // 피드에 보관함 여부 + 좋아요 눌렀는지 여부 추가
+    private Page<MusicPostFeedResponseDto> mapToFeedDtosWithLibraryFlag(
+            Page<MusicPost> posts,
+            Long viewerId
+    ) {
+
+        List<MusicPost> content = posts.getContent();
+        if (content.isEmpty()) {
+            return posts.map(post -> MusicPostFeedResponseDto.from(post, false, false));
+        }
+
+        // postIds, musicIds 추출
+        List<Long> postIds = content.stream()
+                .map(MusicPost::getId)
+                .toList();
+
+        List<Long> musicIds = content.stream()
+                .map(p -> p.getMusic().getId())
+                .toList();
+
+        // 내 보관함에 있는 musicId 목록 조회
+        List<Long> inLibraryIds = libraryRepository.findMusicIdsInLibrary(viewerId, musicIds);
+        Set<Long> inLibrarySet = new HashSet<>(inLibraryIds);
+
+        // 내가 좋아요 누른 postId 목록 조회
+        List<Long> likedPostIds = likeRepository.findLikedPostIds(viewerId, postIds);
+        Set<Long> likedSet = new HashSet<>(likedPostIds);
+
+        // 같은 멤버 여러 번 나올 수 있으니까 캐시
+        Map<Long, String> profileUrlCache = new HashMap<>();
+
+        return posts.map(post -> {
+            boolean inLibrary = inLibrarySet.contains(post.getMusic().getId());
+            boolean liked = likedSet.contains(post.getId());
+
+            Member member = post.getMember();
+            Long memberId = member.getId();
+
+            // presigned URL 캐싱해서 member당 한 번만 생성
+            String profileImageUrl = profileUrlCache.computeIfAbsent(
+                    memberId,
+                    id -> memberService.resolveProfileImageUrl(member)
+            );
+
+            return MusicPostFeedResponseDto.from(post, inLibrary, liked, profileImageUrl);
+        });
     }
 
 
