@@ -41,9 +41,13 @@ public class PostController {
         );
     }
 
-    @GetMapping("/today")
-    public ResponseEntity<ApiResponse<TodayPostResponseDTO>> getTodayPost() {
-        TodayPostResponseDTO response = postService.getTodayPostByMember();
-        return ResponseEntity.ok(ApiResponse.ok(response, "오늘의 게시물 조회 완료"));
+    // [GET] /post/{memberId}/today
+    // 사용자의 오늘 공유한 음악 조회
+    @GetMapping("/{memberId}/today")
+    public ResponseEntity<ApiResponse<TodayPostResponseDTO>> getTodayPostByMemberId(
+            @PathVariable Long memberId
+    ) {
+        TodayPostResponseDTO response = postService.getTodayPostByMember(memberId);
+        return ResponseEntity.ok(ApiResponse.ok(response, "멤버의 오늘의 게시물 조회 완료"));
     }
 }
