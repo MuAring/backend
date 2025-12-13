@@ -81,7 +81,7 @@ public class Group extends BaseEntity {
             return image.getUrl();
         }
         // 기본 이미지 반환
-        return "https://your-bucket.s3.amazonaws.com/default-group-image.png";
+        return "https://muaring-s3-bucket.s3.amazonaws.com/group/default-group-image.png";
     }
 
     public boolean isFull() {
