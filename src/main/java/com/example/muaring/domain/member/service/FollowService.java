@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -165,60 +164,55 @@ public class FollowService {
         followRepository.delete(follow);
     }
 
+    @Transactional(readOnly = true)
     public List<FollowMemberListDTO> getFollowers(Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        List<Follow> followers = followRepository.findAllByFollowee(member);
+        if (!memberRepository.existsById(memberId)) {
+            throw new MemberException(MemberErrorCode.MEMBER_NOT_FOUND);
+        }
 
-        return followers.stream()
-                .map(follow -> {
-                    Member follower = follow.getFollower();
-                    boolean iFollow = followRepository.existsByFollowerAndFollowee(member, follower);
+        return followRepository.findFollowersWithRecentPost(memberId)
+                .stream()
+                .map(dto -> {
 
                     String status;
-                    if (member.getId().equals(follower.getId())) {
+                    if (dto.getMemberId().equals(memberId)) {
                         status = "SELF";
-                    } else if (iFollow) {
-                        status = "FOLLOWING";
                     } else {
-                        status = "FOLLOW_BACK";
+                        status = dto.getFollowStatus();
                     }
 
                     return FollowMemberListDTO.builder()
-                            .memberId(follower.getId())
-                            .name(follower.getNickname())
-                            .profileImage(
-                                    follower.getProfileImage() != null
-                                            ? follower.getProfileImage().getUrl()
-                                            : null
-                            )                            .isPublic(follower.getIsPublic())
+                            .memberId(dto.getMemberId())
+                            .name(dto.getName())
+                            .profileImage(dto.getProfileImage())
+                            .isPublic(dto.getIsPublic())
                             .followStatus(status)
+                            .musicTitle(dto.getMusicTitle())
+                            .musicArtist(dto.getMusicArtist())
                             .build();
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
+
 
     public List<FollowMemberListDTO> getFollowings(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
 
-        List<Follow> followings = followRepository.findAllByFollower(member);
+        return followRepository.findFollowingsWithRecentPost(memberId)
+                .stream()
+                .map(dto -> FollowMemberListDTO.builder()
+                        .memberId(dto.getMemberId())
+                        .name(dto.getName())
+                        .profileImage(dto.getProfileImage())
+                        .isPublic(dto.getIsPublic())
+                        .followStatus("FOLLOWING")
 
-        return followings.stream()
-                .map(follow -> {
-                    Member followee = follow.getFollowee();
-                    return FollowMemberListDTO.builder()
-                            .memberId(followee.getId())
-                            .name(followee.getNickname())
-                            .profileImage(
-                                    followee.getProfileImage() != null
-                                            ? followee.getProfileImage().getUrl()  // 실제 필드명에 맞게 변경 (예: getFilePath())
-                                            : null
-                            )                              .isPublic(followee.getIsPublic())
-                            .followStatus("FOLLOWING")
-                            .build();
-                })
-                .collect(Collectors.toList());
+                        .musicTitle(dto.getMusicTitle())
+                        .musicArtist(dto.getMusicArtist())
+                        .build()
+                )
+                .toList();
     }
 }
