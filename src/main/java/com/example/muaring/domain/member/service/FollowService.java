@@ -174,15 +174,26 @@ public class FollowService {
         return followers.stream()
                 .map(follow -> {
                     Member follower = follow.getFollower();
+                    boolean iFollow = followRepository.existsByFollowerAndFollowee(member, follower);
+
+                    String status;
+                    if (member.getId().equals(follower.getId())) {
+                        status = "SELF";
+                    } else if (iFollow) {
+                        status = "FOLLOWING";
+                    } else {
+                        status = "FOLLOW_BACK";
+                    }
+
                     return FollowMemberListDTO.builder()
                             .memberId(follower.getId())
                             .name(follower.getNickname())
                             .profileImage(
                                     follower.getProfileImage() != null
-                                            ? follower.getProfileImage().getUrl()  // 실제 필드명에 맞게 변경 (예: getFilePath())
+                                            ? follower.getProfileImage().getUrl()
                                             : null
                             )                            .isPublic(follower.getIsPublic())
-                            .followStatus("FOLLOWER")
+                            .followStatus(status)
                             .build();
                 })
                 .collect(Collectors.toList());
