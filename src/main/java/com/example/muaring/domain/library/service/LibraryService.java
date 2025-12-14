@@ -114,6 +114,26 @@ public class LibraryService {
     }
 
     @Transactional
+    public void deleteOneMusicFromLibrary(Long musicId) {
+
+        if (musicId == null) {
+            throw new MusicException(MusicErrorCode.MUSIC_NOT_FOUND);
+        }
+
+        Long loginedMemberId = SecurityUtil.getMemberId();
+
+        Member member = memberRepository.findById(loginedMemberId)
+                .orElseThrow(() -> new MusicException(MusicErrorCode.MEMBER_NOT_FOUND));
+
+        if (!libraryRepository.existsByMemberIdAndMusicId(loginedMemberId, musicId)) {
+            throw new MusicException(MusicErrorCode.MUSIC_NOT_FOUND);
+        }
+
+        libraryRepository.deleteByMusicIdAndMember(musicId, member);
+
+    }
+
+    @Transactional
     public void exportToSpotify(SpotifyExportRequest request) {
 
         String token = request.getSpotifyAccessToken();
