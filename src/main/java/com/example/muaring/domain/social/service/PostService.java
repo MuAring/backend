@@ -197,19 +197,20 @@ public class PostService {
         });
     }
 
-    public TodayPostResponseDTO getTodayPostByMember() {
+    public TodayPostResponseDTO getTodayPostByMember(Long memberId) {
 
-        Long memberId = SecurityUtil.getMemberId();
-
+        // 멤버 존재 여부 확인
         if (!memberRepository.existsById(memberId)) {
             throw new MusicException(MusicErrorCode.MEMBER_NOT_FOUND);
         }
 
+        // 오늘의 게시물 조회
         MusicPost post = musicPostRepository.findTodayPostByMember(memberId)
                 .orElseThrow(() -> new MusicException(PostErrorCode.POST_NOT_FOUND));
 
         Music music = post.getMusic();
 
+        // DTO 반환
         return TodayPostResponseDTO.builder()
                 .postId(post.getId())
                 .musicId(music.getId())

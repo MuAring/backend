@@ -27,7 +27,7 @@ public class RecommendationController {
 
     // ===================== 그룹 추천 ===================== //
 
-    @GetMapping("/groups-members/{memberId}")
+    @GetMapping("/groups-members")
     public ResponseEntity<GroupRecommendListResponseDto> getRecommendedGroups(
             @RequestParam(defaultValue = "20") int limit
     ) {
@@ -54,7 +54,7 @@ public class RecommendationController {
     }
 
     // 추천 카드 클릭 이벤트 로그
-    @PostMapping("/groups-members/{memberId}/{groupId}/click")
+    @PostMapping("/groups-members/{groupId}/click")
     public ResponseEntity<Void> markGroupRecommendationClicked(
             @PathVariable Long groupId
     ) {
@@ -64,7 +64,7 @@ public class RecommendationController {
     }
 
     // 추천에서 그룹 가입 성공 이벤트 로그
-    @PostMapping("/groups-members/{memberId}/{groupId}/join")
+    @PostMapping("/groups-members/{groupId}/join")
     public ResponseEntity<Void> markGroupRecommendationJoined(
             @PathVariable Long groupId
     ) {
@@ -75,7 +75,7 @@ public class RecommendationController {
 
     // ===================== 멤버 추천 ===================== //
 
-    @GetMapping("/members/{memberId}")
+    @GetMapping("/members")
     public ResponseEntity<List<MemberRecommendItemDto>> getRecommendedMembers(
             @RequestParam(defaultValue = "20") int limit
     ) {
@@ -101,7 +101,7 @@ public class RecommendationController {
     }
 
     // 추천 멤버 카드 클릭 이벤트 로그
-    @PostMapping("/members/{memberId}/{targetMemberId}/click")
+    @PostMapping("/members/{targetMemberId}/click")
     public ResponseEntity<Void> markMemberRecommendationClicked(
             @PathVariable Long targetMemberId
     ) {
@@ -111,7 +111,7 @@ public class RecommendationController {
     }
 
     // 추천에서 멤버 팔로우 성공 이벤트 로그
-    @PostMapping("/members/{memberId}/{targetMemberId}/follow")
+    @PostMapping("/members/{targetMemberId}/follow")
     public ResponseEntity<Void> markMemberRecommendationFollowed(
             @PathVariable Long targetMemberId
     ) {

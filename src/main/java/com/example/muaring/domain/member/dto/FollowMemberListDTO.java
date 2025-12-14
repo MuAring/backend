@@ -11,4 +11,7 @@ public class FollowMemberListDTO {
     private String profileImage;
     private Boolean isPublic;
     private String followStatus;
+
+    private String musicTitle;
+    private String musicArtist;
 }
