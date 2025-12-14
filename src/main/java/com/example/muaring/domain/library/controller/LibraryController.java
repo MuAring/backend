@@ -30,7 +30,7 @@ public class LibraryController {
                 .body(ApiResponse.ok(response, "보관함 조회 완료"));
     }
 
-    @PostMapping("add/{musicId}")
+    @PostMapping("/add/{musicId}")
     public ResponseEntity<ApiResponse<LibraryMusicDTO>> addMusicToLibrary(
             @PathVariable Long musicId,
             @RequestParam(required = false, defaultValue = "DEFAULT") String category
@@ -43,15 +43,23 @@ public class LibraryController {
     }
 
 
-    @DeleteMapping("delete")
+    @DeleteMapping("/delete")
     public ResponseEntity<ApiResponse<Void>> deleteMultiple(
-            @RequestBody List<Long> musicIds
+            @RequestBody List<Long> libraryIds
     ) {
-        libraryService.deleteFromLibrary(musicIds);
+        libraryService.deleteFromLibrary(libraryIds);
         return ResponseEntity.ok(ApiResponse.ok(null, "선택한 음악이 삭제되었습니다."));
     }
 
-    @PostMapping("export")
+    @DeleteMapping("/delete/{musicId}")
+    public ResponseEntity<ApiResponse<Void>> deleteMusicFromLibrary(
+            @PathVariable Long musicId
+    ) {
+        libraryService.deleteOneMusicFromLibrary(musicId);
+        return ResponseEntity.ok(ApiResponse.ok(null, "보관함에서 해당 음악이 삭제되었습니다."));
+    }
+
+    @PostMapping("/export")
     public ResponseEntity<ApiResponse<Void>> exportToSpotify(
             @RequestBody SpotifyExportRequest request
     ) {
