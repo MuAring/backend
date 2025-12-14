@@ -1,26 +1,4 @@
 services:
-  postgres:
-    image: postgres:16          # 원하는 버전 선택
-    container_name: muaring-db
-    environment:
-      POSTGRES_DB: ${DB_NAME}     # DB 이름
-      POSTGRES_USER: ${DB_USERNAME}     # 사용자
-      POSTGRES_PASSWORD: ${DB_PASSWORD} # 비밀번호
-      TZ: Asia/Seoul
-    ports:
-      - "5434:5432"               # 호스트-컨테이너 포트 매핑
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    restart:
-      unless-stopped
-    env_file:
-      .env
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -h 127.0.0.1 -U muaringuser -d muaringdb" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   redis:
     image: redis:7-alpine
     container_name: muaring-redis
@@ -30,7 +8,49 @@ services:
     restart: unless-stopped
     volumes:
       - redis-data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
-  postgres-data:
   redis-data:
+
+
+#services:
+#  postgres:
+#    image: postgres:16          # 원하는 버전 선택
+#    container_name: muaring-db
+#    environment:
+#      POSTGRES_DB: ${DB_NAME}     # DB 이름
+#      POSTGRES_USER: ${DB_USERNAME}     # 사용자
+#      POSTGRES_PASSWORD: ${DB_PASSWORD} # 비밀번호
+#      TZ: Asia/Seoul
+#    ports:
+#      - "5434:5432"               # 호스트-컨테이너 포트 매핑
+#    volumes:
+#      - postgres-data:/var/lib/postgresql/data
+#    restart:
+#      unless-stopped
+#    env_file:
+#      .env
+#    healthcheck:
+#      test: [ "CMD-SHELL", "pg_isready -h 127.0.0.1 -U muaringuser -d muaringdb" ]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#
+#  redis:
+#    image: redis:7-alpine
+#    container_name: muaring-redis
+#    ports:
+#      - "6379:6379"
+#    command: [ "redis-server", "--appendonly", "yes" ]  # AOF 설정
+#    restart: unless-stopped
+#    volumes:
+#      - redis-data:/data
+#
+#volumes:
+#  postgres-data:
+#  redis-data:
