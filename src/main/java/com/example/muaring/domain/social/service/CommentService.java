@@ -8,9 +8,9 @@ import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.exception.MemberException;
 import com.example.muaring.domain.member.repository.MemberRepository;
 import com.example.muaring.domain.member.response.MemberErrorCode;
-import com.example.muaring.domain.social.dto.comment.request.CommentCreateRequestDTO;
-import com.example.muaring.domain.social.dto.comment.response.CommentReadResponseDTO;
-import com.example.muaring.domain.social.dto.comment.response.CommentResponseDTO;
+import com.example.muaring.domain.social.dto.comment.request.CommentCreateRequest;
+import com.example.muaring.domain.social.dto.comment.response.CommentReadResponse;
+import com.example.muaring.domain.social.dto.comment.response.CommentResponse;
 import com.example.muaring.domain.social.entity.Comment;
 import com.example.muaring.domain.social.entity.MusicPost;
 import com.example.muaring.domain.social.exception.comment.CommentErrorCode;
@@ -22,7 +22,6 @@ import com.example.muaring.domain.social.repository.MusicPostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 
 @Service
@@ -36,7 +35,7 @@ public class CommentService {
     private final GroupLevelService groupLevelService;
 
     @Transactional
-    public CommentResponseDTO createComment(Long memberId, Long postId, CommentCreateRequestDTO requestDTO) {
+    public CommentResponse createComment(Long memberId, Long postId, CommentCreateRequest requestDTO) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
         MusicPost post = postRepository.findById(postId)
@@ -55,7 +54,7 @@ public class CommentService {
             );
         }
 
-        return CommentResponseDTO.of(comment);
+        return CommentResponse.of(comment);
     }
 
     @Transactional
@@ -69,7 +68,7 @@ public class CommentService {
     }
 
     @Transactional
-    public CommentResponseDTO createReply(Long commentId, CommentCreateRequestDTO requestDTO) {
+    public CommentResponse createReply(Long commentId, CommentCreateRequest requestDTO) {
         Long memberId = SecurityUtil.getMemberId();
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberException(MemberErrorCode.MEMBER_NOT_FOUND));
@@ -95,10 +94,10 @@ public class CommentService {
             );
         }
 
-        return CommentResponseDTO.of(reply);
+        return CommentResponse.of(reply);
     }
 
-    public List<CommentReadResponseDTO> getCommentsByPostId(Long postId) {
+    public List<CommentReadResponse> getCommentsByPostId(Long postId) {
         MusicPost post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException(PostErrorCode.POST_NOT_FOUND));
         List<Comment> comments = commentRepository.findAllByPostIdOrderByCreatedAtAsc(postId);
@@ -111,7 +110,7 @@ public class CommentService {
 
                 })
 
-                .map(CommentReadResponseDTO::from)
+                .map(CommentReadResponse::from)
                 .toList();
     }
 }

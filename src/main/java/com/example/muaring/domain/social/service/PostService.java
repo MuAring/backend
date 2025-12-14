@@ -1,6 +1,7 @@
 package com.example.muaring.domain.social.service;
 
 import com.example.muaring.common.util.SecurityUtil;
+import com.example.muaring.domain.group.dto.PostDetailReadResponse;
 import com.example.muaring.domain.group.entity.Group;
 import com.example.muaring.domain.group.entity.GroupPlaylist;
 import com.example.muaring.domain.group.level.GroupActivityType;
@@ -11,7 +12,6 @@ import com.example.muaring.domain.library.repository.LibraryRepository;
 import com.example.muaring.domain.member.entity.Member;
 import com.example.muaring.domain.member.repository.MemberRepository;
 import com.example.muaring.domain.member.service.MemberService;
-import com.example.muaring.domain.music.dto.MusicHistoryDTO;
 import com.example.muaring.domain.music.entity.Music;
 import com.example.muaring.domain.music.exception.MusicErrorCode;
 import com.example.muaring.domain.music.exception.MusicException;
@@ -34,6 +34,7 @@ import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PostService {
 
     private final GroupRepository groupRepository;
@@ -131,7 +132,6 @@ public class PostService {
         groupPlaylistRepository.save(groupPlaylist);
     }
 
-    @Transactional(readOnly = true)
     public Page<MusicPostFeedResponseDto> getTodayFolloweePosts(Pageable pageable) {
 
         Long viewerId = SecurityUtil.getMemberId();
@@ -197,8 +197,6 @@ public class PostService {
         });
     }
 
-
-    @Transactional(readOnly = true)
     public TodayPostResponseDTO getTodayPostByMember() {
 
         Long memberId = SecurityUtil.getMemberId();
@@ -221,5 +219,30 @@ public class PostService {
                 .likeCount(post.getLikeCount())
                 .commentCount(post.getCommentCount())
                 .build();
+    }
+
+    // 게시물 상세 조회 (댓글 제외. 댓글은 댓글 조회 api로 프론트에서 따로 불러오게 함)
+    public PostDetailReadResponse getPostDetail(Long postId, Long memberId) {
+        // 게시물 조회
+        MusicPost post = musicPostRepository.findByIdWithDetails(postId)
+                .orElseThrow(() -> new PostException(PostErrorCode.POST_NOT_FOUND));
+
+//        // 그룹 게시물인 경우 접근 권한 확인
+//        if (post.getGroup() != null && !post.getGroup().getIsPublic()) {
+//            boolean isMember = groupMemberRepository.existsByGroupIdAndMemberId(
+//                    post.getGroup().getId(),
+//                    memberId
+//            );
+//            if (!isMember) {
+//                throw new GroupException(GroupErrorCode.NOT_GROUP_MEMBER);
+//            }
+//        }
+
+        // 현재 사용자가 좋아요를 눌렀는지 확인
+        boolean isLiked = likeRepository.existsByPostIdAndMemberId(postId, memberId);
+
+        // 현재 게시글의 음악이 이미 보관함에 존재하는지 확인
+        boolean isAlreadyInLibrary = libraryRepository.existsByMemberIdAndMusicId(memberId, post.getMusic().getId());
+        return PostDetailReadResponse.of(post, isLiked, isAlreadyInLibrary);
     }
 }
