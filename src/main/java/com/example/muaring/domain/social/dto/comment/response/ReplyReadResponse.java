@@ -3,25 +3,25 @@ package com.example.muaring.domain.social.dto.comment.response;
 import com.example.muaring.domain.social.entity.Comment;
 import lombok.Builder;
 
-import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Builder
-public record ReplyReadResponseDTO(
+public record ReplyReadResponse(
         Long commentId,
         String content,
         Long memberId,
         String memberNickname,
         Boolean isDeleted,
-        LocalDateTime createdAt
+        String createdAt
 ) {
-    public static ReplyReadResponseDTO from(Comment reply) {
-        return ReplyReadResponseDTO.builder()
+    public static ReplyReadResponse from(Comment reply) {
+        return ReplyReadResponse.builder()
                 .commentId(reply.getId())
                 .content(reply.getIsDeleted() ? "삭제된 댓글입니다." : reply.getContent())
                 .memberId(reply.getIsDeleted() ? null : reply.getMember().getId())
                 .memberNickname(reply.getIsDeleted() ? "알수없음" : reply.getMember().getNickname())
                 .isDeleted(reply.getIsDeleted())
-                .createdAt(reply.getCreatedAt())
+                .createdAt(reply.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
                 .build();
     }
 }

@@ -4,15 +4,15 @@ import com.example.muaring.domain.social.entity.Comment;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.ALWAYS)  // null 값도 보여주도록
-public record CommentResponseDTO(
+public record CommentResponse(
         Long commentId,
         Long postId,
         Long memberId,
         Long parentCommentId,
         String content
 ) {
-    public static CommentResponseDTO of(Comment comment) {
-        return new CommentResponseDTO(
+    public static CommentResponse of(Comment comment) {
+        return new CommentResponse(
                 comment.getId(),
                 comment.getPost().getId(),
                 comment.getMember().getId(),

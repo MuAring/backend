@@ -1,9 +1,11 @@
 package com.example.muaring.domain.social.controller;
 
 import com.example.muaring.common.response.ApiResponse;
-import com.example.muaring.domain.music.dto.MusicHistoryDTO;
+import com.example.muaring.common.util.SecurityUtil;
+import com.example.muaring.domain.group.dto.PostDetailReadResponse;
 import com.example.muaring.domain.social.dto.post.*;
 import com.example.muaring.domain.social.service.PostService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,13 +15,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/post")
+@RequestMapping
 @RequiredArgsConstructor
 public class PostController {
 
     private final PostService postService;
 
-    @PostMapping
+    @PostMapping("/post")
     public ResponseEntity<ApiResponse<MusicPostDTO>> createMusicPost(
             @RequestBody MusicPostRequestDTO request
     ) {
@@ -29,7 +31,7 @@ public class PostController {
 
     // [GET] /post/followee/today
     // 팔로우한 사용자 + 내 게시물 조회
-    @GetMapping("/followee/today")
+    @GetMapping("/post/followee/today")
     public ResponseEntity<ApiResponse<Page<MusicPostFeedResponseDto>>> getTodayFolloweePosts(
             @PageableDefault(size = 20) Pageable pageable
     ) {
@@ -43,11 +45,23 @@ public class PostController {
 
     // [GET] /post/{memberId}/today
     // 사용자의 오늘 공유한 음악 조회
-    @GetMapping("/{memberId}/today")
+    @GetMapping("/post/{memberId}/today")
     public ResponseEntity<ApiResponse<TodayPostResponseDTO>> getTodayPostByMemberId(
             @PathVariable Long memberId
     ) {
         TodayPostResponseDTO response = postService.getTodayPostByMember(memberId);
         return ResponseEntity.ok(ApiResponse.ok(response, "멤버의 오늘의 게시물 조회 완료"));
+    }
+
+    @GetMapping("/posts/{postId}")
+    @Operation(summary = "게시물 상세 조회", description = "게시물의 기본 정보를 조회합니다. 댓글은 별도 API로 조회하세요.")
+    public ResponseEntity<ApiResponse<PostDetailReadResponse>> getPostDetail(
+            @PathVariable Long postId) {
+        Long memberId = SecurityUtil.getMemberId();
+        PostDetailReadResponse response = postService.getPostDetail(postId, memberId);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.ok(response, "게시물을 조회했습니다."));
     }
 }

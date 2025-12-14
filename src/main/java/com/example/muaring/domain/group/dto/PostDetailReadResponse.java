@@ -3,12 +3,11 @@ package com.example.muaring.domain.group.dto;
 import com.example.muaring.domain.social.entity.MusicPost;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Getter
 @Builder
-public class MusicPostDetailResponseDto {
+public class PostDetailReadResponse {
 
     // 게시물 정보
     private Long postId;
@@ -16,7 +15,7 @@ public class MusicPostDetailResponseDto {
     private Integer likeCount;
     private Integer commentCount;
     private boolean isLiked; // 현재 사용자가 좋아요를 눌렀는지
-    private LocalDateTime createdAt;
+    private String createdAt;
 
     // 작성자 정보
     private AuthorDto author;
@@ -24,8 +23,8 @@ public class MusicPostDetailResponseDto {
     // 음악 정보
     private MusicDto music;
 
-    // 그룹 정보 (있는 경우)
-    private GroupDto group;
+//    // 그룹 정보 (있는 경우)
+//    private GroupDto group;
 
     @Getter
     @Builder
@@ -46,24 +45,25 @@ public class MusicPostDetailResponseDto {
         private String albumImgUrl;
         private Integer durationMs;
         private String previewUrl;
+        private Boolean isAlreadyInLibrary;
     }
 
-    @Getter
-    @Builder
-    public static class GroupDto {
-        private Long groupId;
-        private String name;
-        private String imageUrl;
-    }
+//    @Getter
+//    @Builder
+//    public static class GroupDto {
+//        private Long groupId;
+//        private String name;
+//        private String imageUrl;
+//    }
 
-    public static MusicPostDetailResponseDto of(MusicPost post, boolean isLiked) {
-        return MusicPostDetailResponseDto.builder()
+    public static PostDetailReadResponse of(MusicPost post, boolean isLiked, boolean isAlreadyInLibrary) {
+        return PostDetailReadResponse.builder()
                 .postId(post.getId())
                 .content(post.getContent())
                 .likeCount(post.getLikeCount())
                 .commentCount(post.getCommentCount())
                 .isLiked(isLiked)
-                .createdAt(post.getCreatedAt())
+                .createdAt(post.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
                 .author(AuthorDto.builder()
                         .memberId(post.getMember().getId())
                         .nickname(post.getMember().getNickname())
@@ -80,12 +80,13 @@ public class MusicPostDetailResponseDto {
                         .albumImgUrl(post.getMusic().getAlbumImgUrl())
                         .durationMs(post.getMusic().getDurationMs())
                         .previewUrl(post.getMusic().getPreviewUrl())
+                        .isAlreadyInLibrary(isAlreadyInLibrary)
                         .build())
-                .group(post.getGroup() != null ? GroupDto.builder()
-                        .groupId(post.getGroup().getId())
-                        .name(post.getGroup().getName())
-                        .imageUrl(post.getGroup().getGroupImage())
-                        .build() : null)
+//                .group(post.getGroup() != null ? GroupDto.builder()
+//                        .groupId(post.getGroup().getId())
+//                        .name(post.getGroup().getName())
+//                        .imageUrl(post.getGroup().getGroupImage())
+//                        .build() : null)
                 .build();
     }
 }
