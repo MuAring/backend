@@ -55,4 +55,8 @@ public class MusicPost extends BaseEntity {
             this.likeCount--;
         }
     }
+
+    public void increaseCommentCount() {
+        this.commentCount++;
+    }
 }
