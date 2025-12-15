@@ -43,6 +43,20 @@ public class PostController {
         );
     }
 
+    // [GET] /post/me
+    // 팔로우한 사용자 + 내 게시물 조회
+    @GetMapping("/post/me")
+    public ResponseEntity<ApiResponse<Page<MusicPostFeedResponseDto>>> getMyPosts(
+            @PageableDefault(size = 20) Pageable pageable
+    ) {
+        Page<MusicPostFeedResponseDto> response =
+                postService.getMyPosts(pageable);
+
+        return ResponseEntity.ok(
+                ApiResponse.ok(response, "팔로우한 사용자의 오늘 게시물을 조회했습니다.")
+        );
+    }
+
     // [GET] /post/{memberId}/today
     // 사용자의 오늘 공유한 음악 조회
     @GetMapping("/post/{memberId}/today")
