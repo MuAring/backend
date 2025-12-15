@@ -42,6 +42,7 @@ public class CommentService {
                 .orElseThrow(() -> new PostException(PostErrorCode.POST_NOT_FOUND));
 
         Comment comment = Comment.create(post, member, null, requestDTO.content());
+        post.increaseCommentCount();
         commentRepository.save(comment);
 
         // 그룹 게시글이면 EXP 반영
@@ -81,6 +82,7 @@ public class CommentService {
 
         MusicPost post = parentComment.getPost();
         Comment reply = Comment.create(post, member, parentComment, requestDTO.content());
+        post.increaseCommentCount();
         commentRepository.save(reply);
         parentComment.getReplies().add(reply);
 
