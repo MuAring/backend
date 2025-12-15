@@ -11,6 +11,7 @@ public record CommentReadResponse(
         String content,
         Long memberId,
         String memberNickname,
+        String profileImgUrl,
         Boolean isDeleted,
         String createdAt,
         List<ReplyReadResponse> replies
@@ -21,6 +22,7 @@ public record CommentReadResponse(
                 .content(comment.getIsDeleted() ? "삭제된 댓글입니다." : comment.getContent())
                 .memberId(comment.getIsDeleted() ? null : comment.getMember().getId())
                 .memberNickname(comment.getIsDeleted() ? "알수없음" : comment.getMember().getNickname())
+                .profileImgUrl(comment.getMember().getProfileImage().getUrl())
                 .isDeleted(comment.getIsDeleted())
                 .createdAt(comment.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
                 .replies(comment.getReplies().stream()
