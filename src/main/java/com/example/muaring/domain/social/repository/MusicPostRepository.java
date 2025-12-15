@@ -274,4 +274,51 @@ public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
             @Param("endOfDay") LocalDateTime endOfDay
     );
 
+    // 그룹의 고유한 음악 목록 조회 (중복 제거, 최신순)
+    @Query(value = """
+    WITH unique_music AS (
+        SELECT DISTINCT ON (mp.music_id)
+            mp.post_id,
+            mp.music_id,
+            mp.created_at
+        FROM music_post mp
+        WHERE mp.group_id = :groupId
+          AND mp.is_deleted = false
+        ORDER BY mp.music_id, mp.created_at ASC
+    )
+    SELECT 
+        um.post_id,
+        um.music_id,
+        m.name,
+        m.artist_name,
+        m.album_img_url,
+        m.album_name,
+        um.created_at
+    FROM unique_music um
+    JOIN music m ON um.music_id = m.music_id
+    ORDER BY um.created_at DESC
+    LIMIT :limit OFFSET :offset
+    """,
+            countQuery = """
+    SELECT COUNT(DISTINCT mp.music_id)
+    FROM music_post mp
+    WHERE mp.group_id = :groupId
+      AND mp.is_deleted = false
+    """,
+            nativeQuery = true)
+    List<Object[]> findUniqueMusicArchiveRaw(
+            @Param("groupId") Long groupId,
+            @Param("limit") int limit,
+            @Param("offset") int offset
+    );
+
+    @Query(value = """
+    SELECT COUNT(DISTINCT mp.music_id)
+    FROM music_post mp
+    WHERE mp.group_id = :groupId
+      AND mp.is_deleted = false
+    """,
+            nativeQuery = true)
+    long countUniqueMusicByGroupId(@Param("groupId") Long groupId);
+
 }
