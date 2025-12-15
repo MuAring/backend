@@ -37,6 +37,18 @@ public class MeController {
         return ResponseEntity.ok(body);
     }
 
+    // [GET] me/members/{memberId}/groups 특정 멤버의 그룹 전체 조회
+// [GET] me/members/{memberId}/groups?name=그룹명 특정 멤버의 그룹 중 name 값을 갖고 있는 애들 조회
+    @Operation(summary = "특정 멤버의 그룹 조회", description = "특정 멤버가 참여한 그룹 조회 로직입니다.")
+    @GetMapping("/members/{memberId}/groups")
+    public ResponseEntity<ApiResponse<MyGroupListResponseDto>> getMemberGroups(
+            @PathVariable Long memberId,
+            @RequestParam(required = false) String name
+    ) {
+        ApiResponse<MyGroupListResponseDto> body =
+                ApiResponse.ok(groupService.getMemberGroups(memberId, name));
+        return ResponseEntity.ok(body);
+    }
 
     @Operation(summary = "내 프로필 설정 정보 조회", description = "프로필 수정 화면에서 조회되는 프로필 설정 정보 조회 로직입니다.")
     @GetMapping("/settings")

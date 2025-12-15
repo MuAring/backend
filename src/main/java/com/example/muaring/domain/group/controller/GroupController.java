@@ -246,4 +246,20 @@ public class GroupController {
                 .status(HttpStatus.OK)
                 .body(ApiResponse.ok("그룹 멤버 추방을 완료했습니다."));
     }
+
+    // [GET] /groups/{groupId}/archive
+// 그룹 음악 보관함 조회 (중복 제거)
+    @GetMapping("/{groupId}/archive")
+    public ResponseEntity<ApiResponse<Page<MusicArchiveDto>>> getMusicArchiveByGroup(
+            @PathVariable Long groupId,
+            @PageableDefault(page = 0, size = 20) Pageable pageable
+    ) {
+        Page<MusicArchiveDto> archive = groupService.getMusicArchiveByGroup(groupId, pageable);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.ok(archive, "그룹 음악 보관함 조회가 완료되었습니다."));
+    }
+
+
 }
