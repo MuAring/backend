@@ -234,6 +234,11 @@ public class GroupService {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupException(GroupErrorCode.GROUP_NOT_FOUND));
 
+        Long currentMemberId = SecurityUtil.getMemberId();
+
+        boolean isJoined = groupMemberRepository
+                .existsByGroupIdAndMemberId(groupId, currentMemberId);
+
         int totalPostCount = musicPostRepository.countActiveByGroupId(groupId);
         int totalMusicCount = groupPlaylistRepository.countByGroupId(groupId);
 
@@ -255,7 +260,8 @@ public class GroupService {
                 group,
                 categoryNames,      // 이름 리스트로 전달
                 totalMusicCount,
-                totalPostCount
+                totalPostCount,
+                isJoined
         );
     }
 

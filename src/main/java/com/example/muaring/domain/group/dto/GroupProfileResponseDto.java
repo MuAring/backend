@@ -27,6 +27,9 @@ public class GroupProfileResponseDto {
     private String imageUrl;                // 프로필 이미지 url
     private LocalDateTime createdAt;
 
+    // 현재 사용자의 가입 여부
+    private Boolean isJoined;
+
     // 그룹 레벨 관련 필드
     private Integer level;                  // 현재 그룹 레벨 (1~5)
     private Long exp;                       // 현재 누적 EXP
@@ -40,7 +43,8 @@ public class GroupProfileResponseDto {
             Group group,
             List<String> groupCategoryNames,
             int totalMusicCount,
-            int totalPostCount
+            int totalPostCount,
+            boolean isJoined
     ) {
         Long exp = group.getExp();              // Group 엔티티에 exp 필드 있다고 가정
         Integer level = group.getLevel();       // Group 엔티티에 level 필드 있다고 가정
@@ -70,6 +74,7 @@ public class GroupProfileResponseDto {
                 .exp(exp)
                 .nextLevelExp(nextLevelExp)              // JSON에 null이면 "최대 레벨 상태" 의미
                 .remainingExpToNext(remainingExpToNext)  // 프론트에서 게이지바 그릴 때 사용 (추후 디벨롭)
+                .isJoined(isJoined)
                 .build();
     }
 
@@ -80,14 +85,16 @@ public class GroupProfileResponseDto {
             List<Group> groups,
             Map<Long, List<String>> categoryNamesByGroup,
             Map<Long, Integer> musicCountByGroup,
-            Map<Long, Integer> postCountByGroup
+            Map<Long, Integer> postCountByGroup,
+            Map<Long, Boolean> isJoinedByGroup
     ) {
         return groups.stream()
                 .map(group -> GroupProfileResponseDto.of(
                         group,
                         categoryNamesByGroup.getOrDefault(group.getId(), List.of()),
                         musicCountByGroup.getOrDefault(group.getId(), 0),
-                        postCountByGroup.getOrDefault(group.getId(), 0)
+                        postCountByGroup.getOrDefault(group.getId(), 0),
+                        isJoinedByGroup.getOrDefault(group.getId(), false)
                 ))
                 .toList();
     }
