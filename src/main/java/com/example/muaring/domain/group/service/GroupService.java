@@ -227,6 +227,56 @@ public class GroupService {
         );
     }
 
+    // 🍀 특정 멤버의 소속 그룹 조회 메서드 (검색도 추가)
+    @Transactional(readOnly = true)
+    public MyGroupListResponseDto getMemberGroups(Long memberId, String name) {
+
+        // 1) 해당 멤버가 속한 그룹 + role 조회 (GroupMember 기준)
+        List<GroupMember> memberships = (name == null || name.isBlank())
+                ? groupMemberRepository.findByMember_IdOrderByGroup_NameAsc(memberId)
+                : groupMemberRepository.findByMember_IdAndGroup_NameContainingIgnoreCaseOrderByGroup_NameAsc(memberId, name);
+
+        // Group 리스트로 변환
+        List<Group> groups = memberships.stream()
+                .map(GroupMember::getGroup)
+                .toList();
+
+        List<Long> groupIds = groups.stream()
+                .map(Group::getId)
+                .toList();
+
+        // 2) groupId -> 카테고리 displayName 리스트 매핑
+        Map<Long, List<String>> categoryNamesByGroup = groupIds.isEmpty()
+                ? Map.of()
+                : mappingRepository.findPairsWithNamesByGroupIds(groupIds)
+                .stream()
+                .collect(Collectors.groupingBy(
+                        GroupIdCategoryNameProjection::getGroupId,
+                        Collectors.mapping(
+                                projection -> {
+                                    String code = projection.getCategoryCode(); // "k_pop", "indie", ...
+                                    return GroupCategoryType.fromName(code)
+                                            .getDisplayName();
+                                    // "케이팝", "인디 / 어쿠스틱", ...
+                                },
+                                Collectors.toList()
+                        )
+                ));
+
+        // 3) groupId -> 해당 멤버의 role 매핑
+        Map<Long, String> memberRolesByGroupId = memberships.stream()
+                .collect(Collectors.toMap(
+                        gm -> gm.getGroup().getId(),
+                        gm -> gm.getRole().name()   // "ADMIN" / "MEMBER"
+                ));
+
+        // 4) DTO 변환
+        return MyGroupListResponseDto.of(
+                groups,               // List<Group>
+                categoryNamesByGroup, // Map<Long, List<String>>
+                memberRolesByGroupId  // Map<Long, String>
+        );
+    }
 
     // 🍀 그룹 상세 조회 메서드
     @Transactional(readOnly = true)
@@ -726,5 +776,47 @@ public class GroupService {
 
         // 그룹 멤버 수 감소
         group.decrementMemberCount();
+    }
+
+
+    /**
+     * 그룹 음악 보관함 조회 (PostgreSQL 최적화 버전)
+     * - 같은 음악은 한 번만 표시 (가장 먼저 올라온 포스트 기준)
+     * - DB 레벨에서 중복 제거 및 페이징 처리
+     */
+    @Transactional(readOnly = true)
+    public Page<MusicArchiveDto> getMusicArchiveByGroup(Long groupId, Pageable pageable) {
+        // 1. 그룹 존재 여부 체크
+        if (!groupRepository.existsById(groupId)) {
+            throw new GroupException(GroupErrorCode.GROUP_NOT_FOUND);
+        }
+
+        // 2. 페이징 정보 계산
+        int limit = pageable.getPageSize();
+        int offset = pageable.getPageNumber() * pageable.getPageSize();
+
+        // 3. 데이터 조회
+        List<Object[]> rawResults = musicPostRepository.findUniqueMusicArchiveRaw(
+                groupId, limit, offset
+        );
+
+        // 4. DTO 변환
+        List<MusicArchiveDto> content = rawResults.stream()
+                .map(row -> MusicArchiveDto.builder()
+                        .postId(((Number) row[0]).longValue())
+                        .musicId(((Number) row[1]).longValue())
+                        .title((String) row[2])
+                        .artist((String) row[3])
+                        .albumImage((String) row[4])
+                        .albumName((String) row[5])
+                        .firstPostedAt(((java.sql.Timestamp) row[6]).toLocalDateTime())
+                        .build()
+                )
+                .toList();
+
+        // 5. 전체 개수 조회
+        long total = musicPostRepository.countUniqueMusicByGroupId(groupId);
+
+        return new PageImpl<>(content, pageable, total);
     }
 }
