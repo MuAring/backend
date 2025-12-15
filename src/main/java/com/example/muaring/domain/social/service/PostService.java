@@ -148,6 +148,24 @@ public class PostService {
         Page<MusicPost> posts = musicPostRepository.findTodayPostsByFollowees(viewerId, pageableNoSort);
         return mapToFeedDtosWithLibraryFlag(posts, viewerId);
     }
+    
+    // 내가 공유한 게시물만 조회
+    public Page<MusicPostFeedResponseDto> getMyPosts(Pageable pageable) {
+
+        Long viewerId = SecurityUtil.getMemberId();
+
+        if (viewerId == null) {
+            throw new PostException(PostErrorCode.UNAUTHROIZED);
+        }
+
+        // Pagination + sort 된 채로 바로 가져오기
+        Pageable pageableNoSort = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize()
+        );
+        Page<MusicPost> posts = musicPostRepository.findMyPosts(viewerId, pageableNoSort);
+        return mapToFeedDtosWithLibraryFlag(posts, viewerId);
+    }
 
     // 피드에 보관함 여부 + 좋아요 눌렀는지 여부 추가
     private Page<MusicPostFeedResponseDto> mapToFeedDtosWithLibraryFlag(

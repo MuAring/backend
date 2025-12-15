@@ -119,6 +119,25 @@ public interface MusicPostRepository extends JpaRepository<MusicPost, Long> {
             Pageable pageable
     );
 
+    @Query(value = """
+        SELECT *
+        FROM music_post mp
+        WHERE mp.member_id = :memberId
+        AND mp.group_id IS NULL
+        ORDER BY mp.created_at DESC
+        """,
+            countQuery = """
+        SELECT COUNT(*)
+        FROM music_post mp
+        WHERE mp.member_id = :memberId
+        AND mp.group_id IS NULL
+        """,
+            nativeQuery = true)
+    Page<MusicPost> findMyPosts(
+            @Param("memberId") Long memberId,
+            Pageable pageable
+    );
+
 
     @Query(value = """
         SELECT *
