@@ -27,6 +27,7 @@ public interface MemberLocationQueryRepository extends JpaRepository<MemberLocat
             ) AS distance
         FROM member_location ml
         WHERE ml.member_id <> :selfId
+                AND ml.updated_at >= NOW() - INTERVAL '5 minutes'
     ) AS sub
     WHERE sub.distance < :radius
     ORDER BY sub.distance
